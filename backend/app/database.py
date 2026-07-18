@@ -1,6 +1,8 @@
+from datetime import datetime
 from sqlmodel import Session, SQLModel, create_engine, select
 from app.config import DATABASE_URL, CARGO_TYPES
-from app.models import CargoInventory, SystemSettings
+from app.models import CargoInventory, SystemSettings, Vehicle
+from app.ai.forecast_dispatch.data_loader import get_fleet_bootstrap_rows
 
 # SQLite connection args for multi-threaded async frameworks
 connect_args = {"check_same_thread": False}
@@ -15,7 +17,7 @@ def create_db_and_tables():
 
 def init_db_defaults():
     """
-    Seeds default system configurations and initial cargo states if not present.
+    Seeds default system configurations, initial cargo states, and fleet bootstrap if not present.
     """
     with Session(engine) as session:
         # Seed default weather
@@ -34,4 +36,29 @@ def init_db_defaults():
             if not inv:
                 session.add(CargoInventory(cargo_type=cargo, volume=0.0))
         
+        # Seed vehicles from fleet.csv bootstrap if database is empty
+        vehicles_in_db = session.exec(select(Vehicle)).first()
+        if not vehicles_in_db:
+            try:
+                bootstrap_rows = get_fleet_bootstrap_rows()
+                for row in bootstrap_rows:
+                    # Parse available date/time safely
+                    avail_dt = row["_available_dt"]
+                    avail_str = avail_dt.isoformat() if isinstance(avail_dt, datetime) else str(avail_dt)
+                    
+                    v = Vehicle(
+                        vehicle_id=row["vehicle_id"],
+                        mode=row["mode"],
+                        capacity_kg=float(row["capacity_ton"]) * 1000.0,
+                        status=row["status"],
+                        available_from=avail_str,
+                        supports_refrigeration=bool(row["has_reefer"]),
+                        location="can_tho"
+                    )
+                    session.add(v)
+            except Exception as e:
+                # Fallback to prevent crash if fleet.csv load fails
+                print(f"Error bootstrapping fleet: {e}")
+        
         session.commit()
+

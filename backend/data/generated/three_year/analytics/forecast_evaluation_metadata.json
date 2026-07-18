@@ -1,0 +1,20 @@
+{
+  "label_leakage_fields": [],
+  "models": [
+    "seasonal_naive",
+    "rolling_28d",
+    "monthly_seasonal",
+    "calendar_trend_ridge"
+  ],
+  "random_split_used": false,
+  "rolling_28d_policy": "one-step baseline using observed history available before each prediction day",
+  "split_type": "strict_time_split",
+  "test_period": {
+    "end": "2026-12-31",
+    "start": "2026-01-01"
+  },
+  "train_period": {
+    "end": "2025-12-31",
+    "start": "2024-01-01"
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "analytics_files": {
+    "analytics/forecast_evaluation.csv": "827cf3cfe1b48b1a9d9f4d7b35c18fe1d3ef99f433957ed9d6c9dc1321fd9f19",
+    "analytics/forecast_evaluation_metadata.json": "fb92e704999bba3f9e12674289d31755299fc241e15dd17dd048226fdf3baf2b",
+    "analytics/forecast_predictions_2026.csv": "0a35a5dc14b9a244e35fadf2cd02b15672c97daaa9a648384c4d08984ad48cd7",
+    "analytics/monthly_trends.csv": "ba206bf1f081138dc5aef41687c4d0eb7bd9da1726a898594adac57b813e35d6",
+    "analytics/weather_logistics_impacts.csv": "2b745de4ca6a708664714ad1e9c2eaefae29cbe21a34c93f71b82ec1885f6380"
+  },
+  "canonical_checksums": {
+    "commodities": "9abc7eb7472d3eb5392d1d3d7cff11e4284fca60f2e66e9a47f48e22cc89137f",
+    "fleet": "905b9da04bd41bbf2e0fd2cb642ac03a577afd9ef7aa56f6e4e1703885c36847",
+    "freight_rates": "21a80e037eac566a7043bf10fa266749559d8d0095745aa7c23a830456f4563f",
+    "fuel_prices": "f906caf4bba87e52fe1b1113773f870d29f85e8df89d8b3fe13d8946738115e4",
+    "legs": "cbd6338a28354af74dc8e4bfcd1e0118a40ba815d3aaa1efc56e1db6b0dcfb3b",
+    "nodes": "60da5bf45236f7d34202219f42dc79640a8c89c01ee5bb94500201fac18eae0f",
+    "ops_notes": "37853f845f74b724b8dc9b21303d376c4454511c2dafcf5515de6b4d377d7cda",
+    "orders": "211c40e39d1abf0acf3ba524bcaa0821967aab73650823f2634015d3720748f0",
+    "policy_docs": "192e68235968c7a6e06b30bffcf75499e39e084000b1eca606dad1b8c63f3e49",
+    "weather": "ebf5db0cffa430a3d88d82d31974745e074eace721cda65793aaab4dec038ee6",
+    "weather_bulletins": "f07d8a4b65eb5b1b272b21a7882f1b7109a1a7713dd7c305cbdba7422662536b"
+  },
+  "compatibility_files": {
+    "dataset_fleet.json": "1a138c6df7ef03b135aacd1617acec4863d48bc8bce9b44f9e7236f8d0d4f305",
+    "dataset_orders.json": "04aa59316599840b2ab7c0dfc8f76474171bde11e0ccb03573802904be1e8129",
+    "dataset_price.json": "fe56dcd6626080c6b6f7ecd9effa641a03412f11c8e6ab6d12b23180ec17cf49",
+    "dataset_weather.json": "83d38b2977f1ed552660d1dfc5b075f84c1585a748f1419a4552b453c3405467"
+  },
+  "config_path": "config/base_3y.yaml",
+  "dataset_version": "4.0",
+  "file_checksums": {
+    "analytics/monthly_trends.csv": "ba206bf1f081138dc5aef41687c4d0eb7bd9da1726a898594adac57b813e35d6",
+    "analytics/weather_logistics_impacts.csv": "2b745de4ca6a708664714ad1e9c2eaefae29cbe21a34c93f71b82ec1885f6380",
+    "csv/commodities.csv": "f8935f08b5e7e681868bafa9fac5188544dc8a503f9c372246192a5e6ba8fcdf",
+    "csv/fleet.csv": "7b259fcbc2ff2b48693c7d515ecd69326196cbd6d641afc5548991ec4c124e51",
+    "csv/freight_rates.csv": "97358f557ebd642846151c120cc9913bfc6a8284e4bd15b62ca39c44ccc38c68",
+    "csv/freight_rates/year=2024/freight_rates.csv": "9f340a585d083292c9e6af571cb14ea6fc12ace1fba5b1a7c5040cb81041a769",
+    "csv/freight_rates/year=2025/freight_rates.csv": "1619395443cfe41208654f63f12f45f764c0e88f32d55320e2b6a17f7bebcf5c",
+    "csv/freight_rates/year=2026/freight_rates.csv": "54d6eebfa937512aaf95b073af135dbd34a7d16ffd60f90ca82b903e3dc9575c",
+    "csv/fuel_prices.csv": "eb2bae57524c034cb1d04b313127e1330058a028c1c16c414dd2e34d95dc4758",
+    "csv/fuel_prices/year=2024/fuel_prices.csv": "567dd4bbf68dbfe21bf134a1f61ec668a707d763c9d4be22be11ee7b7b02c67b",
+    "csv/fuel_prices/year=2025/fuel_prices.csv": "f668285a1cdbdd32ef56937eb69f7ce00b33f06ac4866a642b09dbc36a79a037",
+    "csv/fuel_prices/year=2026/fuel_prices.csv": "22d91e480f2ba8ce8a1a7323c99f6c2937f12cbb99b2b3ae5ad5c8e79b111712",
+    "csv/legs.csv": "323507247fe755b84cfd9e45b5ca7a289174f8d364530ffb3d7958f8b1b2153e",
+    "csv/nodes.csv": "88e941b8ec49917ddd1c962683a89d899d22351bf2222baeabefe8347d4c52e5",
+    "csv/ops_notes.csv": "3de67591fce79dfb051cd694829798efcb5f761bee4021195c93a401a88cb3fd",
+    "csv/ops_notes/year=2024/ops_notes.csv": "17cff6e15fa4093e2709e5ff345db22b11691f1bbc03b8ca0ed2ba696ca9e178",
+    "csv/ops_notes/year=2025/ops_notes.csv": "958a921bf5c7510824662480140422e4b536a8726a6e85fae892d82444a4933b",
+    "csv/ops_notes/year=2026/ops_notes.csv": "a15f1da1856c4f637166f681f708015926433bfc082ddcf1b85da7b35cc85cc3",
+    "csv/orders.csv": "c68a52b4038e886efaeab6839f8905b8b6b61c969396da04677762100c737827",
+    "csv/orders/year=2024/orders.csv": "65d651b2a86bf0834d11c6c08fa96ae1d9a7a89abe2189a6b445ab4b73824c01",
+    "csv/orders/year=2025/orders.csv": "8209d45dd8ab87d11fddd65c5a9c460dfb512999512fd77c621e99ef1b8cec9e",
+    "csv/orders/year=2026/orders.csv": "66e350b6138d2e7328a08b77b8d5219ed10251d216e9626e9c6b8547af0bb70d",
+    "csv/policy_docs.csv": "e78a022c1b233485d9a47e7bb4cef9a88066208da34afd13c3b993cd782f44f3",
+    "csv/weather.csv": "de3621dd88e864ef7ec32b7fbba1cdebaf02d01b43a59cfa95c953d3a30daaec",
+    "csv/weather/year=2024/weather.csv": "fcc6dbd30d3ab472cbb098996c851ab0bcaf841dc5137109f261db6fd7c065d7",
+    "csv/weather/year=2025/weather.csv": "3a69a9c68a2f846b45b76a917a1b3bfe4183fab3e11df878975a713e9e136e3f",
+    "csv/weather/year=2026/weather.csv": "1372eb746cae10ed6aae951889df889d87c5e05a2b1aaba04b63a1fd40bdfa94",
+    "csv/weather_bulletins.csv": "c01dd720bbb5b99efdf80b3159fcef72d6f0933b132dd27cc39fae94b8df8a4f",
+    "csv/weather_bulletins/year=2024/weather_bulletins.csv": "8b6968bf8ffaaebf4bd96f650341df4c50c9923975b57130f7987915dc6a41de",
+    "csv/weather_bulletins/year=2025/weather_bulletins.csv": "13a42f4168c99de77de0c0cfad89f9d5bfbce72971b23f37290012bd054515be",
+    "csv/weather_bulletins/year=2026/weather_bulletins.csv": "46a77566bb4ccac6629cdfd657e7d5def95e19b149af8a8f0abd25737b532c3a"
+  },
+  "frequencies": {
+    "freight_hours": 6,
+    "fuel_adjustment_days": 14,
+    "weather_hours": 1
+  },
+  "generated_at": "2026-07-18T00:00:00+07:00",
+  "pack": "three_year",
+  "partition_files": {
+    "csv/freight_rates/year=2024/freight_rates.csv": "9f340a585d083292c9e6af571cb14ea6fc12ace1fba5b1a7c5040cb81041a769",
+    "csv/freight_rates/year=2025/freight_rates.csv": "1619395443cfe41208654f63f12f45f764c0e88f32d55320e2b6a17f7bebcf5c",
+    "csv/freight_rates/year=2026/freight_rates.csv": "54d6eebfa937512aaf95b073af135dbd34a7d16ffd60f90ca82b903e3dc9575c",
+    "csv/fuel_prices/year=2024/fuel_prices.csv": "567dd4bbf68dbfe21bf134a1f61ec668a707d763c9d4be22be11ee7b7b02c67b",
+    "csv/fuel_prices/year=2025/fuel_prices.csv": "f668285a1cdbdd32ef56937eb69f7ce00b33f06ac4866a642b09dbc36a79a037",
+    "csv/fuel_prices/year=2026/fuel_prices.csv": "22d91e480f2ba8ce8a1a7323c99f6c2937f12cbb99b2b3ae5ad5c8e79b111712",
+    "csv/ops_notes/year=2024/ops_notes.csv": "17cff6e15fa4093e2709e5ff345db22b11691f1bbc03b8ca0ed2ba696ca9e178",
+    "csv/ops_notes/year=2025/ops_notes.csv": "958a921bf5c7510824662480140422e4b536a8726a6e85fae892d82444a4933b",
+    "csv/ops_notes/year=2026/ops_notes.csv": "a15f1da1856c4f637166f681f708015926433bfc082ddcf1b85da7b35cc85cc3",
+    "csv/orders/year=2024/orders.csv": "65d651b2a86bf0834d11c6c08fa96ae1d9a7a89abe2189a6b445ab4b73824c01",
+    "csv/orders/year=2025/orders.csv": "8209d45dd8ab87d11fddd65c5a9c460dfb512999512fd77c621e99ef1b8cec9e",
+    "csv/orders/year=2026/orders.csv": "66e350b6138d2e7328a08b77b8d5219ed10251d216e9626e9c6b8547af0bb70d",
+    "csv/weather/year=2024/weather.csv": "fcc6dbd30d3ab472cbb098996c851ab0bcaf841dc5137109f261db6fd7c065d7",
+    "csv/weather/year=2025/weather.csv": "3a69a9c68a2f846b45b76a917a1b3bfe4183fab3e11df878975a713e9e136e3f",
+    "csv/weather/year=2026/weather.csv": "1372eb746cae10ed6aae951889df889d87c5e05a2b1aaba04b63a1fd40bdfa94",
+    "csv/weather_bulletins/year=2024/weather_bulletins.csv": "8b6968bf8ffaaebf4bd96f650341df4c50c9923975b57130f7987915dc6a41de",
+    "csv/weather_bulletins/year=2025/weather_bulletins.csv": "13a42f4168c99de77de0c0cfad89f9d5bfbce72971b23f37290012bd054515be",
+    "csv/weather_bulletins/year=2026/weather_bulletins.csv": "46a77566bb4ccac6629cdfd657e7d5def95e19b149af8a8f0abd25737b532c3a"
+  },
+  "period": {
+    "end": "2026-12-31T23:00:00+07:00",
+    "start": "2024-01-01T00:00:00+07:00",
+    "timezone": "Asia/Bangkok"
+  },
+  "provenance_summary": {
+    "simulated": "Weather, orders, fleet state, prices, rates, water distances, and seasonality unless explicitly noted.",
+    "user_provided": "Selected provisional road distances from the execution contract.",
+    "verified": "No locally supplied numeric anchor was treated as verified."
+  },
+  "resolved_temporal_effects": {
+    "demand_year_noise": {
+      "2024": 0.99551865,
+      "2025": 0.98799408,
+      "2026": 1.00915385
+    },
+    "year_weather_anomaly": {
+      "2024": 0.97630219,
+      "2025": 0.94777143,
+      "2026": 0.99574357
+    }
+  },
+  "row_counts": {
+    "commodities": 10,
+    "fleet": 77,
+    "freight_rates": 368256,
+    "fuel_prices": 237,
+    "legs": 14,
+    "nodes": 6,
+    "ops_notes": 4461,
+    "orders": 25771,
+    "policy_docs": 10,
+    "weather": 157824,
+    "weather_bulletins": 6576
+  },
+  "scenario": {
+    "fleet": {
+      "road_status_mix": null,
+      "water_status_mix": null
+    },
+    "freight": {
+      "mode_demand_multipliers": {
+        "road": 1.0,
+        "water": 1.0
+      },
+      "mode_rate_multipliers": {
+        "road": 1.0,
+        "water": 1.0
+      }
+    },
+    "fuel_price_multipliers": {
+      "diesel_005s": 1.0,
+      "gasoline": 1.0,
+      "marine_diesel": 1.0
+    },
+    "fuel_price_paths": {},
+    "name": "annual",
+    "order_multiplier": 1.0,
+    "weather": {
+      "extreme_events": [],
+      "flood_risk_add": 0.0,
+      "rainfall_multiplier": 1.0,
+      "river_level_add_m": 0.0,
+      "road_factor_add": 0.0,
+      "suppress_base_extreme_events": false,
+      "target_node_multipliers": {},
+      "water_factor_add": 0.0
+    }
+  },
+  "seed": 20260717
+}

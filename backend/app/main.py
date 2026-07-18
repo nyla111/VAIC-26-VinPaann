@@ -5,7 +5,9 @@ from app.config import CORS_ORIGINS
 from app.database import create_db_and_tables
 from app.routes.layer1 import router as layer1_router
 from app.routes.hub import router as hub_router
+from app.routes.layer2 import router as layer2_router
 from app.routes.websocket import router as ws_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,7 +37,9 @@ app.add_middleware(
 # Register routers
 app.include_router(layer1_router, prefix="/api/layer1", tags=["Layer 1 Route Optimizer"])
 app.include_router(hub_router, prefix="/api/hub", tags=["Hub Operations"])
+app.include_router(layer2_router, prefix="/api/layer2", tags=["Layer 2 Dispatch & Forecast"])
 app.include_router(ws_router, tags=["Real-time Dashboard (WebSockets)"])
+
 
 @app.get("/")
 async def root_endpoint():
