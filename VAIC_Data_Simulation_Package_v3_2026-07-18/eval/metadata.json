@@ -1,0 +1,27 @@
+{
+  "actual_rows": 50,
+  "algorithm_version": "brute_force_v1",
+  "candidate_routes": [
+    "A_DIRECT_ROAD",
+    "B_ROAD_VIA_CT",
+    "C_WATER_VIA_CT"
+  ],
+  "checksums": {
+    "reference_routes.csv": "6d54a5e87d939aa3651d731c94e4fdbff01cda28d92fbc45d23b7f3dbcac9a2c",
+    "reference_routes.json": "030e9e416ebb5e93b524a3153544b3bcae394a6b518049e3932b713a890a5c22"
+  },
+  "dataset_version": "3.0",
+  "leakage_control": "Labels are stored only in eval/ and are absent from canonical packs.",
+  "pack_counts": {
+    "S1_normal": 17,
+    "S2_flood": 17,
+    "S3_price_shock": 16
+  },
+  "reference_route_counts": {
+    "A_DIRECT_ROAD": 46,
+    "B_ROAD_VIA_CT": 1,
+    "C_WATER_VIA_CT": 2,
+    "INFEASIBLE": 1
+  },
+  "target_rows": 50
+}

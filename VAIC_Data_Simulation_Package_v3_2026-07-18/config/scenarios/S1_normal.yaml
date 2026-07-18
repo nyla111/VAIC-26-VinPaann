@@ -1,0 +1,33 @@
+extends: ../base.yaml
+dataset:
+  start: "2026-10-15T00:00:00+07:00"
+  end: "2026-10-17T23:00:00+07:00"
+  pack: S1_normal
+  output_subdir: scenarios/S1_normal
+scenario:
+  name: S1_normal
+  order_multiplier: 1.00
+  weather:
+    suppress_base_extreme_events: true
+    rainfall_multiplier: 0.45
+    river_level_add_m: -0.10
+    flood_risk_add: 0.00
+    road_factor_add: 0.00
+    water_factor_add: 0.00
+    target_node_multipliers: {}
+    extreme_events: []
+  fleet:
+    road_status_mix: null
+    water_status_mix: null
+  fuel_price_multipliers:
+    diesel_005s: 1.00
+    gasoline: 1.00
+    marine_diesel: 1.00
+  freight:
+    mode_rate_multipliers:
+      road: 1.00
+      water: 1.00
+    mode_demand_multipliers:
+      road: 1.00
+      water: 1.00
+

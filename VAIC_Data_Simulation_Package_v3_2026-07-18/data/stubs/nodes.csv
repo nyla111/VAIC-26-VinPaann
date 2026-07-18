@@ -1,0 +1,11 @@
+node_id,name_vi,node_type,location_label,lat,lon,on_river,active,source_type
+HUB_VITHANH,Hub Vị Thanh,farm_hub,Vị Thanh,9.784000,105.470100,True,True,assumption
+HUB_LONGXUYEN,Hub Long Xuyên,farm_hub,Long Xuyên,10.386400,105.435200,True,True,assumption
+HUB_SOCTRANG,Hub Sóc Trăng,farm_hub,Sóc Trăng,9.602500,105.973900,True,True,assumption
+HUB_VINHLONG,Hub Vĩnh Long,farm_hub,Vĩnh Long,10.253700,105.972200,True,True,assumption
+CT_HUB,Trung tâm trung chuyển Cần Thơ,transshipment,Cần Thơ,10.045200,105.746900,True,True,assumption
+HCM_MARKET,Thị trường TP.HCM,market,TP.HCM,10.776900,106.700900,False,True,assumption
+HUB_CAMAU,Hub Cà Mau,farm_hub,Cà Mau,9.176900,105.152400,True,False,assumption
+HUB_DONGTHAP,Hub Đồng Tháp,farm_hub,Đồng Tháp,10.493800,105.688200,True,False,assumption
+HUB_TAYNINH,Hub Tây Ninh,farm_hub,Tây Ninh,11.335200,106.109900,False,False,assumption
+HUB_BENTRE,Hub Bến Tre,farm_hub,Bến Tre,10.243400,106.375600,True,False,assumption

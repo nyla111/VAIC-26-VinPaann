@@ -1,0 +1,11 @@
+commodity_id,name_vi,category,perishability_level,max_hold_hours,loss_pct_per_hour,value_vnd_per_kg,needs_reefer,water_ok,compatible_vehicle_types,source_type
+COM_RICE,Lúa gạo,grain,1,120.000000,0.010000,16000.000000,False,True,truck_5t|truck_15t|boat_50t|barge_200t|barge_500t,assumption
+COM_PANGASIUS,Cá tra,aquatic,5,18.000000,0.180000,32000.000000,True,False,reefer_8t,assumption
+COM_SHRIMP,Tôm,aquatic,5,12.000000,0.220000,125000.000000,True,False,reefer_8t,assumption
+COM_POMELO,Bưởi,fruit,3,48.000000,0.055000,36000.000000,False,True,truck_5t|truck_15t|boat_50t,assumption
+COM_SWEET_POTATO,Khoai lang,vegetable,2,72.000000,0.030000,15000.000000,False,True,truck_5t|truck_15t|boat_50t,assumption
+COM_SUGARCANE,Mía,industrial_crop,2,72.000000,0.025000,1300.000000,False,True,truck_15t|boat_50t|barge_200t|barge_500t,assumption
+COM_PINEAPPLE,Khóm,fruit,3,42.000000,0.060000,10000.000000,False,True,truck_5t|truck_15t|boat_50t,assumption
+COM_PURPLE_ONION,Hành tím,vegetable,2,72.000000,0.035000,28000.000000,False,True,truck_5t|truck_15t|boat_50t,assumption
+COM_ORANGE,Cam sành,fruit,3,42.000000,0.065000,22000.000000,False,True,truck_5t|truck_15t|boat_50t,assumption
+COM_VEGETABLE,Rau màu,vegetable,4,24.000000,0.100000,18000.000000,False,False,truck_5t|truck_15t|reefer_8t,assumption

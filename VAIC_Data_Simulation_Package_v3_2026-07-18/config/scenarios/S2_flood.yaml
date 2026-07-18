@@ -1,0 +1,41 @@
+extends: ../base.yaml
+dataset:
+  start: "2026-10-15T00:00:00+07:00"
+  end: "2026-10-17T23:00:00+07:00"
+  pack: S2_flood
+  output_subdir: scenarios/S2_flood
+scenario:
+  name: S2_flood
+  order_multiplier: 0.95
+  weather:
+    suppress_base_extreme_events: true
+    rainfall_multiplier: 2.20
+    river_level_add_m: 0.65
+    flood_risk_add: 0.18
+    road_factor_add: 0.12
+    water_factor_add: 0.05
+    target_node_multipliers:
+      HUB_VITHANH: 1.35
+      HUB_SOCTRANG: 1.30
+      CT_HUB: 1.20
+    extreme_events:
+      - start: "2026-10-15T08:00:00+07:00"
+        end: "2026-10-17T08:00:00+07:00"
+        rainfall_add_mm: 22.0
+        river_level_add_m: 0.35
+        affected_nodes: [HUB_VITHANH, HUB_SOCTRANG, CT_HUB]
+  fleet:
+    road_status_mix: null
+    water_status_mix: null
+  fuel_price_multipliers:
+    diesel_005s: 1.00
+    gasoline: 1.00
+    marine_diesel: 1.00
+  freight:
+    mode_rate_multipliers:
+      road: 1.08
+      water: 1.02
+    mode_demand_multipliers:
+      road: 1.12
+      water: 1.04
+

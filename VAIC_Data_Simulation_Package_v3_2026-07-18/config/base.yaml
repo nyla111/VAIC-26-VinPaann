@@ -1,0 +1,600 @@
+dataset:
+  version: "3.0"
+  seed: 20260717
+  timezone: Asia/Bangkok
+  generated_at: "2026-07-17T00:00:00+07:00"
+  start: "2026-01-01T00:00:00+07:00"
+  end: "2026-12-31T23:00:00+07:00"
+  pack: annual
+  output_root: data/generated
+  output_subdir: annual
+  stubs_dir: data/stubs
+  extra_hubs: false
+  default_format: both
+  json_orientation: records
+
+rng_stream_offsets:
+  orders: 101
+  weather: 202
+  fleet: 303
+  fuel: 404
+  freight: 505
+
+scenario:
+  name: annual
+  order_multiplier: 1.00
+  weather:
+    suppress_base_extreme_events: false
+    rainfall_multiplier: 1.00
+    river_level_add_m: 0.00
+    flood_risk_add: 0.00
+    road_factor_add: 0.00
+    water_factor_add: 0.00
+    target_node_multipliers: {}
+    extreme_events: []
+  fleet:
+    road_status_mix: null
+    water_status_mix: null
+  fuel_price_multipliers:
+    diesel_005s: 1.00
+    gasoline: 1.00
+    marine_diesel: 1.00
+  fuel_price_paths: {}
+  freight:
+    mode_rate_multipliers:
+      road: 1.00
+      water: 1.00
+    mode_demand_multipliers:
+      road: 1.00
+      water: 1.00
+
+nodes:
+  - node_id: HUB_VITHANH
+    name_vi: Hub Vị Thanh
+    node_type: farm_hub
+    location_label: Vị Thanh
+    lat: 9.7840
+    lon: 105.4701
+    on_river: true
+    active: true
+    optional: false
+    source_type: assumption
+    source_note: Tọa độ đại diện cấp thành phố; cần xác minh trước khi dùng ngoài demo.
+  - node_id: HUB_LONGXUYEN
+    name_vi: Hub Long Xuyên
+    node_type: farm_hub
+    location_label: Long Xuyên
+    lat: 10.3864
+    lon: 105.4352
+    on_river: true
+    active: true
+    optional: false
+    source_type: assumption
+    source_note: Tọa độ đại diện cấp thành phố; cần xác minh trước khi dùng ngoài demo.
+  - node_id: HUB_SOCTRANG
+    name_vi: Hub Sóc Trăng
+    node_type: farm_hub
+    location_label: Sóc Trăng
+    lat: 9.6025
+    lon: 105.9739
+    on_river: true
+    active: true
+    optional: false
+    source_type: assumption
+    source_note: Tọa độ đại diện cấp thành phố; cần xác minh trước khi dùng ngoài demo.
+  - node_id: HUB_VINHLONG
+    name_vi: Hub Vĩnh Long
+    node_type: farm_hub
+    location_label: Vĩnh Long
+    lat: 10.2537
+    lon: 105.9722
+    on_river: true
+    active: true
+    optional: false
+    source_type: assumption
+    source_note: Tọa độ đại diện cấp thành phố; cần xác minh trước khi dùng ngoài demo.
+  - node_id: CT_HUB
+    name_vi: Trung tâm trung chuyển Cần Thơ
+    node_type: transshipment
+    location_label: Cần Thơ
+    lat: 10.0452
+    lon: 105.7469
+    on_river: true
+    active: true
+    optional: false
+    source_type: assumption
+    source_note: Tọa độ đại diện cấp thành phố; vị trí hub thật chưa được cung cấp.
+  - node_id: HCM_MARKET
+    name_vi: Thị trường TP.HCM
+    node_type: market
+    location_label: TP.HCM
+    lat: 10.7769
+    lon: 106.7009
+    on_river: false
+    active: true
+    optional: false
+    source_type: assumption
+    source_note: Tọa độ đại diện trung tâm thành phố; vị trí chợ đích thật chưa được cung cấp.
+  - node_id: HUB_CAMAU
+    name_vi: Hub Cà Mau
+    node_type: farm_hub
+    location_label: Cà Mau
+    lat: 9.1769
+    lon: 105.1524
+    on_river: true
+    active: false
+    optional: true
+    source_type: assumption
+    source_note: Node tùy chọn, chỉ dùng để làm stub đủ 10 dòng khi extra_hubs=false.
+  - node_id: HUB_DONGTHAP
+    name_vi: Hub Đồng Tháp
+    node_type: farm_hub
+    location_label: Đồng Tháp
+    lat: 10.4938
+    lon: 105.6882
+    on_river: true
+    active: false
+    optional: true
+    source_type: assumption
+    source_note: Node tùy chọn, chỉ dùng để làm stub đủ 10 dòng khi extra_hubs=false.
+  - node_id: HUB_TAYNINH
+    name_vi: Hub Tây Ninh
+    node_type: farm_hub
+    location_label: Tây Ninh
+    lat: 11.3352
+    lon: 106.1099
+    on_river: false
+    active: false
+    optional: true
+    source_type: assumption
+    source_note: Node tùy chọn, chỉ dùng để làm stub đủ 10 dòng khi extra_hubs=false.
+  - node_id: HUB_BENTRE
+    name_vi: Hub Bến Tre
+    node_type: farm_hub
+    location_label: Bến Tre
+    lat: 10.2434
+    lon: 106.3756
+    on_river: true
+    active: false
+    optional: true
+    source_type: assumption
+    source_note: Node tùy chọn, chỉ dùng để làm stub đủ 10 dòng khi extra_hubs=false.
+
+legs:
+  - {leg_id: LEG_VT_HCM_ROAD, from_node_id: HUB_VITHANH, to_node_id: HCM_MARKET, mode: road, distance_km: 240.0, duration_hr_base: 5.2, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: assumption, source_note: Khoảng cách demo từ narrative cũ; chưa xác minh.}
+  - {leg_id: LEG_LX_HCM_ROAD, from_node_id: HUB_LONGXUYEN, to_node_id: HCM_MARKET, mode: road, distance_km: 190.0, duration_hr_base: 4.4, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: user_provided, source_note: Corrective anchor từ technical review; vẫn là provisional và cần đo lại theo endpoint thật.}
+  - {leg_id: LEG_ST_HCM_ROAD, from_node_id: HUB_SOCTRANG, to_node_id: HCM_MARKET, mode: road, distance_km: 231.0, duration_hr_base: 5.1, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: assumption, source_note: Khoảng cách demo từ narrative cũ; chưa xác minh.}
+  - {leg_id: LEG_VL_HCM_ROAD, from_node_id: HUB_VINHLONG, to_node_id: HCM_MARKET, mode: road, distance_km: 144.0, duration_hr_base: 3.2, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: user_provided, source_note: Provisional anchor do người dùng cung cấp; mode được diễn giải là road cho demo.}
+  - {leg_id: LEG_VT_CT_ROAD, from_node_id: HUB_VITHANH, to_node_id: CT_HUB, mode: road, distance_km: 60.0, duration_hr_base: 1.5, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: assumption, source_note: Khoảng cách demo từ narrative cũ; chưa xác minh.}
+  - {leg_id: LEG_LX_CT_ROAD, from_node_id: HUB_LONGXUYEN, to_node_id: CT_HUB, mode: road, distance_km: 62.0, duration_hr_base: 1.6, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: user_provided, source_note: Corrective anchor từ technical review; vẫn là provisional và cần đo lại theo endpoint thật.}
+  - {leg_id: LEG_ST_CT_ROAD, from_node_id: HUB_SOCTRANG, to_node_id: CT_HUB, mode: road, distance_km: 63.0, duration_hr_base: 1.6, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: assumption, source_note: Khoảng cách demo từ narrative cũ; chưa xác minh.}
+  - {leg_id: LEG_VL_CT_ROAD, from_node_id: HUB_VINHLONG, to_node_id: CT_HUB, mode: road, distance_km: 38.0, duration_hr_base: 1.0, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: user_provided, source_note: Corrective anchor từ technical review; vẫn là provisional và cần đo lại theo endpoint thật.}
+  - {leg_id: LEG_VT_CT_WATER, from_node_id: HUB_VITHANH, to_node_id: CT_HUB, mode: water, distance_km: 72.0, duration_hr_base: 6.5, weather_sensitivity: water_level, bidirectional: true, active: true, source_type: assumption, source_note: Water distance riêng cho simulation; không sao chép road distance.}
+  - {leg_id: LEG_LX_CT_WATER, from_node_id: HUB_LONGXUYEN, to_node_id: CT_HUB, mode: water, distance_km: 105.0, duration_hr_base: 9.0, weather_sensitivity: water_level, bidirectional: true, active: true, source_type: assumption, source_note: Water distance riêng cho simulation; không sao chép road distance.}
+  - {leg_id: LEG_ST_CT_WATER, from_node_id: HUB_SOCTRANG, to_node_id: CT_HUB, mode: water, distance_km: 82.0, duration_hr_base: 7.5, weather_sensitivity: water_level, bidirectional: true, active: true, source_type: assumption, source_note: Water distance riêng cho simulation; không sao chép road distance.}
+  - {leg_id: LEG_VL_CT_WATER, from_node_id: HUB_VINHLONG, to_node_id: CT_HUB, mode: water, distance_km: 65.0, duration_hr_base: 5.8, weather_sensitivity: water_level, bidirectional: true, active: true, source_type: assumption, source_note: Water distance riêng cho simulation; không sao chép road distance.}
+  - {leg_id: LEG_CT_HCM_ROAD, from_node_id: CT_HUB, to_node_id: HCM_MARKET, mode: road, distance_km: 172.0, duration_hr_base: 3.7, weather_sensitivity: road_flood, bidirectional: true, active: true, source_type: user_provided, source_note: Corrective anchor từ technical review; vẫn là provisional và cần đo lại theo endpoint thật.}
+  - {leg_id: LEG_CT_HCM_WATER, from_node_id: CT_HUB, to_node_id: HCM_MARKET, mode: water, distance_km: 220.0, duration_hr_base: 19.0, weather_sensitivity: mixed, bidirectional: true, active: true, source_type: assumption, source_note: Water distance và duration riêng cho simulation; chưa xác minh.}
+
+commodities:
+  - commodity_id: COM_RICE
+    name_vi: Lúa gạo
+    compatibility_code_vi: lua_gao
+    category: grain
+    perishability_level: 1
+    max_hold_hours: 120.0
+    loss_pct_per_hour: 0.010
+    value_vnd_per_kg: 16000.0
+    needs_reefer: false
+    water_ok: true
+    compatible_vehicle_types: [truck_5t, truck_15t, boat_50t, barge_200t, barge_500t]
+    source_type: assumption
+    weight_distribution: {median_kg: 7500.0, log_sigma: 0.55, min_kg: 500.0, max_kg: 45000.0}
+    monthly_multipliers: [0.90, 1.25, 1.45, 1.20, 0.85, 0.80, 1.25, 1.35, 0.95, 0.90, 1.20, 1.15]
+  - commodity_id: COM_PANGASIUS
+    name_vi: Cá tra
+    compatibility_code_vi: ca_tra
+    category: aquatic
+    perishability_level: 5
+    max_hold_hours: 18.0
+    loss_pct_per_hour: 0.180
+    value_vnd_per_kg: 32000.0
+    needs_reefer: true
+    water_ok: false
+    compatible_vehicle_types: [reefer_8t]
+    source_type: assumption
+    weight_distribution: {median_kg: 4200.0, log_sigma: 0.35, min_kg: 500.0, max_kg: 8000.0}
+    monthly_multipliers: [0.95, 0.95, 1.00, 1.00, 1.05, 1.05, 1.05, 1.05, 1.00, 1.00, 0.95, 0.95]
+  - commodity_id: COM_SHRIMP
+    name_vi: Tôm
+    compatibility_code_vi: tom
+    category: aquatic
+    perishability_level: 5
+    max_hold_hours: 12.0
+    loss_pct_per_hour: 0.220
+    value_vnd_per_kg: 125000.0
+    needs_reefer: true
+    water_ok: false
+    compatible_vehicle_types: [reefer_8t]
+    source_type: assumption
+    weight_distribution: {median_kg: 3000.0, log_sigma: 0.40, min_kg: 300.0, max_kg: 8000.0}
+    monthly_multipliers: [0.65, 0.70, 0.80, 1.00, 1.35, 1.50, 1.55, 1.45, 1.25, 0.90, 0.75, 0.65]
+  - commodity_id: COM_POMELO
+    name_vi: Bưởi
+    compatibility_code_vi: buoi
+    category: fruit
+    perishability_level: 3
+    max_hold_hours: 48.0
+    loss_pct_per_hour: 0.055
+    value_vnd_per_kg: 36000.0
+    needs_reefer: false
+    water_ok: true
+    compatible_vehicle_types: [truck_5t, truck_15t, boat_50t]
+    source_type: assumption
+    weight_distribution: {median_kg: 5200.0, log_sigma: 0.45, min_kg: 400.0, max_kg: 18000.0}
+    monthly_multipliers: [0.80, 0.75, 0.70, 0.70, 0.75, 0.85, 1.00, 1.25, 1.45, 1.55, 1.35, 1.10]
+  - commodity_id: COM_SWEET_POTATO
+    name_vi: Khoai lang
+    compatibility_code_vi: khoai_lang
+    category: vegetable
+    perishability_level: 2
+    max_hold_hours: 72.0
+    loss_pct_per_hour: 0.030
+    value_vnd_per_kg: 15000.0
+    needs_reefer: false
+    water_ok: true
+    compatible_vehicle_types: [truck_5t, truck_15t, boat_50t]
+    source_type: assumption
+    weight_distribution: {median_kg: 6500.0, log_sigma: 0.50, min_kg: 500.0, max_kg: 24000.0}
+    monthly_multipliers: [1.20, 1.30, 0.85, 0.80, 1.15, 1.25, 0.85, 0.80, 1.10, 1.20, 0.90, 0.85]
+  - commodity_id: COM_SUGARCANE
+    name_vi: Mía
+    compatibility_code_vi: mia
+    category: industrial_crop
+    perishability_level: 2
+    max_hold_hours: 72.0
+    loss_pct_per_hour: 0.025
+    value_vnd_per_kg: 1300.0
+    needs_reefer: false
+    water_ok: true
+    compatible_vehicle_types: [truck_15t, boat_50t, barge_200t, barge_500t]
+    source_type: assumption
+    weight_distribution: {median_kg: 16000.0, log_sigma: 0.50, min_kg: 1500.0, max_kg: 85000.0}
+    monthly_multipliers: [1.25, 1.05, 0.80, 0.65, 0.60, 0.60, 0.65, 0.80, 1.15, 1.45, 1.55, 1.50]
+  - commodity_id: COM_PINEAPPLE
+    name_vi: Khóm
+    compatibility_code_vi: khom
+    category: fruit
+    perishability_level: 3
+    max_hold_hours: 42.0
+    loss_pct_per_hour: 0.060
+    value_vnd_per_kg: 10000.0
+    needs_reefer: false
+    water_ok: true
+    compatible_vehicle_types: [truck_5t, truck_15t, boat_50t]
+    source_type: assumption
+    weight_distribution: {median_kg: 5500.0, log_sigma: 0.45, min_kg: 400.0, max_kg: 20000.0}
+    monthly_multipliers: [0.90, 0.90, 0.95, 1.05, 1.10, 1.15, 1.15, 1.10, 1.05, 1.00, 0.95, 0.90]
+  - commodity_id: COM_PURPLE_ONION
+    name_vi: Hành tím
+    compatibility_code_vi: hanh_tim
+    category: vegetable
+    perishability_level: 2
+    max_hold_hours: 72.0
+    loss_pct_per_hour: 0.035
+    value_vnd_per_kg: 28000.0
+    needs_reefer: false
+    water_ok: true
+    compatible_vehicle_types: [truck_5t, truck_15t, boat_50t]
+    source_type: assumption
+    weight_distribution: {median_kg: 4200.0, log_sigma: 0.48, min_kg: 300.0, max_kg: 16000.0}
+    monthly_multipliers: [1.45, 1.35, 1.20, 0.85, 0.70, 0.65, 0.65, 0.70, 0.80, 0.95, 1.20, 1.50]
+  - commodity_id: COM_ORANGE
+    name_vi: Cam sành
+    compatibility_code_vi: cam_sanh
+    category: fruit
+    perishability_level: 3
+    max_hold_hours: 42.0
+    loss_pct_per_hour: 0.065
+    value_vnd_per_kg: 22000.0
+    needs_reefer: false
+    water_ok: true
+    compatible_vehicle_types: [truck_5t, truck_15t, boat_50t]
+    source_type: assumption
+    weight_distribution: {median_kg: 4800.0, log_sigma: 0.45, min_kg: 350.0, max_kg: 18000.0}
+    monthly_multipliers: [1.15, 1.10, 0.95, 0.80, 0.75, 0.75, 0.80, 0.90, 1.05, 1.25, 1.35, 1.25]
+  - commodity_id: COM_VEGETABLE
+    name_vi: Rau màu
+    compatibility_code_vi: rau_mau
+    category: vegetable
+    perishability_level: 4
+    max_hold_hours: 24.0
+    loss_pct_per_hour: 0.100
+    value_vnd_per_kg: 18000.0
+    needs_reefer: false
+    water_ok: false
+    compatible_vehicle_types: [truck_5t, truck_15t, reefer_8t]
+    source_type: assumption
+    weight_distribution: {median_kg: 2600.0, log_sigma: 0.42, min_kg: 200.0, max_kg: 9000.0}
+    monthly_multipliers: [1.15, 1.10, 1.00, 0.90, 0.85, 0.80, 0.80, 0.85, 0.95, 1.05, 1.15, 1.20]
+
+order_generation:
+  target_annual_rows: {min: 6000, max: 12000}
+  destination_node_id: HCM_MARKET
+  forecast_grain: day
+  shared_monthly_multipliers: [0.65, 0.70, 0.82, 0.98, 1.16, 1.34, 1.50, 1.62, 1.48, 1.20, 0.88, 0.67]
+  shared_seasonality_weight: 0.80
+  daily_latent:
+    enabled: true
+    persistence: 0.65
+    regional_log_std: 0.08
+    hub_log_std: 0.06
+    clip: [0.75, 1.35]
+  hubs:
+    HUB_LONGXUYEN:
+      base_daily_orders: 6.4
+      commodity_mix: {COM_RICE: 0.48, COM_PANGASIUS: 0.27, COM_VEGETABLE: 0.10, COM_SWEET_POTATO: 0.15}
+    HUB_SOCTRANG:
+      base_daily_orders: 6.2
+      commodity_mix: {COM_SHRIMP: 0.32, COM_RICE: 0.28, COM_PURPLE_ONION: 0.25, COM_VEGETABLE: 0.15}
+    HUB_VINHLONG:
+      base_daily_orders: 6.0
+      commodity_mix: {COM_POMELO: 0.28, COM_ORANGE: 0.26, COM_SWEET_POTATO: 0.28, COM_VEGETABLE: 0.18}
+    HUB_VITHANH:
+      base_daily_orders: 6.3
+      commodity_mix: {COM_SUGARCANE: 0.28, COM_PINEAPPLE: 0.27, COM_RICE: 0.27, COM_PANGASIUS: 0.10, COM_VEGETABLE: 0.08}
+  hourly_arrival_multipliers: [0.05, 0.03, 0.02, 0.02, 0.05, 0.40, 1.20, 1.80, 1.70, 1.50, 1.30, 1.20, 1.10, 1.00, 1.00, 1.10, 1.20, 1.40, 1.30, 1.10, 0.70, 0.40, 0.20, 0.10]
+  weekday_multipliers: [1.05, 1.05, 1.05, 1.05, 1.10, 0.90, 0.80]
+  minute_range: [0, 59]
+  ready_delay_hours: {gamma_shape: 1.8, gamma_scale: 0.7, min: 0.0, max: 4.0}
+  deadline_hold_fraction: {min: 0.55, max: 0.90}
+  deadline_floor_hours: 4.0
+  status_probabilities: {new: 0.30, ready: 0.66, cancelled: 0.04}
+  priority_deadline_threshold_hours: [10.0, 20.0, 36.0, 60.0]
+  priority_perishability_weight: 0.65
+  priority_deadline_weight: 0.35
+
+weather_generation:
+  frequency_hours: 1
+  minimum_river_level_m: 0.05
+  wet_months: [5, 6, 7, 8, 9, 10, 11]
+  rain_probability: {dry: 0.10, wet: 0.34}
+  regional_gamma: {shape: 1.7, scale_dry_mm: 2.5, scale_wet_mm: 8.5}
+  regional_persistence: 0.62
+  local_noise_std_mm: 1.6
+  local_rain_weight: 0.18
+  hourly_rain_multipliers: [0.55, 0.50, 0.45, 0.45, 0.50, 0.65, 0.75, 0.80, 0.85, 0.90, 0.95, 0.95, 1.00, 1.10, 1.20, 1.35, 1.50, 1.55, 1.45, 1.30, 1.10, 0.90, 0.75, 0.65]
+  river_seasonality:
+    peak_month: 10
+    amplitude_m: 0.62
+    rainfall_memory_hours: 24
+    rainfall_coefficient_m_per_mm: 0.010
+    local_noise_std_m: 0.035
+  node_profiles:
+    HUB_VITHANH: {rainfall_multiplier: 1.08, river_level_base_m: 2.15}
+    HUB_LONGXUYEN: {rainfall_multiplier: 1.02, river_level_base_m: 2.45}
+    HUB_SOCTRANG: {rainfall_multiplier: 1.12, river_level_base_m: 1.95}
+    HUB_VINHLONG: {rainfall_multiplier: 1.00, river_level_base_m: 2.25}
+    CT_HUB: {rainfall_multiplier: 1.05, river_level_base_m: 2.35}
+    HCM_MARKET: {rainfall_multiplier: 0.95, river_level_base_m: null}
+  flood:
+    rainfall_severe_mm: 65.0
+    river_risk_start_m: 2.60
+    river_risk_severe_m: 3.75
+    rainfall_weight: 0.46
+    river_weight: 0.54
+    risk_cap: 1.00
+    alert_thresholds: {watch: 0.35, warning: 0.60, severe: 0.82}
+    road_risk_penalty: 1.25
+    road_rain_penalty: 0.25
+    water_optimal_low_m: 1.55
+    water_optimal_high_m: 3.35
+    water_low_penalty: 0.70
+    water_high_penalty: 0.85
+    nonriver_water_factor: 1.00
+  base_extreme_events:
+    - start: "2026-09-20T06:00:00+07:00"
+      end: "2026-09-21T18:00:00+07:00"
+      rainfall_add_mm: 18.0
+      river_level_add_m: 0.25
+      affected_nodes: [HUB_VITHANH, HUB_SOCTRANG, CT_HUB]
+    - start: "2026-10-28T12:00:00+07:00"
+      end: "2026-10-29T23:00:00+07:00"
+      rainfall_add_mm: 15.0
+      river_level_add_m: 0.22
+      affected_nodes: [HUB_LONGXUYEN, HUB_VINHLONG, CT_HUB]
+
+fleet_generation:
+  status_mix: {available: 0.54, en_route: 0.25, maintenance: 0.11, reserved: 0.10}
+  available_delay_hours:
+    available: [0.0, 2.0]
+    en_route: [3.0, 18.0]
+    maintenance: [18.0, 72.0]
+    reserved: [4.0, 30.0]
+  vehicle_types:
+    truck_5t: {mode: road, capacity_ton: 5.0, cost_fixed_vnd: 250000.0, cost_per_km_vnd: 12000.0, speed_kmh: 45.0, has_reefer: false}
+    truck_15t: {mode: road, capacity_ton: 15.0, cost_fixed_vnd: 420000.0, cost_per_km_vnd: 18500.0, speed_kmh: 42.0, has_reefer: false}
+    reefer_8t: {mode: road, capacity_ton: 8.0, cost_fixed_vnd: 650000.0, cost_per_km_vnd: 21000.0, speed_kmh: 43.0, has_reefer: true}
+    boat_50t: {mode: water, capacity_ton: 50.0, cost_fixed_vnd: 900000.0, cost_per_km_vnd: 6000.0, speed_kmh: 12.0, has_reefer: false}
+    barge_200t: {mode: water, capacity_ton: 200.0, cost_fixed_vnd: 2500000.0, cost_per_km_vnd: 9000.0, speed_kmh: 10.0, has_reefer: false}
+    barge_500t: {mode: water, capacity_ton: 500.0, cost_fixed_vnd: 5200000.0, cost_per_km_vnd: 13000.0, speed_kmh: 8.5, has_reefer: false}
+  allocations:
+    truck_5t: {HUB_VITHANH: 5, HUB_LONGXUYEN: 5, HUB_SOCTRANG: 5, HUB_VINHLONG: 5, CT_HUB: 4}
+    truck_15t: {HUB_VITHANH: 3, HUB_LONGXUYEN: 3, HUB_SOCTRANG: 3, HUB_VINHLONG: 3, CT_HUB: 5}
+    reefer_8t: {HUB_VITHANH: 2, HUB_LONGXUYEN: 3, HUB_SOCTRANG: 3, HUB_VINHLONG: 2, CT_HUB: 4}
+    boat_50t: {HUB_VITHANH: 2, HUB_LONGXUYEN: 2, HUB_SOCTRANG: 2, HUB_VINHLONG: 2, CT_HUB: 4}
+    barge_200t: {HUB_VITHANH: 0, HUB_LONGXUYEN: 0, HUB_SOCTRANG: 0, HUB_VINHLONG: 0, CT_HUB: 7}
+    barge_500t: {HUB_VITHANH: 0, HUB_LONGXUYEN: 0, HUB_SOCTRANG: 0, HUB_VINHLONG: 0, CT_HUB: 3}
+
+fuel_generation:
+  adjustment_interval_days: 14
+  base_prices_vnd_per_liter:
+    diesel_005s: 21745.0
+    gasoline: 20003.0
+    marine_diesel: 18500.0
+  adjustment_volatility_std: 0.025
+  max_adjustment_fraction: 0.060
+  mean_reversion: 0.22
+  source_type: simulated
+
+freight_generation:
+  frequency_hours: 6
+  minimum_rate_noise_multiplier: 0.70
+  rate_types: [spot, contract]
+  contract_discount: 0.90
+  rate_volatility_std: {spot: 0.075, contract: 0.020}
+  fuel_pass_through:
+    mode_fuel_type: {road: diesel_005s, water: marine_diesel}
+    beta_by_mode: {road: 0.38, water: 0.25}
+    minimum_factor: 0.80
+  vehicle_rates:
+    truck_5t: {rate_vnd_per_ton_km: 1500.0, fixed_fee_vnd: 260000.0}
+    truck_15t: {rate_vnd_per_ton_km: 1050.0, fixed_fee_vnd: 430000.0}
+    reefer_8t: {rate_vnd_per_ton_km: 1950.0, fixed_fee_vnd: 680000.0}
+    boat_50t: {rate_vnd_per_ton_km: 520.0, fixed_fee_vnd: 950000.0}
+    barge_200t: {rate_vnd_per_ton_km: 310.0, fixed_fee_vnd: 2600000.0}
+    barge_500t: {rate_vnd_per_ton_km: 235.0, fixed_fee_vnd: 5300000.0}
+  hourly_demand_multipliers: [0.80, 0.80, 0.80, 0.80, 0.82, 0.88, 0.95, 1.08, 1.18, 1.20, 1.15, 1.10, 1.05, 1.03, 1.02, 1.04, 1.08, 1.15, 1.20, 1.18, 1.08, 0.98, 0.90, 0.84]
+  weekday_multipliers: [1.04, 1.05, 1.05, 1.04, 1.08, 0.92, 0.86]
+  monthly_multipliers: [0.96, 0.97, 1.00, 1.02, 1.03, 1.05, 1.08, 1.10, 1.12, 1.13, 1.06, 1.02]
+  leg_rate_multipliers:
+    LEG_VT_HCM_ROAD: 1.08
+    LEG_LX_HCM_ROAD: 1.06
+    LEG_ST_HCM_ROAD: 1.08
+    LEG_VL_HCM_ROAD: 0.96
+    LEG_VT_CT_ROAD: 0.98
+    LEG_LX_CT_ROAD: 1.00
+    LEG_ST_CT_ROAD: 1.00
+    LEG_VL_CT_ROAD: 0.97
+    LEG_VT_CT_WATER: 1.02
+    LEG_LX_CT_WATER: 1.04
+    LEG_ST_CT_WATER: 1.03
+    LEG_VL_CT_WATER: 0.98
+    LEG_CT_HCM_ROAD: 1.00
+    LEG_CT_HCM_WATER: 0.96
+
+grounding_generation:
+  weather_bulletins:
+    road_restricted_factor: 1.45
+    road_closed_factor: 2.75
+    water_caution_factor: 1.08
+    water_closed_low_m: 1.00
+    water_closed_high_m: 3.85
+  ops_notes:
+    available_note_hours: 12
+    daily_note_valid_hours: 24
+  policy_docs:
+    - policy_id: POL_FORECAST_GRAIN
+      title: Grain dự báo nhu cầu
+      applies_to: forecast_agent
+      policy_text: Dự báo nhu cầu ở grain ngày × hub; không công bố forecast theo giờ vì mật độ sự kiện thấp. Đánh giá trên nhiều seed và time split.
+      citation_ref: config/base.yaml#order_generation
+      source_type: assumption
+    - policy_id: POL_COLD_CHAIN
+      title: Ràng buộc cold chain
+      applies_to: COM_PANGASIUS|COM_SHRIMP
+      policy_text: Đơn hàng needs_reefer=true chỉ được ghép với phương tiện has_reefer=true; không được bỏ ràng buộc để giảm chi phí.
+      citation_ref: SCHEMA.md#commodities
+      source_type: assumption
+    - policy_id: POL_WATER_COMPAT
+      title: Tương thích đường thủy
+      applies_to: route_optimizer
+      policy_text: Chỉ commodity water_ok=true mới được xét tuyến thủy; quyết định vẫn phải kiểm tra deadline và trạng thái luồng.
+      citation_ref: SCHEMA.md#commodities
+      source_type: assumption
+    - policy_id: POL_NAVIGATION_CLOSURE
+      title: Đóng luồng do mực nước cực đoan
+      applies_to: water_route
+      policy_text: Nếu weather_bulletins.water_navigation_status=closed thì tuyến thủy bị loại khỏi tập khả thi; không thay bằng một penalty hữu hạn.
+      citation_ref: config/base.yaml#grounding_generation
+      source_type: assumption
+    - policy_id: POL_ROAD_CLOSURE
+      title: Đóng đường do ngập
+      applies_to: road_route
+      policy_text: Nếu weather_bulletins.road_status=closed thì chặng đường bộ liên quan bị loại khỏi tập khả thi cho kỳ hiệu lực của bản tin.
+      citation_ref: config/base.yaml#grounding_generation
+      source_type: assumption
+    - policy_id: POL_FUEL_PASS_THROUGH
+      title: Fuel pass-through vào cước biến đổi
+      applies_to: freight_rates
+      policy_text: fuel_cost_factor = max(minimum_factor, 1 + beta_mode × (fuel_price/base_fuel_price - 1)); factor chỉ nhân variable rate, không nhân fixed fee.
+      citation_ref: config/base.yaml#freight_generation
+      source_type: assumption
+    - policy_id: POL_BARGE_HUB
+      title: Barge lớn chỉ đóng tại Cần Thơ
+      applies_to: barge_200t|barge_500t
+      policy_text: Barge 200–500 tấn được bố trí tại CT_HUB để nhận hàng đã gom; spoke hub dùng boat_50t cho gom tuyến đầu.
+      citation_ref: config/base.yaml#fleet_generation
+      source_type: assumption
+    - policy_id: POL_CONSOLIDATION
+      title: Phân bổ fixed fee khi gom tải
+      applies_to: dispatch_agent
+      policy_text: Route qua Cần Thơ chỉ được đánh giá sau khi fixed fee được phân bổ theo lô gom; không kết luận tuyến B vô ích từ tối ưu per-order.
+      citation_ref: config/baseline_policy.yaml
+      source_type: assumption
+    - policy_id: POL_NO_LEAKAGE
+      title: Tách input và golden evaluation
+      applies_to: all_agents
+      policy_text: Canonical input không chứa recommended_route hoặc reference cost. Nhãn chuẩn chỉ nằm trong eval/ và không được dùng làm feature.
+      citation_ref: eval/README.md
+      source_type: assumption
+    - policy_id: POL_PROVENANCE
+      title: Trích dẫn và provenance
+      applies_to: all_agents
+      policy_text: Mọi giải thích phải nêu bulletin, ops note, policy_id hoặc structured row đã dùng; simulated và assumption không được trình bày như observed fact.
+      citation_ref: ANCHORS.md
+      source_type: assumption
+
+evaluation:
+  target_rows: 50
+  pack_quotas: {S1_normal: 17, S2_flood: 17, S3_price_shock: 16}
+  rate_type: spot
+  transfer_wait_hours: {A_DIRECT_ROAD: 0.0, B_ROAD_VIA_CT: 2.0, C_WATER_VIA_CT: 4.0}
+  allow_split_load: true
+  algorithm_version: brute_force_v1
+
+compatibility_exports:
+  enabled: true
+  directory_name: compat
+  filenames:
+    orders: dataset_orders.json
+    weather: dataset_weather.json
+    fleet: dataset_fleet.json
+    price: dataset_price.json
+  weather_alert_map:
+    none: thap
+    watch: trung_binh
+    warning: cao
+    severe: cao
+  fleet_type_map:
+    road: xe_tai
+    water: sa_lan
+  fleet_status_map:
+    available: ranh
+    en_route: dang_chay
+    maintenance: bao_tri
+    reserved: da_dat
+  location_codes:
+    HUB_VITHANH: vi_thanh
+    HUB_LONGXUYEN: long_xuyen
+    HUB_SOCTRANG: soc_trang
+    HUB_VINHLONG: vinh_long
+    CT_HUB: can_tho
+    HCM_MARKET: tp_hcm
+  price_projection:
+    road_fuel_type: diesel_005s
+    road_fuel_liters_per_km: 0.35
+    reference_road_vehicle_type: truck_5t
+    reference_water_vehicle_type: boat_50t
+
+validation:
+  required_hubs: [HUB_VITHANH, HUB_LONGXUYEN, HUB_SOCTRANG, HUB_VINHLONG]
+  required_commodities: [COM_RICE, COM_PANGASIUS, COM_SHRIMP, COM_POMELO, COM_SWEET_POTATO, COM_SUGARCANE, COM_PINEAPPLE, COM_PURPLE_ONION]
+  allowed_timestamp_offset: "+07:00"
+  reproducibility_enabled: true
+  numeric_tolerance: 0.000001
+  demand_signal_guardrails:
+    calendar_oracle_r2: {min: 0.40, max: 0.75}
+    monthly_tonnage_peak_trough: {min: 1.75, max: 3.00}
+    daily_variance_mean_ratio: {min: 1.10, max: 2.50}
+    hourly_zero_share_max: 0.82

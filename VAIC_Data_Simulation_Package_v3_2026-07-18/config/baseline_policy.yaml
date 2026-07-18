@@ -1,0 +1,10 @@
+policy_name: habit_based_v1
+route_rule: always_direct_road_to_hcm
+dispatch_rule:
+  min_load_factor: 0.60
+  max_wait_hours: 24
+weather_awareness: false
+price_awareness: false
+vehicle_rule: first_available_compatible_vehicle
+split_large_orders: true
+

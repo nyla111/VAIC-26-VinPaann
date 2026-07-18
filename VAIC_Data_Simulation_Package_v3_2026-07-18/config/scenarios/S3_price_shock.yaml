@@ -1,0 +1,45 @@
+extends: ../base.yaml
+dataset:
+  start: "2026-10-15T00:00:00+07:00"
+  end: "2026-10-17T23:00:00+07:00"
+  pack: S3_price_shock
+  output_subdir: scenarios/S3_price_shock
+scenario:
+  name: S3_price_shock
+  order_multiplier: 1.00
+  weather:
+    suppress_base_extreme_events: true
+    rainfall_multiplier: 0.45
+    river_level_add_m: -0.10
+    flood_risk_add: 0.00
+    road_factor_add: 0.00
+    water_factor_add: 0.00
+    target_node_multipliers: {}
+    extreme_events: []
+  fleet:
+    road_status_mix:
+      available: 0.30
+      en_route: 0.35
+      maintenance: 0.15
+      reserved: 0.20
+    water_status_mix: null
+  fuel_price_multipliers:
+    diesel_005s: 1.00
+    gasoline: 1.00
+    marine_diesel: 1.00
+  fuel_price_paths:
+    diesel_005s:
+      - {offset_hours: 0, multiplier: 1.05}
+      - {offset_hours: 24, multiplier: 1.12}
+      - {offset_hours: 48, multiplier: 1.18}
+    marine_diesel:
+      - {offset_hours: 0, multiplier: 1.01}
+      - {offset_hours: 24, multiplier: 1.02}
+      - {offset_hours: 48, multiplier: 1.04}
+  freight:
+    mode_rate_multipliers:
+      road: 1.05
+      water: 1.00
+    mode_demand_multipliers:
+      road: 1.10
+      water: 1.03

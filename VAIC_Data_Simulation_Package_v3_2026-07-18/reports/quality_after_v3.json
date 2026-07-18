@@ -1,0 +1,171 @@
+{
+  "barge_locations": [
+    {
+      "current_node_id": "CT_HUB",
+      "vehicle_type": "barge_200t",
+      "vehicles": 7
+    },
+    {
+      "current_node_id": "CT_HUB",
+      "vehicle_type": "barge_500t",
+      "vehicles": 3
+    }
+  ],
+  "dataset_version": "3.0",
+  "evaluation_rows": 50,
+  "fuel_freight_linkage_columns_present": true,
+  "grounding_row_counts": {
+    "ops_notes": 1537,
+    "policy_docs": 10,
+    "weather_bulletins": 2190
+  },
+  "multi_seed": {
+    "runs": [
+      {
+        "calendar_oracle_r2_hub_month_dow": 0.41516,
+        "daily_orders_per_hub_mean": 6.20137,
+        "daily_variance_mean_ratio": 1.406376,
+        "hourly_zero_share": 0.7873,
+        "median_water_eligible_ton_per_day_by_hub": {
+          "HUB_LONGXUYEN": 34.616548,
+          "HUB_SOCTRANG": 20.791286,
+          "HUB_VINHLONG": 29.105723,
+          "HUB_VITHANH": 51.61347
+        },
+        "monthly_tonnage_peak_trough": 2.118844,
+        "rows": 9054,
+        "seed": 20260717
+      },
+      {
+        "calendar_oracle_r2_hub_month_dow": 0.453355,
+        "daily_orders_per_hub_mean": 6.327397,
+        "daily_variance_mean_ratio": 1.507333,
+        "hourly_zero_share": 0.783904,
+        "median_water_eligible_ton_per_day_by_hub": {
+          "HUB_LONGXUYEN": 30.261883,
+          "HUB_SOCTRANG": 19.592586,
+          "HUB_VINHLONG": 29.630744,
+          "HUB_VITHANH": 52.852548
+        },
+        "monthly_tonnage_peak_trough": 2.021771,
+        "rows": 9238,
+        "seed": 20261714
+      },
+      {
+        "calendar_oracle_r2_hub_month_dow": 0.473689,
+        "daily_orders_per_hub_mean": 6.267123,
+        "daily_variance_mean_ratio": 1.45608,
+        "hourly_zero_share": 0.786273,
+        "median_water_eligible_ton_per_day_by_hub": {
+          "HUB_LONGXUYEN": 31.895203,
+          "HUB_SOCTRANG": 18.837907,
+          "HUB_VINHLONG": 29.593992,
+          "HUB_VITHANH": 59.882819
+        },
+        "monthly_tonnage_peak_trough": 1.855,
+        "rows": 9150,
+        "seed": 20262711
+      },
+      {
+        "calendar_oracle_r2_hub_month_dow": 0.473697,
+        "daily_orders_per_hub_mean": 6.247945,
+        "daily_variance_mean_ratio": 1.436316,
+        "hourly_zero_share": 0.784275,
+        "median_water_eligible_ton_per_day_by_hub": {
+          "HUB_LONGXUYEN": 32.31882,
+          "HUB_SOCTRANG": 19.986196,
+          "HUB_VINHLONG": 28.452861,
+          "HUB_VITHANH": 49.583224
+        },
+        "monthly_tonnage_peak_trough": 2.142651,
+        "rows": 9122,
+        "seed": 20263708
+      },
+      {
+        "calendar_oracle_r2_hub_month_dow": 0.436487,
+        "daily_orders_per_hub_mean": 6.286301,
+        "daily_variance_mean_ratio": 1.457004,
+        "hourly_zero_share": 0.784304,
+        "median_water_eligible_ton_per_day_by_hub": {
+          "HUB_LONGXUYEN": 32.153577,
+          "HUB_SOCTRANG": 20.473324,
+          "HUB_VINHLONG": 29.443404,
+          "HUB_VITHANH": 50.644383
+        },
+        "monthly_tonnage_peak_trough": 2.008581,
+        "rows": 9178,
+        "seed": 20264705
+      }
+    ],
+    "seeds": [
+      20260717,
+      20261714,
+      20262711,
+      20263708,
+      20264705
+    ],
+    "summary": {
+      "calendar_oracle_r2_hub_month_dow": {
+        "max": 0.473697,
+        "median": 0.453355,
+        "min": 0.41516
+      },
+      "daily_variance_mean_ratio": {
+        "max": 1.507333,
+        "median": 1.45608,
+        "min": 1.406376
+      },
+      "hourly_zero_share": {
+        "max": 0.7873,
+        "median": 0.784304,
+        "min": 0.783904
+      },
+      "monthly_tonnage_peak_trough": {
+        "max": 2.142651,
+        "median": 2.021771,
+        "min": 1.855
+      },
+      "rows": {
+        "max": 9238.0,
+        "median": 9150.0,
+        "min": 9054.0
+      }
+    }
+  },
+  "orders": {
+    "calendar_oracle_r2_hub_month_dow": 0.41516,
+    "daily_orders_per_hub_mean": 6.20137,
+    "daily_variance_mean_ratio": 1.406376,
+    "hourly_zero_share": 0.7873,
+    "median_water_eligible_ton_per_day_by_hub": {
+      "HUB_LONGXUYEN": 34.616548,
+      "HUB_SOCTRANG": 20.791286,
+      "HUB_VINHLONG": 29.105723,
+      "HUB_VITHANH": 51.61347
+    },
+    "monthly_tonnage_peak_trough": 2.118844,
+    "rows": 9054
+  },
+  "route_geometry": {
+    "HUB_LONGXUYEN": {
+      "direct_road_km": 190.0,
+      "via_ct_detour_pct": 23.157895,
+      "via_ct_road_km": 234.0
+    },
+    "HUB_SOCTRANG": {
+      "direct_road_km": 231.0,
+      "via_ct_detour_pct": 1.731602,
+      "via_ct_road_km": 235.0
+    },
+    "HUB_VINHLONG": {
+      "direct_road_km": 144.0,
+      "via_ct_detour_pct": 45.833333,
+      "via_ct_road_km": 210.0
+    },
+    "HUB_VITHANH": {
+      "direct_road_km": 240.0,
+      "via_ct_detour_pct": -3.333333,
+      "via_ct_road_km": 232.0
+    }
+  }
+}

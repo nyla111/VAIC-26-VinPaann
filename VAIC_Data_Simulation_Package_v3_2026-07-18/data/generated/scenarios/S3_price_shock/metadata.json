@@ -1,0 +1,146 @@
+{
+  "canonical_checksums": {
+    "commodities": "9abc7eb7472d3eb5392d1d3d7cff11e4284fca60f2e66e9a47f48e22cc89137f",
+    "fleet": "e9dfe89c3a1f71000c4e3fd63eaada59459e10e19f909093d25d6fd33160ad87",
+    "freight_rates": "d5d78685858c1a62e5910f4dd905b566e5ebc564978045ffbc21e4d922e601c6",
+    "fuel_prices": "8aebb3277d0fdfb0bcbc0e176304106ce03b9b4184c503c221109e1b46bba334",
+    "legs": "cbd6338a28354af74dc8e4bfcd1e0118a40ba815d3aaa1efc56e1db6b0dcfb3b",
+    "nodes": "60da5bf45236f7d34202219f42dc79640a8c89c01ee5bb94500201fac18eae0f",
+    "ops_notes": "a5a1e0affc79a00984b4347f3f204e114312ed2d4b0679a142577d98ed87d927",
+    "orders": "d07422f3b4d790ba388baacef93000423728a033cc99bb61e4510f5a59dafcab",
+    "policy_docs": "9c72a9fb619c95e6adfc97c4e53a88d2b882dc9bab4abdee727c58aceb6f846e",
+    "weather": "4f0e885b2c400db9782860747dc824339db572fd2ccc3021c64b016d04deea86",
+    "weather_bulletins": "f072fd112edb16cd2faa4be1f9d540387dd7ec3985f0c1c1ea8ef97757bb7a0c"
+  },
+  "compatibility_files": {
+    "dataset_fleet.json": "68a2301ef519208870257a9f37b7258bb0537ab9a427d590e5569bf5c0bcaca4",
+    "dataset_orders.json": "d5151a6e96f3118e6b2d34dd23c5a39bb5545ee2c1d0655e22ad975fc3961fbb",
+    "dataset_price.json": "6936a103655a071a30fdea231dce9effef09c8904b7564694986cc36d9cc2771",
+    "dataset_weather.json": "31b78bf58e65c6882dc867b7eb52f2428149d1402cb65bb7cc4a0b902673ff25"
+  },
+  "config_path": "config/scenarios/S3_price_shock.yaml",
+  "dataset_version": "3.0",
+  "file_checksums": {
+    "csv/commodities.csv": "f8935f08b5e7e681868bafa9fac5188544dc8a503f9c372246192a5e6ba8fcdf",
+    "csv/fleet.csv": "4c4f489a2603db4fc6132eecb9fd38977e3ab17df80e822d9d967c4319602b8d",
+    "csv/freight_rates.csv": "70979fecd2572aed0311bb6ab0974dbb2980a5053c9ae28d5ec6ad17226fe0cc",
+    "csv/fuel_prices.csv": "b23c66b31f5117d24e0690e92dc34246cf444d14f62572bb093861d95c5f98a4",
+    "csv/legs.csv": "323507247fe755b84cfd9e45b5ca7a289174f8d364530ffb3d7958f8b1b2153e",
+    "csv/nodes.csv": "88e941b8ec49917ddd1c962683a89d899d22351bf2222baeabefe8347d4c52e5",
+    "csv/ops_notes.csv": "4968144b05841377390d9f4f8d3f62e731505d05eb4216a15529b5fced979493",
+    "csv/orders.csv": "cda5ef4487fde36ae384cee29e8187d25eadcb8665d278d8fa99fe3cc74e1f2d",
+    "csv/policy_docs.csv": "b751253ce3a508ffa70be0066b002ee846631efa066fefee2c2cbc7356839b7e",
+    "csv/weather.csv": "ac6ce15abeb5ff0c3314d5f5e088b73a9d3db82ab99b84ed2c82d86ca1fddf09",
+    "csv/weather_bulletins.csv": "1ead93d052c5e05fc55baac247d20c276f31400b754686468447f5eaf1749645",
+    "json/commodities.json": "203823a5dc4f10ea6bf1fcb6362a4d563012316d7c63fa56820e7c25a5b8e74e",
+    "json/fleet.json": "e5fe2511cb860c1e749c9456e8457573bac979bee60102710402f0c7111dbe27",
+    "json/freight_rates.json": "78f522d2090e8701348b5bc8f31333777a43e89fa1ef85e11cc90d60d7909e3e",
+    "json/fuel_prices.json": "3674cecc31df1425ee1654ca6f364a5c5be8052660e83ead43e75803d5f2f5b3",
+    "json/legs.json": "3a910b8fc34663f3260ca931c73c345de53af4408dfa68264c89231dfb3e9ce3",
+    "json/nodes.json": "b207553565f1a296f145db647aba742da6d324f014e89027c6c6fad84cef0039",
+    "json/ops_notes.json": "51b55de951f7f21afafd486cdc31326985cdee290320f6183a7cd062ef2d6ddd",
+    "json/orders.json": "7290e32f5a13ffdfa1f21d767aba239dab075cabe1a57417af60b6d12e2810e0",
+    "json/policy_docs.json": "04f580e605bc6304787f13fc230ee19045e724b2b63308e8b8eac1a12b1e41bc",
+    "json/weather.json": "6cc63be3fefed0d6c07b2686b9a1a38eaa6079af5dd7bf88606048e18c669d84",
+    "json/weather_bulletins.json": "602cf108f525f96217b8b98a694c4c529544a940d9534cd311b39630a1fe7258"
+  },
+  "frequencies": {
+    "freight_hours": 6,
+    "fuel_adjustment_days": 14,
+    "weather_hours": 1
+  },
+  "generated_at": "2026-07-17T00:00:00+07:00",
+  "pack": "S3_price_shock",
+  "period": {
+    "end": "2026-10-17T23:00:00+07:00",
+    "start": "2026-10-15T00:00:00+07:00",
+    "timezone": "Asia/Bangkok"
+  },
+  "provenance_summary": {
+    "simulated": "Weather, orders, fleet state, prices, rates, water distances, and seasonality unless explicitly noted.",
+    "user_provided": "Selected provisional road distances from the execution contract.",
+    "verified": "No locally supplied numeric anchor was treated as verified."
+  },
+  "row_counts": {
+    "commodities": 10,
+    "fleet": 77,
+    "freight_rates": 1008,
+    "fuel_prices": 7,
+    "legs": 14,
+    "nodes": 6,
+    "ops_notes": 89,
+    "orders": 64,
+    "policy_docs": 10,
+    "weather": 432,
+    "weather_bulletins": 18
+  },
+  "scenario": {
+    "fleet": {
+      "road_status_mix": {
+        "available": 0.3,
+        "en_route": 0.35,
+        "maintenance": 0.15,
+        "reserved": 0.2
+      },
+      "water_status_mix": null
+    },
+    "freight": {
+      "mode_demand_multipliers": {
+        "road": 1.1,
+        "water": 1.03
+      },
+      "mode_rate_multipliers": {
+        "road": 1.05,
+        "water": 1.0
+      }
+    },
+    "fuel_price_multipliers": {
+      "diesel_005s": 1.0,
+      "gasoline": 1.0,
+      "marine_diesel": 1.0
+    },
+    "fuel_price_paths": {
+      "diesel_005s": [
+        {
+          "multiplier": 1.05,
+          "offset_hours": 0
+        },
+        {
+          "multiplier": 1.12,
+          "offset_hours": 24
+        },
+        {
+          "multiplier": 1.18,
+          "offset_hours": 48
+        }
+      ],
+      "marine_diesel": [
+        {
+          "multiplier": 1.01,
+          "offset_hours": 0
+        },
+        {
+          "multiplier": 1.02,
+          "offset_hours": 24
+        },
+        {
+          "multiplier": 1.04,
+          "offset_hours": 48
+        }
+      ]
+    },
+    "name": "S3_price_shock",
+    "order_multiplier": 1.0,
+    "weather": {
+      "extreme_events": [],
+      "flood_risk_add": 0.0,
+      "rainfall_multiplier": 0.45,
+      "river_level_add_m": -0.1,
+      "road_factor_add": 0.0,
+      "suppress_base_extreme_events": true,
+      "target_node_multipliers": {},
+      "water_factor_add": 0.0
+    }
+  },
+  "seed": 20260717
+}

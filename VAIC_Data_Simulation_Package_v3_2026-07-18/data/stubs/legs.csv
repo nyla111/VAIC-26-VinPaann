@@ -1,0 +1,11 @@
+leg_id,from_node_id,to_node_id,mode,distance_km,duration_hr_base,weather_sensitivity,bidirectional,active,source_type,source_note
+LEG_VT_HCM_ROAD,HUB_VITHANH,HCM_MARKET,road,240.000000,5.200000,road_flood,True,True,assumption,Khoảng cách demo từ narrative cũ; chưa xác minh.
+LEG_LX_HCM_ROAD,HUB_LONGXUYEN,HCM_MARKET,road,190.000000,4.400000,road_flood,True,True,user_provided,Corrective anchor từ technical review; vẫn là provisional và cần đo lại theo endpoint thật.
+LEG_ST_HCM_ROAD,HUB_SOCTRANG,HCM_MARKET,road,231.000000,5.100000,road_flood,True,True,assumption,Khoảng cách demo từ narrative cũ; chưa xác minh.
+LEG_VL_HCM_ROAD,HUB_VINHLONG,HCM_MARKET,road,144.000000,3.200000,road_flood,True,True,user_provided,Provisional anchor do người dùng cung cấp; mode được diễn giải là road cho demo.
+LEG_VT_CT_ROAD,HUB_VITHANH,CT_HUB,road,60.000000,1.500000,road_flood,True,True,assumption,Khoảng cách demo từ narrative cũ; chưa xác minh.
+LEG_LX_CT_ROAD,HUB_LONGXUYEN,CT_HUB,road,62.000000,1.600000,road_flood,True,True,user_provided,Corrective anchor từ technical review; vẫn là provisional và cần đo lại theo endpoint thật.
+LEG_ST_CT_ROAD,HUB_SOCTRANG,CT_HUB,road,63.000000,1.600000,road_flood,True,True,assumption,Khoảng cách demo từ narrative cũ; chưa xác minh.
+LEG_VL_CT_ROAD,HUB_VINHLONG,CT_HUB,road,38.000000,1.000000,road_flood,True,True,user_provided,Corrective anchor từ technical review; vẫn là provisional và cần đo lại theo endpoint thật.
+LEG_VT_CT_WATER,HUB_VITHANH,CT_HUB,water,72.000000,6.500000,water_level,True,True,assumption,Water distance riêng cho simulation; không sao chép road distance.
+LEG_LX_CT_WATER,HUB_LONGXUYEN,CT_HUB,water,105.000000,9.000000,water_level,True,True,assumption,Water distance riêng cho simulation; không sao chép road distance.

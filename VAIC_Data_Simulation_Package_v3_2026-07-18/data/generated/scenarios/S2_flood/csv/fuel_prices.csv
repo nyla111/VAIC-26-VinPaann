@@ -1,0 +1,4 @@
+ts,fuel_type,price_vnd_per_liter,adjustment_date,source_type
+2026-10-15T00:00:00+07:00,diesel_005s,21745.000000,2026-10-15,simulated
+2026-10-15T00:00:00+07:00,gasoline,20003.000000,2026-10-15,simulated
+2026-10-15T00:00:00+07:00,marine_diesel,18500.000000,2026-10-15,simulated
