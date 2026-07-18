@@ -5,7 +5,9 @@ from app.models import CargoInventory, SystemSettings, Vehicle
 from app.ai.forecast_dispatch.data_loader import get_fleet_bootstrap_rows
 
 # SQLite connection args for multi-threaded async frameworks
-connect_args = {"check_same_thread": False}
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 def create_db_and_tables():
@@ -35,6 +37,15 @@ def init_db_defaults():
             inv = session.get(CargoInventory, cargo)
             if not inv:
                 session.add(CargoInventory(cargo_type=cargo, volume=0.0))
+        
+        # Seed default users
+        from app.models import User
+        users_in_db = session.exec(select(User)).first()
+        if not users_in_db:
+            session.add(User(email="enterprise1@vaic.vn", password_hash="demo123", role="enterprise"))
+            session.add(User(email="logistics1@vaic.vn", password_hash="demo123", role="logistics"))
+            session.add(User(email="admin1@vaic.vn", password_hash="demo123", role="admin"))
+
         
         # Seed vehicles from fleet.csv bootstrap if database is empty
         vehicles_in_db = session.exec(select(Vehicle)).first()

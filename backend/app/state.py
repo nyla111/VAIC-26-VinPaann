@@ -111,7 +111,9 @@ class SystemStateManager:
                             order = session.get(DBOrder, order_id)
                             if order:
                                 order.state = "dispatched"
+                                order.dispatched_at = now_utc.isoformat()
                                 session.add(order)
+
                     
                     # 2. Reset the inventory tracking metrics (compatible with old UI charts)
                     inventories = session.exec(select(CargoInventory)).all()

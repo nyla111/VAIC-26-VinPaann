@@ -30,6 +30,16 @@ class SystemSettings(SQLModel, table=True):
     value: str
 
 
+class User(SQLModel, table=True):
+    """
+    User accounts for authentication and authorization.
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True, index=True)
+    password_hash: str
+    role: str  # "enterprise", "logistics", "admin"
+
+
 class Order(SQLModel, table=True):
     """
     Stores details of agricultural orders created dynamically by users/customers.
@@ -45,9 +55,17 @@ class Order(SQLModel, table=True):
     
     # Layer 2 trip tracking fields
     selected_route_id: Optional[str] = None
-    state: str = Field(default="ROUTED_TO_CAN_THO")
+    state: str = Field(default="created")
     actual_arrival_at: Optional[str] = None
     actual_weight_kg: Optional[float] = None
+
+    # New enterprise role fields
+    delivery_deadline: Optional[str] = None
+    harvested_at: Optional[str] = None
+    assigned_vehicle_id: Optional[str] = None
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    dispatched_at: Optional[str] = None
+
 
 
 class Vehicle(SQLModel, table=True):

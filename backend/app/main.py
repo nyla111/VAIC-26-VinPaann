@@ -1,12 +1,17 @@
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from app.config import CORS_ORIGINS
 from app.database import create_db_and_tables
 from app.routes.layer1 import router as layer1_router
 from app.routes.hub import router as hub_router
 from app.routes.layer2 import router as layer2_router
 from app.routes.websocket import router as ws_router
+from app.routes.auth import router as auth_router
+from app.routes.dashboard import router as dashboard_router
+
 
 
 @asynccontextmanager
@@ -25,6 +30,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Configure Session Middleware for signed cookie sessions
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("DASHBOARD_SECRET_KEY", "vaic-hackathon-session-secret"),
+    same_site="lax",
+    https_only=os.getenv("DASHBOARD_COOKIE_HTTPS", "false").lower() == "true",
+)
+
 # Configure CORS for React integration
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +52,10 @@ app.include_router(layer1_router, prefix="/api/layer1", tags=["Layer 1 Route Opt
 app.include_router(hub_router, prefix="/api/hub", tags=["Hub Operations"])
 app.include_router(layer2_router, prefix="/api/layer2", tags=["Layer 2 Dispatch & Forecast"])
 app.include_router(ws_router, tags=["Real-time Dashboard (WebSockets)"])
+app.include_router(auth_router, tags=["Dashboard Auth"])
+
+app.include_router(dashboard_router, tags=["Dashboard View/Operations"])
+
 
 
 @app.get("/")

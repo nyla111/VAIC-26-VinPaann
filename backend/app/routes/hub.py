@@ -132,9 +132,11 @@ async def select_route(request: RouteSelectRequest, background_tasks: Background
                     db_order = session.get(Order, int(request.order_id))
                 except:
                     pass
+            now_str = datetime.now(timezone.utc).isoformat()
             if db_order:
                 db_order.selected_route_id = request.selected_route_id
                 db_order.state = "dispatched"
+                db_order.dispatched_at = now_str
                 session.add(db_order)
             else:
                 db_order = Order(
@@ -142,12 +144,14 @@ async def select_route(request: RouteSelectRequest, background_tasks: Background
                     commodity_id=None,
                     loai_hang=request.cargo_type,
                     khoi_luong_kg=request.volume,
-                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    timestamp=now_str,
                     created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     selected_route_id=request.selected_route_id,
-                    state="dispatched"
+                    state="dispatched",
+                    dispatched_at=now_str
                 )
                 session.add(db_order)
+
                 
             log_msg = f"Direct Route: {request.volume:.2f} kg of {request.cargo_type} from {request.hub_id} dispatched directly to HCM."
             session.add(SystemLog(timestamp=timestamp_log, message=log_msg))

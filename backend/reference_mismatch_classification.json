@@ -1,0 +1,350 @@
+{
+  "summary": {
+    "total_cases": 50,
+    "exact_or_legacy_alias_matched": 46,
+    "mismatches": 4,
+    "group_1_acceptable_model_change": 0,
+    "group_2_serious_direction_change": 4
+  },
+  "group_1_acceptable_model_change": [],
+  "group_2_serious_direction_change": [
+    {
+      "eval_id": "EVAL_ROUTE_001",
+      "pack": "S1_normal",
+      "order_id": "ORD_2026_000007",
+      "input": {
+        "order_id": "ORD_2026_000007",
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "",
+        "khoi_luong_kg": 6899.564804,
+        "timestamp": "2026-10-15T09:44:18+07:00"
+      },
+      "optimizer_recommended_route": "A_DIRECT_ROAD",
+      "optimizer_khuyen_nghi": "di_thang_hcm",
+      "reference_route": "B_ROAD_VIA_CT",
+      "raw_reference_route": "B_ROAD_VIA_CT",
+      "optimizer_direction": "direct",
+      "reference_direction": "via_ct",
+      "reference_rationale_codes": "CT_CONSOLIDATION_PATH|DEADLINE_FEASIBLE",
+      "reference_feasible_routes": "A_DIRECT_ROAD|B_ROAD_VIA_CT|C_WATER_VIA_CT",
+      "reference_infeasible_routes": "",
+      "reference_route_a_cost_vnd": "2792718.708594",
+      "reference_route_b_cost_vnd": "2788278.196119",
+      "reference_route_c_cost_vnd": "3434868.591265",
+      "reference_total_cost_vnd": "2788278.196119",
+      "reference_elapsed_hr": "7.965159",
+      "optimizer_phuong_an": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 2586189.6,
+          "thoi_gian_du_kien_gio": 5.7,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2523302.24,
+            "spoilage_cost_vnd": 62887.36,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 2586189.6,
+            "pricing_source": "freight_rates"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 3888676.57,
+          "thoi_gian_du_kien_gio": 5.89,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2788745.6,
+            "spoilage_cost_vnd": 64996.25,
+            "transshipment_fee_vnd": 1034934.72,
+            "total_cost_vnd": 3888676.57,
+            "pricing_source": "freight_rates"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4195979.92,
+          "thoi_gian_du_kien_gio": 10.74,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3042434.07,
+            "spoilage_cost_vnd": 118611.14,
+            "transshipment_fee_vnd": 1034934.72,
+            "total_cost_vnd": 4195979.92,
+            "pricing_source": "freight_rates"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 4041325.24,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2724888.28,
+            "spoilage_cost_vnd": 281502.24,
+            "transshipment_fee_vnd": 1034934.72,
+            "total_cost_vnd": 4041325.24,
+            "pricing_source": "freight_rates"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3734021.89,
+          "thoi_gian_du_kien_gio": 20.64,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2471199.82,
+            "spoilage_cost_vnd": 227887.35,
+            "transshipment_fee_vnd": 1034934.72,
+            "total_cost_vnd": 3734021.89,
+            "pricing_source": "freight_rates"
+          }
+        }
+      ],
+      "optimizer_evidence": {
+        "weather_ts": "2026-10-15T09:00:00+07:00",
+        "price_ts": "2026-10-15T06:00:00+07:00"
+      },
+      "classification": "group_2_serious_direction_change"
+    },
+    {
+      "eval_id": "EVAL_ROUTE_019",
+      "pack": "S2_flood",
+      "order_id": "ORD_2026_000006",
+      "input": {
+        "order_id": "ORD_2026_000006",
+        "hub_id": "HUB_SOCTRANG",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "",
+        "khoi_luong_kg": 15026.246378,
+        "timestamp": "2026-10-15T11:46:37+07:00"
+      },
+      "optimizer_recommended_route": "INFEASIBLE",
+      "optimizer_khuyen_nghi": null,
+      "reference_route": "A_DIRECT_ROAD",
+      "raw_reference_route": "A_DIRECT_ROAD",
+      "optimizer_direction": "infeasible",
+      "reference_direction": "direct",
+      "reference_rationale_codes": "DIRECT_ROUTE_COST_OR_DEADLINE",
+      "reference_feasible_routes": "A_DIRECT_ROAD|B_ROAD_VIA_CT",
+      "reference_infeasible_routes": "C_WATER_VIA_CT:ROUTE_CLOSED",
+      "reference_route_a_cost_vnd": "6333954.587138",
+      "reference_route_b_cost_vnd": "7141006.926035",
+      "reference_route_c_cost_vnd": "",
+      "reference_total_cost_vnd": "6333954.587138",
+      "reference_elapsed_hr": "11.440493",
+      "optimizer_phuong_an": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "khong_co_phuong_tien_phu_hop"
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "khong_co_phuong_tien_phu_hop"
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "muc_nuoc_khong_an_toan"
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "muc_nuoc_khong_an_toan"
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "muc_nuoc_khong_an_toan"
+        }
+      ],
+      "optimizer_evidence": {
+        "weather_ts": "2026-10-15T11:00:00+07:00",
+        "price_ts": null
+      },
+      "classification": "group_2_serious_direction_change"
+    },
+    {
+      "eval_id": "EVAL_ROUTE_021",
+      "pack": "S2_flood",
+      "order_id": "ORD_2026_000009",
+      "input": {
+        "order_id": "ORD_2026_000009",
+        "hub_id": "HUB_SOCTRANG",
+        "commodity_id": "COM_SHRIMP",
+        "loai_hang": "",
+        "khoi_luong_kg": 3002.226631,
+        "timestamp": "2026-10-15T14:00:23+07:00"
+      },
+      "optimizer_recommended_route": "A_DIRECT_ROAD",
+      "optimizer_khuyen_nghi": "di_thang_hcm",
+      "reference_route": "INFEASIBLE",
+      "raw_reference_route": "INFEASIBLE",
+      "optimizer_direction": "direct",
+      "reference_direction": "infeasible",
+      "reference_rationale_codes": "NO_DEADLINE_FEASIBLE_ROUTE",
+      "reference_feasible_routes": "",
+      "reference_infeasible_routes": "A_DIRECT_ROAD:DEADLINE_INFEASIBLE|B_ROAD_VIA_CT:DEADLINE_INFEASIBLE|C_WATER_VIA_CT:COMMODITY_NOT_WATER_COMPATIBLE+ROUTE_CLOSED",
+      "reference_route_a_cost_vnd": "",
+      "reference_route_b_cost_vnd": "",
+      "reference_route_c_cost_vnd": "",
+      "reference_total_cost_vnd": "",
+      "reference_elapsed_hr": "",
+      "optimizer_phuong_an": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 17962818.57,
+          "thoi_gian_du_kien_gio": 13.29,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 6991287.03,
+            "spoilage_cost_vnd": 10971531.54,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 17962818.57,
+            "pricing_source": "freight_rates"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 19985522.35,
+          "thoi_gian_du_kien_gio": 13.73,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 8198012.03,
+            "spoilage_cost_vnd": 11337176.33,
+            "transshipment_fee_vnd": 450333.99,
+            "total_cost_vnd": 19985522.35,
+            "pricing_source": "freight_rates"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "hang_khong_phu_hop_duong_thuy"
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "hang_khong_phu_hop_duong_thuy"
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "hang_khong_phu_hop_duong_thuy"
+        }
+      ],
+      "optimizer_evidence": {
+        "weather_ts": "2026-10-15T14:00:00+07:00",
+        "price_ts": "2026-10-15T12:00:00+07:00"
+      },
+      "classification": "group_2_serious_direction_change"
+    },
+    {
+      "eval_id": "EVAL_ROUTE_024",
+      "pack": "S2_flood",
+      "order_id": "ORD_2026_000019",
+      "input": {
+        "order_id": "ORD_2026_000019",
+        "hub_id": "HUB_LONGXUYEN",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "",
+        "khoi_luong_kg": 15825.481162,
+        "timestamp": "2026-10-15T21:31:47+07:00"
+      },
+      "optimizer_recommended_route": "INFEASIBLE",
+      "optimizer_khuyen_nghi": null,
+      "reference_route": "A_DIRECT_ROAD",
+      "raw_reference_route": "A_DIRECT_ROAD",
+      "optimizer_direction": "infeasible",
+      "reference_direction": "direct",
+      "reference_rationale_codes": "DIRECT_ROUTE_COST_OR_DEADLINE",
+      "reference_feasible_routes": "A_DIRECT_ROAD|B_ROAD_VIA_CT",
+      "reference_infeasible_routes": "C_WATER_VIA_CT:ROUTE_CLOSED",
+      "reference_route_a_cost_vnd": "7288353.349575",
+      "reference_route_b_cost_vnd": "8568754.666268",
+      "reference_route_c_cost_vnd": "",
+      "reference_total_cost_vnd": "7288353.349575",
+      "reference_elapsed_hr": "9.636242",
+      "optimizer_phuong_an": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "khong_co_phuong_tien_phu_hop"
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "khong_co_phuong_tien_phu_hop"
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "muc_nuoc_khong_an_toan"
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "muc_nuoc_khong_an_toan"
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": null,
+          "thoi_gian_du_kien_gio": null,
+          "trang_thai": "currently_unavailable",
+          "ly_do": "muc_nuoc_khong_an_toan"
+        }
+      ],
+      "optimizer_evidence": {
+        "weather_ts": "2026-10-15T21:00:00+07:00",
+        "price_ts": null
+      },
+      "classification": "group_2_serious_direction_change"
+    }
+  ]
+}
