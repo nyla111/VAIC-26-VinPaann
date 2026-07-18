@@ -851,3 +851,43 @@ Bộ data đạt yêu cầu khi có thể chứng minh bằng simulation rằng:
 Bắt đầu ngay từ **Phase P0**.
 
 Không viết lại proposal. Không hỏi thêm khi có thể dùng assumption có ghi nhãn. Không dừng trước khi đã tạo ít nhất schema, stubs, generator, scenarios, baseline policy và validator.
+
+# 19. TEMPORAL EXTENSION V4 — 2024-2026
+
+Ngoài annual/scenario pack v3, agent phải hỗ trợ pack `three_year` từ `2024-01-01T00:00:00+07:00` đến `2026-12-31T23:00:00+07:00` bằng `config/base_3y.yaml`.
+
+## 19.1. Geography override bắt buộc
+
+- Dùng duy nhất tên tỉnh/thành **sau sáp nhập** cho toàn bộ record 2024-2026.
+- Một node chỉ có một mapping hành chính trong `data/reference/node_admin_history.csv`.
+- Không sinh tên tỉnh cũ theo event time và không bắt consumer xử lý cutover 2025.
+- Ghi rõ đây là analytical harmonization, không phải historical administrative truth.
+- Không tạo demand/weather/freight jump tại 01/07/2025 chỉ vì đổi địa giới.
+
+## 19.2. Temporal signal contract
+
+- Annual index mục tiêu: `1.00`, `1.04`, `1.08` cho 2024, 2025, 2026.
+- Seasonality kết hợp production/market pattern ở cấp shared, commodity và hub.
+- Mỗi năm có seeded clipped noise; hiệu ứng đã resolve phải được ghi vào metadata.
+- Weather có monthly profile, year anomaly, extreme event và causal lag đến orders/freight.
+- Pattern cùng tháng phải tương quan dương nhưng không được giống hệt giữa các năm.
+
+## 19.3. Anti-overfit/underfit contract
+
+- Quality guardrail phải chạy trên ít nhất ba seed độc lập.
+- Forecast evaluation dùng train 2024-2025, test 2026; cấm random split, test tuning và feature lấy từ tương lai.
+- Báo cáo đầy đủ cả baseline yếu hoặc kết quả âm; không chọn riêng metric thuận lợi.
+- Một model phức tạp không bắt buộc thắng ở mọi grain. Daily và monthly phải báo riêng.
+
+## 19.4. Lệnh handoff
+
+~~~bash
+python src/generate_data.py --config config/base_3y.yaml --no-stubs
+python src/evaluate_forecast.py
+python src/audit_three_year_quality.py
+python src/audit_three_year_multiseed.py
+python src/validate_three_year.py
+python -m pytest -q
+~~~
+
+Definition of done của temporal extension: đủ 36 tháng, partition tái ghép được, geography consistent, quality/multi-seed/validation đều PASS, forecast giữ temporal holdout và report nêu rõ assumptions/limitations.

@@ -1,0 +1,102 @@
+{
+  "checks": {
+    "all_annual_indices_within_tolerance": true,
+    "all_lag12_positive": true,
+    "all_peak_trough_in_range": true,
+    "seed_changes_outputs": true
+  },
+  "checks_failed": 0,
+  "checks_passed": 4,
+  "runs": [
+    {
+      "actual_annual_index": {
+        "2024": 1.0,
+        "2025": 1.032929306491532,
+        "2026": 1.1159318778537977
+      },
+      "annual_relative_error": {
+        "2024": 0.0,
+        "2025": 0.006798743758142421,
+        "2026": 0.0332702572720348
+      },
+      "lag12_autocorrelation": 0.6714726213961105,
+      "monthly_peak_trough": 1.5728921635756683,
+      "orders": 25771,
+      "resolved_temporal_effects": {
+        "demand_year_noise": {
+          "2024": 0.99551865,
+          "2025": 0.98799408,
+          "2026": 1.00915385
+        },
+        "year_weather_anomaly": {
+          "2024": 0.97630219,
+          "2025": 0.94777143,
+          "2026": 0.99574357
+        }
+      },
+      "seed": 20260717
+    },
+    {
+      "actual_annual_index": {
+        "2024": 1.0,
+        "2025": 1.0878645453844156,
+        "2026": 1.1169873015010565
+      },
+      "annual_relative_error": {
+        "2024": 0.0,
+        "2025": 0.046023601331168784,
+        "2026": 0.034247501389867076
+      },
+      "lag12_autocorrelation": 0.8537977260449869,
+      "monthly_peak_trough": 1.6437611742704192,
+      "orders": 26135,
+      "resolved_temporal_effects": {
+        "demand_year_noise": {
+          "2024": 1.00299206,
+          "2025": 1.00676817,
+          "2026": 1.01667234
+        },
+        "year_weather_anomaly": {
+          "2024": 0.99591187,
+          "2025": 1.02603766,
+          "2026": 0.98990024
+        }
+      },
+      "seed": 20261714
+    },
+    {
+      "actual_annual_index": {
+        "2024": 1.0,
+        "2025": 1.0357868105320187,
+        "2026": 1.0881176226062081
+      },
+      "annual_relative_error": {
+        "2024": 0.0,
+        "2025": 0.0040511437192128135,
+        "2026": 0.007516317227970439
+      },
+      "lag12_autocorrelation": 0.6290216099693925,
+      "monthly_peak_trough": 1.4783181040050324,
+      "orders": 25642,
+      "resolved_temporal_effects": {
+        "demand_year_noise": {
+          "2024": 0.98500785,
+          "2025": 1.02242769,
+          "2026": 1.00203788
+        },
+        "year_weather_anomaly": {
+          "2024": 1.00766988,
+          "2025": 1.06871472,
+          "2026": 0.92862825
+        }
+      },
+      "seed": 20262711
+    }
+  ],
+  "seeds": [
+    20260717,
+    20261714,
+    20262711
+  ],
+  "status": "PASS"
+}

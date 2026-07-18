@@ -7,6 +7,26 @@ Bộ dữ liệu này là đầu vào semi-synthetic, có seed và có thể tá
 
 Đây là dữ liệu mô phỏng để phát triển và trình diễn, không phải dữ liệu vận hành hoặc báo giá thị trường. Tất cả tọa độ, khoảng cách đường thủy, thời lượng, tốc độ, cước, mùa vụ, hệ số thời tiết, hao hụt và cơ cấu đội xe hiện tại đều là giả định mô phỏng. Năm khoảng cách đường bộ lấy từ bảng người dùng cung cấp được ghi riêng là `user_provided_anchor`, chưa phải fact đã xác minh. Hai center anchor nhiên liệu ngày 09/07/2026 được xác minh từ Bộ Công Thương; tuy vậy, mọi row của chuỗi annual/scenario vẫn mang `source_type=simulated` vì là mô phỏng/extrapolation. Xem [ANCHORS.md](ANCHORS.md) trước khi dùng số liệu trong pitch hoặc ngoài demo.
 
+## Temporal extension v4: ba năm 2024-2026
+
+Pack `data/generated/three_year/` mở rộng contract v3 theo trục thời gian mà không đổi schema của 11 bảng canonical. Pack dùng seed mặc định `20260717`, bao phủ đủ 36 tháng và xuất CSV canonical, bốn JSON compatibility, partition theo năm và các bảng analytics.
+
+Quy ước địa lý của pack ba năm là **harmonized post-2025**: mọi bản ghi từ 2024 đến 2026 chỉ dùng tên tỉnh/thành sau sáp nhập. Một node chỉ có một `admin_id` và một `admin_name` xuyên suốt chuỗi thời gian. Đây là lựa chọn chuẩn hóa phục vụ join và phân tích theo yêu cầu dự án, không phải cách tái hiện tên hành chính lịch sử tại ngày phát sinh bản ghi. Không có demand shock tại mốc tháng 7/2025 chỉ vì đổi địa giới.
+
+Riêng `compat/dataset_weather.json.region` chỉ dùng `can_tho`, `an_giang`, `vinh_long`, `thanh_pho_ho_chi_minh`. Tên thành phố/điểm như Vị Thanh, Sóc Trăng hoặc Long Xuyên chỉ còn là label của hub, không được dùng làm khóa tỉnh/thành.
+
+Sinh và kiểm tra pack ba năm:
+
+~~~bash
+python src/generate_data.py --config config/base_3y.yaml --no-stubs
+python src/evaluate_forecast.py
+python src/audit_three_year_quality.py
+python src/audit_three_year_multiseed.py
+python src/validate_three_year.py
+~~~
+
+Kết quả seed chuẩn có 25,771 orders, 157,824 weather rows và 368,256 freight-rate rows. Quality audit đạt 15/15, multi-seed guardrail đạt 4/4 và validator đầy đủ đạt 78/78. Báo cáo chi tiết nằm tại [reports/VAIC_Three_Year_Synthetic_Data_Report.md](reports/VAIC_Three_Year_Synthetic_Data_Report.md).
+
 ## Data contract
 
 Contract v3 gồm 6 logical pack và 11 bảng canonical:
@@ -90,9 +110,16 @@ Trong vòng lặp phát triển có thể dùng `--skip-reproducibility` để b
 
 ~~~text
 data/
+├── reference/                     # Mapping hành chính đã hài hòa theo tên sau sáp nhập
 ├── raw_sources/                   # Input tham chiếu local; không auto-calibrate
 ├── stubs/                         # 11 CSV nhỏ để tích hợp sớm
 └── generated/
+    ├── three_year/
+    │   ├── csv/                   # 11 bảng canonical cho 2024-2026
+    │   ├── csv/<table>/year=YYYY/ # Partition năm cho consumer phân tích
+    │   ├── compat/                # 4 JSON schema đơn giản
+    │   ├── analytics/             # Trend, weather impact và forecast holdout
+    │   └── metadata.json
     ├── annual/
     │   ├── csv/                   # 11 bảng chuẩn
     │   ├── json/                  # 11 bảng chuẩn, orientation=records
@@ -120,6 +147,7 @@ Row count của pack seed `20260717` hiện tại:
 | S1_normal | 64 | 432 | 77 | 3 | 1,008 | 18 | 89 | 10 |
 | S2_flood | 51 | 432 | 77 | 3 | 1,008 | 18 | 89 | 10 |
 | S3_price_shock | 64 | 432 | 77 | 7 | 1,008 | 18 | 89 | 10 |
+| three_year | 25,771 | 157,824 | 77 | 237 | 368,256 | 6,576 | 4,461 | 10 |
 
 Mỗi pack còn có 6 node, 14 leg và 10 commodity. S3 có 7 fuel rows vì diesel/marine diesel đi qua shock path ba bậc thay vì một mức tĩnh.
 
@@ -133,6 +161,7 @@ Row count là output deterministic của config/code hiện tại, không phải
 - Seed mặc định: `20260717`
 - Múi giờ: `Asia/Bangkok`, timestamp xuất theo ISO 8601 với `+07:00`
 - Annual: `2026-01-01T00:00:00+07:00` đến `2026-12-31T23:00:00+07:00`
+- Three-year: `2024-01-01T00:00:00+07:00` đến `2026-12-31T23:00:00+07:00`; config tại `config/base_3y.yaml`
 - Scenario: cùng cửa sổ `2026-10-15T00:00:00+07:00` đến `2026-10-17T23:00:00+07:00`
 - Mỗi miền ngẫu nhiên có stream riêng: orders `+101`, weather `+202`, fleet `+303`, fuel `+404`, freight `+505`
 

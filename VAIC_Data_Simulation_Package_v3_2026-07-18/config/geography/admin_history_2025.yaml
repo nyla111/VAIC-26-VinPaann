@@ -1,0 +1,16 @@
+source:
+  title: Nghị quyết 202/2025/QH15 về sắp xếp đơn vị hành chính cấp tỉnh
+  url: https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm
+  resolution_date: "2025-06-12"
+  operational_cutover: "2025-07-01T00:00:00+07:00"
+
+reference_files:
+  admin_units: data/reference/admin_units.csv
+  node_admin_history: data/reference/node_admin_history.csv
+
+rules:
+  stable_logistics_key: node_id
+  geography_mode: harmonized_post_2025
+  geography_for_all_records: use post-2025 admin names for 2024-2026 analytical consistency
+  event_time_history_in_output: false
+  merger_changes_demand: false

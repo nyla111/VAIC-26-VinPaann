@@ -386,6 +386,44 @@ generation rules + resolved YAML + RNG stream
 
 Canonical serialization phải ổn định về thứ tự cột/row để checksum tái lập được. Compatibility export là downstream projection của canonical object, không chạy random lần hai.
 
+## Temporal extension v4
+
+V4 giữ nguyên schema canonical của 11 bảng v3 và bổ sung pack `three_year` cho 2024-2026.
+
+### Geography reference
+
+`data/reference/admin_units.csv` có các cột:
+
+| Column | Ý nghĩa |
+|---|---|
+| `admin_id` | Khóa ổn định của tỉnh/thành sau sáp nhập |
+| `admin_name` | Tên tỉnh/thành sau sáp nhập dùng trong toàn bộ 2024-2026 |
+| `admin_type` | Loại đơn vị hành chính |
+| `valid_from`, `valid_to` | Phạm vi của analytical view; không phải lịch sử event-time |
+| `source_type`, `source_ref` | Provenance của mapping |
+
+`data/reference/node_admin_history.csv` có `node_id`, `admin_id`, `valid_from`, `valid_to`, `mapping_type`. Tên file giữ chữ `history` để tương thích planning ban đầu, nhưng v4 chỉ có đúng một row cho mỗi node với `mapping_type=harmonized_post_2025`; không có cutover 2025 và không có tên tỉnh cũ.
+
+Các cột địa lý trong `analytics/monthly_trends.csv` gồm `admin_id`, `admin_name`, `admin_version`; `admin_version` luôn là `harmonized_post_2025`.
+
+Trong compatibility `dataset_weather.json`, field `region` của pack ba năm cũng dùng mã tỉnh/thành sau sáp nhập: `can_tho`, `an_giang`, `vinh_long`, `thanh_pho_ho_chi_minh`. Các label `Vị Thanh`, `Sóc Trăng`, `Long Xuyên` chỉ còn là tên điểm/hub vận hành, không phải khóa tỉnh/thành.
+
+### Analytics tables
+
+`analytics/monthly_trends.csv`:
+
+`month`, `hub_id`, `commodity_id`, `admin_id`, `admin_name`, `admin_version`, `order_count`, `total_weight_tons`, `avg_weight_kg`, `avg_rainfall_mm`, `avg_river_level_m`, `flood_hours`, `salinity_risk_avg`, `annual_index`, `seasonal_index`.
+
+`analytics/weather_logistics_impacts.csv`:
+
+`date`, `hub_id`, `rainfall_3d_mm`, `flood_risk_3d`, `salinity_risk_14d`, `supply_factor`, `delay_factor`, `priority_add`, `road_capacity_factor`, `freight_weather_factor`.
+
+`analytics/forecast_evaluation.csv` dùng `model`, `scope`, `grain`, `n_observations`, `mae`, `rmse`, `smape`, `wape`, `r2`. `forecast_predictions_2026.csv` chỉ chứa dự báo cho holdout 2026. Metadata của forecast ghi rõ train/test window và feature policy.
+
+### Partitions
+
+Mỗi bảng canonical có thể được đọc nguyên khối từ `csv/<table>.csv` hoặc theo năm từ `csv/<table>/year=YYYY/<table>.csv`. Ghép ba partition theo thứ tự năm phải tái tạo đúng row count và nội dung logical của canonical CSV.
+
 ## Versioning
 
 - Thêm cột optional hoặc projection mới: tăng minor version và giữ reader cũ nếu có thể.

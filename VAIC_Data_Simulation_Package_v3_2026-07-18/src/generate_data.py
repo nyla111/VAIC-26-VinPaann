@@ -250,7 +250,387 @@ def _normalized(values: Iterable[float]) -> np.ndarray:
     return array / array.mean()
 
 
-def generate_orders(config: dict[str, Any]) -> pd.DataFrame:
+def _config_relative_path(config: dict[str, Any], relative_path: str) -> Path:
+    config_path = Path(config["_runtime"]["config_path"])
+    return (config_path.parent / relative_path).resolve()
+
+
+def _project_relative_path(config: dict[str, Any], relative_path: str) -> Path:
+    config_path = Path(config["_runtime"]["config_path"])
+    return (config_path.parent.parent / relative_path).resolve()
+
+
+def _load_auxiliary_yaml(config: dict[str, Any], relative_path: str) -> dict[str, Any]:
+    path = _config_relative_path(config, relative_path)
+    with path.open("r", encoding="utf-8") as handle:
+        return yaml.safe_load(handle) or {}
+
+
+def _resolved_demand_year_noise(
+    config: dict[str, Any], rng: np.random.Generator, years: Iterable[int]
+) -> dict[int, float]:
+    temporal = config["temporal_generation"]
+    noise = temporal["seeded_year_noise"]
+    resolved = {
+        int(year): float(
+            np.clip(
+                rng.normal(float(noise["mean"]), float(noise["std"])),
+                float(noise["clip"][0]),
+                float(noise["clip"][1]),
+            )
+        )
+        for year in sorted(set(int(value) for value in years))
+    }
+    config.setdefault("_resolved", {})["demand_year_noise"] = {
+        str(year): round(value, 8) for year, value in resolved.items()
+    }
+    return resolved
+
+
+def build_weather_logistics_impacts(
+    config: dict[str, Any], weather: pd.DataFrame
+) -> pd.DataFrame:
+    settings = config.get("weather_order_causality", {})
+    columns = [
+        "date",
+        "hub_id",
+        "rainfall_3d_mm",
+        "flood_risk_3d",
+        "salinity_risk_14d",
+        "supply_factor",
+        "delay_factor",
+        "priority_add",
+        "road_capacity_factor",
+        "freight_weather_factor",
+    ]
+    if not settings.get("enabled", False):
+        return pd.DataFrame(columns=columns)
+
+    seasonality = _load_auxiliary_yaml(
+        config, config["temporal_generation"]["weather_seasonality_config"]
+    )
+    salinity_by_month = {
+        int(month): float(value)
+        for month, value in seasonality["salinity_risk_by_month"].items()
+    }
+    coastal_multiplier = {
+        str(node): float(value)
+        for node, value in seasonality["coastal_node_multiplier"].items()
+    }
+    hubs = set(config["order_generation"]["hubs"])
+    frame = weather.loc[weather["node_id"].isin(hubs)].copy()
+    frame["_time"] = pd.to_datetime(frame["ts"])
+    frame["date"] = frame["_time"].dt.floor("D")
+    daily = (
+        frame.groupby(["node_id", "date"], sort=True, as_index=False)
+        .agg(
+            rainfall_day_mm=("rainfall_mm", "sum"),
+            flood_risk_day=("flood_risk_idx", "mean"),
+        )
+        .sort_values(["node_id", "date"])
+    )
+    daily["salinity_day"] = [
+        salinity_by_month[pd.Timestamp(day).month]
+        * coastal_multiplier.get(str(node), 0.25)
+        for node, day in zip(daily["node_id"], daily["date"])
+    ]
+
+    pieces: list[pd.DataFrame] = []
+    for _, subset in daily.groupby("node_id", sort=True):
+        subset = subset.copy()
+        subset["rainfall_3d_mm"] = (
+            subset["rainfall_day_mm"]
+            .shift(int(settings["rain_lag_days"]))
+            .rolling(int(settings["rain_window_days"]), min_periods=1)
+            .mean()
+            .fillna(0.0)
+        )
+        subset["flood_risk_3d"] = (
+            subset["flood_risk_day"]
+            .shift(int(settings["flood_lag_days"]))
+            .rolling(int(settings["flood_window_days"]), min_periods=1)
+            .mean()
+            .fillna(0.0)
+        )
+        subset["salinity_risk_14d"] = (
+            subset["salinity_day"]
+            .shift(int(settings["salinity_lag_days"]))
+            .rolling(int(settings["salinity_window_days"]), min_periods=1)
+            .mean()
+            .fillna(subset["salinity_day"])
+        )
+        pieces.append(subset)
+    impact = pd.concat(pieces, ignore_index=True)
+    threshold = float(settings["heavy_rain_threshold_mm_day"])
+    rain_excess = np.maximum(0.0, impact["rainfall_3d_mm"] / threshold - 1.0)
+    moderate_rain = (
+        (impact["rainfall_3d_mm"] > 4.0)
+        & (impact["rainfall_3d_mm"] <= threshold)
+    ).astype(float)
+    pressure = (
+        float(settings["heavy_rain_penalty"]) * rain_excess
+        + float(settings["flood_penalty"]) * impact["flood_risk_3d"]
+        + float(settings["salinity_penalty"]) * impact["salinity_risk_14d"]
+        - float(settings["moderate_rain_benefit"]) * moderate_rain
+    )
+    impact["supply_factor"] = np.clip(
+        1.0 - pressure,
+        float(settings["supply_factor_clip"][0]),
+        float(settings["supply_factor_clip"][1]),
+    )
+    adverse = np.maximum(0.0, 1.0 - impact["supply_factor"])
+    impact["delay_factor"] = np.minimum(
+        float(settings["delay_factor_max"]), 1.0 + 1.6 * adverse
+    )
+    impact["priority_add"] = np.minimum(
+        float(settings["priority_add_max"]), 2.2 * adverse
+    )
+    impact["road_capacity_factor"] = np.maximum(
+        float(settings["road_capacity_factor_min"]), 1.0 - 1.4 * adverse
+    )
+    impact["freight_weather_factor"] = np.minimum(
+        float(settings["freight_weather_factor_max"]), 1.0 + 1.2 * adverse
+    )
+    impact = impact.rename(columns={"node_id": "hub_id"})
+    impact["date"] = impact["date"].map(lambda value: pd.Timestamp(value).date().isoformat())
+    for column in columns[2:]:
+        impact[column] = impact[column].astype(float).round(6)
+    return impact.loc[:, columns].sort_values(["date", "hub_id"]).reset_index(drop=True)
+
+
+def _generate_temporal_orders(
+    config: dict[str, Any], weather: pd.DataFrame | None
+) -> pd.DataFrame:
+    rng = component_rng(config, "orders")
+    settings = config["order_generation"]
+    temporal = config["temporal_generation"]
+    seasonality = _load_auxiliary_yaml(
+        config, temporal["commodity_seasonality_config"]
+    )
+    scenario_multiplier = float(config["scenario"]["order_multiplier"])
+    hourly = _normalized(settings["hourly_arrival_multipliers"])
+    weekday = _normalized(settings["weekday_multipliers"])
+    regional_monthly = _normalized(seasonality["regional_monthly_factor"])
+    shared_weight = float(settings["shared_seasonality_weight"])
+    commodity_weight = float(settings["commodity_seasonality_weight"])
+    hub_weight = float(settings["hub_seasonality_weight"])
+    if not math.isclose(shared_weight + commodity_weight + hub_weight, 1.0, abs_tol=1e-9):
+        raise ValueError("Temporal seasonality weights must sum to 1")
+
+    commodity_config = {row["commodity_id"]: row for row in config["commodities"]}
+    production = seasonality["production_seasonality"]
+    market = seasonality["market_demand_seasonality"]
+    commodity_monthly = {
+        commodity_id: _normalized(
+            np.asarray(production[commodity_id], dtype=float)
+            * np.asarray(market[commodity_id], dtype=float)
+        )
+        for commodity_id in commodity_config
+    }
+    hub_monthly = {
+        hub_id: _normalized(values)
+        for hub_id, values in seasonality["hub_monthly_factor"].items()
+    }
+    annual_index = {
+        int(year): float(value)
+        for year, value in temporal["annual_demand_index"].items()
+    }
+    base_year = int(temporal["base_year"])
+    hub_adjustments = temporal["hub_growth_adjustment"]
+    commodity_adjustments = seasonality["commodity_annual_adjustment"]
+
+    hourly_timestamps = time_index(config)
+    days = pd.DatetimeIndex(hourly_timestamps.floor("D").unique())
+    available_hours = {
+        day: hourly_timestamps[hourly_timestamps.floor("D") == day] for day in days
+    }
+    year_noise = _resolved_demand_year_noise(config, rng, days.year)
+
+    impacts = (
+        build_weather_logistics_impacts(config, weather)
+        if weather is not None
+        else pd.DataFrame()
+    )
+    impact_lookup = {
+        (str(row.date), str(row.hub_id)): row
+        for row in impacts.itertuples(index=False)
+    }
+    causal = config.get("weather_order_causality", {})
+
+    latent_cfg = settings.get("daily_latent", {})
+    persistence = float(latent_cfg.get("persistence", 0.0))
+    innovation_scale = math.sqrt(max(0.0, 1.0 - persistence**2))
+    regional_state = 0.0
+    hub_states = {hub_id: 0.0 for hub_id in settings["hubs"]}
+    status_names = list(settings["status_probabilities"])
+    status_probabilities = np.asarray(
+        list(settings["status_probabilities"].values()), dtype=float
+    )
+    status_probabilities /= status_probabilities.sum()
+    records: list[dict[str, Any]] = []
+
+    for day in days:
+        if latent_cfg.get("enabled", False):
+            regional_state = persistence * regional_state + float(
+                rng.normal(
+                    0.0,
+                    float(latent_cfg["regional_log_std"]) * innovation_scale,
+                )
+            )
+        for hub_id, hub_profile in settings["hubs"].items():
+            if latent_cfg.get("enabled", False):
+                hub_states[hub_id] = persistence * hub_states[hub_id] + float(
+                    rng.normal(
+                        0.0,
+                        float(latent_cfg["hub_log_std"]) * innovation_scale,
+                    )
+                )
+                latent_multiplier = float(
+                    np.clip(
+                        math.exp(regional_state + hub_states[hub_id]),
+                        float(latent_cfg["clip"][0]),
+                        float(latent_cfg["clip"][1]),
+                    )
+                )
+            else:
+                latent_multiplier = 1.0
+
+            day_key = day.date().isoformat()
+            impact = impact_lookup.get((day_key, hub_id))
+            for commodity_id, base_share in hub_profile["commodity_mix"].items():
+                commodity = commodity_config[commodity_id]
+                category_sensitivity = float(
+                    causal.get("sensitivity_by_category", {}).get(
+                        commodity["category"], 1.0
+                    )
+                )
+                if impact is None:
+                    weather_supply_factor = 1.0
+                    delay_factor = 1.0
+                    priority_add = 0.0
+                else:
+                    raw_pressure = 1.0 - float(impact.supply_factor)
+                    weather_supply_factor = float(
+                        np.clip(
+                            1.0 - raw_pressure * category_sensitivity,
+                            float(causal["supply_factor_clip"][0]),
+                            float(causal["supply_factor_clip"][1]),
+                        )
+                    )
+                    delay_factor = 1.0 + (float(impact.delay_factor) - 1.0) * category_sensitivity
+                    priority_add = float(impact.priority_add) * category_sensitivity
+
+                years_from_base = day.year - base_year
+                annual_factor = (
+                    annual_index[day.year]
+                    * (1.0 + float(hub_adjustments.get(hub_id, 0.0)) * years_from_base)
+                    * (1.0 + float(commodity_adjustments.get(commodity_id, 0.0)) * years_from_base)
+                    * year_noise[day.year]
+                )
+                seasonal_factor = (
+                    shared_weight * float(regional_monthly[day.month - 1])
+                    + commodity_weight
+                    * float(commodity_monthly[commodity_id][day.month - 1])
+                    + hub_weight * float(hub_monthly[hub_id][day.month - 1])
+                )
+                expected = (
+                    float(hub_profile["base_daily_orders"])
+                    * float(base_share)
+                    * float(weekday[day.weekday()])
+                    * annual_factor
+                    * seasonal_factor
+                    * weather_supply_factor
+                    * latent_multiplier
+                    * scenario_multiplier
+                )
+                count = int(rng.poisson(expected))
+                if not count:
+                    continue
+                day_hours = available_hours[day]
+                hour_probabilities = np.asarray(
+                    [hourly[timestamp.hour] for timestamp in day_hours], dtype=float
+                )
+                hour_probabilities /= hour_probabilities.sum()
+                selected_hours = rng.choice(len(day_hours), size=count, p=hour_probabilities)
+                for hour_position in selected_hours:
+                    distribution = commodity["weight_distribution"]
+                    weight_kg = float(
+                        np.clip(
+                            rng.lognormal(
+                                mean=math.log(float(distribution["median_kg"])),
+                                sigma=float(distribution["log_sigma"]),
+                            ),
+                            float(distribution["min_kg"]),
+                            float(distribution["max_kg"]),
+                        )
+                    )
+                    minute_low, minute_high = settings["minute_range"]
+                    base_hour = day_hours[int(hour_position)]
+                    max_minute = 0 if base_hour == hourly_timestamps[-1] else int(minute_high)
+                    minute = int(rng.integers(int(minute_low), max_minute + 1))
+                    arrival = base_hour + pd.Timedelta(minutes=minute)
+                    delay = settings["ready_delay_hours"]
+                    ready_delay = float(
+                        np.clip(
+                            rng.gamma(float(delay["gamma_shape"]), float(delay["gamma_scale"]))
+                            * delay_factor,
+                            float(delay["min"]),
+                            float(delay["max"]) * float(causal.get("delay_factor_max", 1.0)),
+                        )
+                    )
+                    ready = arrival + pd.Timedelta(hours=ready_delay)
+                    hold_fraction = rng.uniform(
+                        float(settings["deadline_hold_fraction"]["min"]),
+                        float(settings["deadline_hold_fraction"]["max"]),
+                    )
+                    deadline_hours = max(
+                        float(settings["deadline_floor_hours"]),
+                        float(commodity["max_hold_hours"]) * float(hold_fraction),
+                    )
+                    deadline = ready + pd.Timedelta(hours=deadline_hours)
+                    deadline_score = 5 - int(
+                        np.searchsorted(
+                            np.asarray(
+                                settings["priority_deadline_threshold_hours"], dtype=float
+                            ),
+                            deadline_hours,
+                            side="right",
+                        )
+                    )
+                    priority_score = (
+                        float(commodity["perishability_level"])
+                        * float(settings["priority_perishability_weight"])
+                        + deadline_score * float(settings["priority_deadline_weight"])
+                        + priority_add
+                    )
+                    records.append(
+                        {
+                            "hub_id": hub_id,
+                            "commodity_id": commodity_id,
+                            "weight_kg": weight_kg,
+                            "arrival_ts": iso_timestamp(arrival),
+                            "ready_ts": iso_timestamp(ready),
+                            "deadline_ts": iso_timestamp(deadline),
+                            "destination_node_id": settings["destination_node_id"],
+                            "priority_level": int(np.clip(round(priority_score), 1, 5)),
+                            "status": str(rng.choice(status_names, p=status_probabilities)),
+                        }
+                    )
+
+    records.sort(key=lambda row: (row["arrival_ts"], row["hub_id"], row["commodity_id"]))
+    counters: dict[int, int] = {}
+    for record in records:
+        year = pd.Timestamp(record["arrival_ts"]).year
+        counters[year] = counters.get(year, 0) + 1
+        record["order_id"] = f"ORD_{year}_{counters[year]:06d}"
+    return normalize_frame("orders", pd.DataFrame(records))
+
+
+def generate_orders(
+    config: dict[str, Any], weather: pd.DataFrame | None = None
+) -> pd.DataFrame:
+    if "temporal_generation" in config:
+        return _generate_temporal_orders(config, weather)
     rng = component_rng(config, "orders")
     settings = config["order_generation"]
     scenario_multiplier = float(config["scenario"]["order_multiplier"])
@@ -405,9 +785,11 @@ def generate_orders(config: dict[str, Any]) -> pd.DataFrame:
                 )
 
     records.sort(key=lambda row: (row["arrival_ts"], row["hub_id"], row["commodity_id"]))
-    year = pd.Timestamp(config["dataset"]["start"]).year
-    for number, record in enumerate(records, start=1):
-        record["order_id"] = f"ORD_{year}_{number:06d}"
+    counters: dict[int, int] = {}
+    for record in records:
+        year = pd.Timestamp(record["arrival_ts"]).year
+        counters[year] = counters.get(year, 0) + 1
+        record["order_id"] = f"ORD_{year}_{counters[year]:06d}"
     frame = pd.DataFrame(records)
     return normalize_frame("orders", frame)
 
@@ -444,22 +826,55 @@ def generate_weather(config: dict[str, Any], nodes: pd.DataFrame) -> pd.DataFram
     scenario = config["scenario"]["weather"]
     timestamps = time_index(config, int(settings["frequency_hours"]))
     hourly = _normalized(settings["hourly_rain_multipliers"])
+    years = sorted(set(int(year) for year in timestamps.year))
+    anomaly_config = settings.get("year_weather_anomaly")
+    if anomaly_config:
+        year_weather_anomaly = {
+            year: float(
+                np.clip(
+                    rng.normal(
+                        float(anomaly_config["mean"]),
+                        float(anomaly_config["std"]),
+                    ),
+                    float(anomaly_config["clip"][0]),
+                    float(anomaly_config["clip"][1]),
+                )
+            )
+            for year in years
+        }
+        config.setdefault("_resolved", {})["year_weather_anomaly"] = {
+            str(year): round(value, 8)
+            for year, value in year_weather_anomaly.items()
+        }
+    else:
+        year_weather_anomaly = {year: 1.0 for year in years}
     regional = np.zeros(len(timestamps), dtype=float)
     previous = 0.0
     wet_months = set(int(month) for month in settings["wet_months"])
     persistence = float(settings["regional_persistence"])
     for index, timestamp in enumerate(timestamps):
         season = "wet" if timestamp.month in wet_months else "dry"
-        event_probability = float(settings["rain_probability"][season])
+        if "rain_probability_by_month" in settings:
+            event_probability = float(
+                settings["rain_probability_by_month"][timestamp.month]
+            )
+            gamma_scale = float(
+                settings["regional_gamma_scale_by_month_mm"][timestamp.month]
+            )
+        else:
+            event_probability = float(settings["rain_probability"][season])
+            gamma_scale = float(
+                settings["regional_gamma"][f"scale_{season}_mm"]
+            )
         innovation = 0.0
         if rng.random() < event_probability:
-            scale_key = f"scale_{season}_mm"
             innovation = float(
                 rng.gamma(
                     float(settings["regional_gamma"]["shape"]),
-                    float(settings["regional_gamma"][scale_key]),
+                    gamma_scale,
                 )
                 * hourly[timestamp.hour]
+                * year_weather_anomaly[timestamp.year]
             )
         regional[index] = persistence * previous + (1.0 - persistence) * innovation
         previous = regional[index]
@@ -479,12 +894,23 @@ def generate_weather(config: dict[str, Any], nodes: pd.DataFrame) -> pd.DataFram
     records: list[dict[str, Any]] = []
 
     for time_position, timestamp in enumerate(timestamps):
-        month_phase = math.cos(
-            2.0
-            * math.pi
-            * (timestamp.month - float(settings["river_seasonality"]["peak_month"]))
-            / 12.0
-        )
+        if "river_level_monthly_add_m" in settings:
+            river_seasonal_add = float(
+                settings["river_level_monthly_add_m"][timestamp.month]
+            )
+        else:
+            month_phase = math.cos(
+                2.0
+                * math.pi
+                * (
+                    timestamp.month
+                    - float(settings["river_seasonality"]["peak_month"])
+                )
+                / 12.0
+            )
+            river_seasonal_add = (
+                float(settings["river_seasonality"]["amplitude_m"]) * month_phase
+            )
         for node_id in nodes["node_id"]:
             profile = node_profiles[node_id]
             local_noise = rng.normal(0.0, float(settings["local_noise_std_mm"]))
@@ -505,7 +931,7 @@ def generate_weather(config: dict[str, Any], nodes: pd.DataFrame) -> pd.DataFram
             if bool(node_on_river[node_id]):
                 river_level = (
                     float(profile["river_level_base_m"])
-                    + float(settings["river_seasonality"]["amplitude_m"]) * month_phase
+                    + river_seasonal_add
                     + regional_memory[time_position]
                     * float(settings["river_seasonality"]["rainfall_coefficient_m_per_mm"])
                     + float(scenario["river_level_add_m"])
@@ -724,6 +1150,7 @@ def generate_freight_rates(
     config: dict[str, Any],
     legs: pd.DataFrame,
     fuel_prices: pd.DataFrame,
+    weather: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     rng = component_rng(config, "freight")
     settings = config["freight_generation"]
@@ -739,6 +1166,16 @@ def generate_freight_rates(
         for mode in ("road", "water")
     }
     fuel_settings = settings["fuel_pass_through"]
+    weather_causality = settings.get("weather_causality", {})
+    weather_lookup: dict[tuple[str, str], tuple[float, float]] = {}
+    if weather_causality.get("enabled", False) and weather is not None:
+        weather_lookup = {
+            (str(row.ts), str(row.node_id)): (
+                float(row.road_factor),
+                float(row.water_factor),
+            )
+            for row in weather.itertuples(index=False)
+        }
     fuel_series: dict[str, tuple[pd.DatetimeIndex, np.ndarray]] = {}
     for fuel_type, subset in fuel_prices.groupby("fuel_type", sort=False):
         sorted_subset = subset.assign(_time=pd.to_datetime(subset["ts"], utc=True)).sort_values(
@@ -770,6 +1207,16 @@ def generate_freight_rates(
             demand_idx = base_demand * float(
                 scenario["mode_demand_multipliers"][mode]
             )
+            if weather_lookup:
+                road_factor, water_factor = weather_lookup.get(
+                    (iso_timestamp(timestamp), str(leg.from_node_id)),
+                    (1.0, 1.0),
+                )
+                operational_factor = road_factor if mode == "road" else water_factor
+                beta_key = "road_beta" if mode == "road" else "water_beta"
+                demand_idx *= 1.0 + float(weather_causality[beta_key]) * max(
+                    0.0, operational_factor - 1.0
+                )
             leg_multiplier = float(settings["leg_rate_multipliers"][leg.leg_id])
             for vehicle_type in vehicle_types_by_mode[mode]:
                 base = settings["vehicle_rates"][vehicle_type]
@@ -1009,11 +1456,11 @@ def generate_tables(config: dict[str, Any]) -> dict[str, pd.DataFrame]:
     nodes = build_nodes(config)
     legs = build_legs(config, nodes)
     commodities = build_commodities(config)
-    orders = generate_orders(config)
     weather = generate_weather(config, nodes)
+    orders = generate_orders(config, weather)
     fleet = generate_fleet(config)
     fuel_prices = generate_fuel_prices(config)
-    freight_rates = generate_freight_rates(config, legs, fuel_prices)
+    freight_rates = generate_freight_rates(config, legs, fuel_prices, weather)
     tables = {
         "nodes": nodes,
         "legs": legs,
@@ -1186,6 +1633,211 @@ def write_stubs(
         )
 
 
+def _load_admin_references(
+    config: dict[str, Any],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    temporal = config["temporal_generation"]
+    geography = _load_auxiliary_yaml(config, temporal["admin_history_config"])
+    admin_units = pd.read_csv(
+        _project_relative_path(config, geography["reference_files"]["admin_units"]),
+        dtype=str,
+        keep_default_na=False,
+    )
+    node_history = pd.read_csv(
+        _project_relative_path(
+            config, geography["reference_files"]["node_admin_history"]
+        ),
+        dtype=str,
+        keep_default_na=False,
+    )
+    return admin_units, node_history
+
+
+def build_monthly_trends(
+    config: dict[str, Any], tables: dict[str, pd.DataFrame]
+) -> pd.DataFrame:
+    orders = tables["orders"].copy()
+    orders["month"] = pd.to_datetime(orders["arrival_ts"]).dt.strftime("%Y-%m")
+    order_summary = (
+        orders.groupby(["month", "hub_id", "commodity_id"], sort=True, as_index=False)
+        .agg(
+            order_count=("order_id", "size"),
+            total_weight_tons=("weight_kg", lambda values: float(values.sum()) / 1000.0),
+            avg_weight_kg=("weight_kg", "mean"),
+        )
+    )
+
+    weather = tables["weather"].copy()
+    weather["month"] = pd.to_datetime(weather["ts"]).dt.strftime("%Y-%m")
+    weather["_flood_hour"] = (weather["flood_risk_idx"].astype(float) >= 0.60).astype(int)
+    weather_summary = (
+        weather.groupby(["month", "node_id"], sort=True, as_index=False)
+        .agg(
+            avg_rainfall_mm=("rainfall_mm", "mean"),
+            avg_river_level_m=("river_level_m", "mean"),
+            flood_hours=("_flood_hour", "sum"),
+        )
+        .rename(columns={"node_id": "hub_id"})
+    )
+    result = order_summary.merge(
+        weather_summary, on=["month", "hub_id"], how="left", validate="many_to_one"
+    )
+
+    admin_units, node_history = _load_admin_references(config)
+    node_to_admin = node_history.set_index("node_id")["admin_id"].to_dict()
+    admin_names = admin_units.set_index("admin_id")["admin_name"].to_dict()
+    admin_versions = admin_units.set_index("admin_id")["admin_version"].to_dict()
+    result["admin_id"] = result["hub_id"].map(node_to_admin)
+    result["admin_name"] = result["admin_id"].map(admin_names)
+    result["admin_version"] = result["admin_id"].map(admin_versions)
+
+    temporal = config["temporal_generation"]
+    seasonality = _load_auxiliary_yaml(
+        config, temporal["commodity_seasonality_config"]
+    )
+    weather_seasonality = _load_auxiliary_yaml(
+        config, temporal["weather_seasonality_config"]
+    )
+    regional = _normalized(seasonality["regional_monthly_factor"])
+    hub_profiles = {
+        hub_id: _normalized(values)
+        for hub_id, values in seasonality["hub_monthly_factor"].items()
+    }
+    commodity_profiles = {
+        commodity_id: _normalized(
+            np.asarray(seasonality["production_seasonality"][commodity_id], dtype=float)
+            * np.asarray(
+                seasonality["market_demand_seasonality"][commodity_id], dtype=float
+            )
+        )
+        for commodity_id in seasonality["production_seasonality"]
+    }
+    shared_weight = float(config["order_generation"]["shared_seasonality_weight"])
+    commodity_weight = float(
+        config["order_generation"]["commodity_seasonality_weight"]
+    )
+    hub_weight = float(config["order_generation"]["hub_seasonality_weight"])
+    annual_index = {
+        int(year): float(value)
+        for year, value in temporal["annual_demand_index"].items()
+    }
+    salinity = {
+        int(month): float(value)
+        for month, value in weather_seasonality["salinity_risk_by_month"].items()
+    }
+    coastal = {
+        str(node): float(value)
+        for node, value in weather_seasonality["coastal_node_multiplier"].items()
+    }
+    result["annual_index"] = result["month"].map(
+        lambda value: annual_index[int(str(value)[:4])]
+    )
+    result["seasonal_index"] = [
+        shared_weight * float(regional[int(month[-2:]) - 1])
+        + commodity_weight
+        * float(commodity_profiles[commodity_id][int(month[-2:]) - 1])
+        + hub_weight * float(hub_profiles[hub_id][int(month[-2:]) - 1])
+        for month, hub_id, commodity_id in zip(
+            result["month"], result["hub_id"], result["commodity_id"]
+        )
+    ]
+    result["salinity_risk_avg"] = [
+        salinity[int(month[-2:])] * coastal.get(str(hub_id), 0.25)
+        for month, hub_id in zip(result["month"], result["hub_id"])
+    ]
+    columns = [
+        "month",
+        "hub_id",
+        "commodity_id",
+        "admin_id",
+        "admin_name",
+        "admin_version",
+        "order_count",
+        "total_weight_tons",
+        "avg_weight_kg",
+        "avg_rainfall_mm",
+        "avg_river_level_m",
+        "flood_hours",
+        "salinity_risk_avg",
+        "annual_index",
+        "seasonal_index",
+    ]
+    result = result.loc[:, columns].sort_values(
+        ["month", "hub_id", "commodity_id"]
+    )
+    for column in result.select_dtypes(include=["float", "float32", "float64"]):
+        result[column] = result[column].round(6)
+    return result.reset_index(drop=True)
+
+
+def write_analytics_outputs(
+    config: dict[str, Any],
+    tables: dict[str, pd.DataFrame],
+    output_dir: Path,
+) -> dict[str, str]:
+    settings = config.get("analytics", {})
+    if not settings.get("enabled", False):
+        return {}
+    analytics_dir = output_dir / settings["directory_name"]
+    analytics_dir.mkdir(parents=True, exist_ok=True)
+    outputs = {
+        settings["monthly_trends_filename"]: build_monthly_trends(config, tables),
+        settings["weather_impacts_filename"]: build_weather_logistics_impacts(
+            config, tables["weather"]
+        ),
+    }
+    checksums: dict[str, str] = {}
+    for filename, frame in outputs.items():
+        path = analytics_dir / filename
+        frame.to_csv(
+            path,
+            index=False,
+            encoding="utf-8",
+            lineterminator="\n",
+            float_format="%.6f",
+        )
+        checksums[f"{settings['directory_name']}/{filename}"] = sha256_file(path)
+    return checksums
+
+
+def write_year_partitions(
+    config: dict[str, Any],
+    tables: dict[str, pd.DataFrame],
+    csv_dir: Path,
+) -> dict[str, str]:
+    settings = config.get("analytics", {})
+    selected = set(settings.get("partition_tables", []))
+    if not selected:
+        return {}
+    timestamp_columns = {
+        "orders": "arrival_ts",
+        "weather": "ts",
+        "fuel_prices": "ts",
+        "freight_rates": "ts",
+        "weather_bulletins": "valid_from",
+        "ops_notes": "created_at",
+    }
+    checksums: dict[str, str] = {}
+    for name in sorted(selected):
+        frame = tables[name].copy()
+        timestamp_column = timestamp_columns[name]
+        frame["_year"] = pd.to_datetime(frame[timestamp_column]).dt.year
+        for year, subset in frame.groupby("_year", sort=True):
+            partition_dir = csv_dir / name / f"year={int(year)}"
+            partition_dir.mkdir(parents=True, exist_ok=True)
+            path = partition_dir / f"{name}.csv"
+            subset.drop(columns="_year").to_csv(
+                path,
+                index=False,
+                encoding="utf-8",
+                lineterminator="\n",
+                float_format="%.6f",
+            )
+            relative = path.relative_to(csv_dir.parent).as_posix()
+            checksums[relative] = sha256_file(path)
+    return checksums
+
+
 def write_pack(
     config: dict[str, Any],
     tables: dict[str, pd.DataFrame],
@@ -1218,7 +1870,15 @@ def write_pack(
             _write_json_records(frame, path)
             file_checksums[f"json/{name}.json"] = sha256_file(path)
 
+    partition_checksums = (
+        write_year_partitions(config, tables, csv_dir)
+        if output_format in ("csv", "both")
+        else {}
+    )
+    analytics_checksums = write_analytics_outputs(config, tables, output_dir)
     compatibility_checksums = write_compatibility_outputs(config, tables, output_dir)
+    file_checksums.update(partition_checksums)
+    file_checksums.update(analytics_checksums)
     runtime_config_path = config.get("_runtime", {}).get("config_path", "")
     if runtime_config_path:
         try:
@@ -1248,6 +1908,9 @@ def write_pack(
         "file_checksums": file_checksums,
         "canonical_checksums": canonical_checksums,
         "scenario": copy.deepcopy(config["scenario"]),
+        "resolved_temporal_effects": copy.deepcopy(config.get("_resolved", {})),
+        "analytics_files": analytics_checksums,
+        "partition_files": partition_checksums,
         "compatibility_files": compatibility_checksums,
         "provenance_summary": {
             "verified": "No locally supplied numeric anchor was treated as verified.",
