@@ -1,0 +1,131 @@
+extends: base.yaml
+
+dataset:
+  version: "4.0"
+  generated_at: "2026-07-18T00:00:00+07:00"
+  start: "2024-01-01T00:00:00+07:00"
+  end: "2026-12-31T23:00:00+07:00"
+  pack: three_year
+  output_subdir: three_year
+  default_format: csv
+
+order_generation:
+  target_annual_rows: {min: 18000, max: 36000}
+  shared_seasonality_weight: 0.35
+  commodity_seasonality_weight: 0.50
+  hub_seasonality_weight: 0.15
+
+temporal_generation:
+  base_year: 2024
+  annual_demand_index: {2024: 1.00, 2025: 1.04, 2026: 1.08}
+  hub_growth_adjustment:
+    HUB_LONGXUYEN: 0.01
+    HUB_SOCTRANG: 0.02
+    HUB_VINHLONG: -0.01
+    HUB_VITHANH: 0.00
+  seeded_year_noise: {mean: 1.00, std: 0.012, clip: [0.975, 1.025]}
+  geography_mode: harmonized_post_2025
+  admin_reference_date: "2025-07-01T00:00:00+07:00"
+  admin_history_config: geography/admin_history_2025.yaml
+  commodity_seasonality_config: seasonality/commodity_monthly.yaml
+  weather_seasonality_config: seasonality/weather_monthly.yaml
+
+weather_generation:
+  rain_probability_by_month:
+    1: 0.08
+    2: 0.07
+    3: 0.08
+    4: 0.14
+    5: 0.24
+    6: 0.34
+    7: 0.38
+    8: 0.42
+    9: 0.45
+    10: 0.43
+    11: 0.25
+    12: 0.10
+  regional_gamma_scale_by_month_mm:
+    1: 2.2
+    2: 2.0
+    3: 2.2
+    4: 3.5
+    5: 5.5
+    6: 7.5
+    7: 8.5
+    8: 9.0
+    9: 9.5
+    10: 9.0
+    11: 6.0
+    12: 2.8
+  river_level_monthly_add_m:
+    1: -0.35
+    2: -0.42
+    3: -0.45
+    4: -0.35
+    5: -0.15
+    6: 0.05
+    7: 0.20
+    8: 0.38
+    9: 0.55
+    10: 0.62
+    11: 0.30
+    12: -0.05
+  year_weather_anomaly: {mean: 1.00, std: 0.06, clip: [0.88, 1.14]}
+  base_extreme_events:
+    - {start: "2024-09-18T06:00:00+07:00", end: "2024-09-19T18:00:00+07:00", rainfall_add_mm: 16.0, river_level_add_m: 0.20, affected_nodes: [HUB_VITHANH, HUB_SOCTRANG, CT_HUB]}
+    - {start: "2025-10-04T12:00:00+07:00", end: "2025-10-05T23:00:00+07:00", rainfall_add_mm: 17.0, river_level_add_m: 0.23, affected_nodes: [HUB_LONGXUYEN, HUB_VINHLONG, CT_HUB]}
+    - {start: "2026-09-20T06:00:00+07:00", end: "2026-09-21T18:00:00+07:00", rainfall_add_mm: 18.0, river_level_add_m: 0.25, affected_nodes: [HUB_VITHANH, HUB_SOCTRANG, CT_HUB]}
+    - {start: "2026-10-28T12:00:00+07:00", end: "2026-10-29T23:00:00+07:00", rainfall_add_mm: 15.0, river_level_add_m: 0.22, affected_nodes: [HUB_LONGXUYEN, HUB_VINHLONG, CT_HUB]}
+
+weather_order_causality:
+  enabled: true
+  rain_lag_days: 1
+  rain_window_days: 3
+  flood_lag_days: 1
+  flood_window_days: 3
+  salinity_lag_days: 7
+  salinity_window_days: 14
+  moderate_rain_benefit: 0.025
+  heavy_rain_threshold_mm_day: 45.0
+  heavy_rain_penalty: 0.11
+  flood_penalty: 0.14
+  salinity_penalty: 0.09
+  sensitivity_by_category: {grain: 0.70, aquatic: 1.15, fruit: 0.95, vegetable: 1.20, industrial_crop: 0.65}
+  supply_factor_clip: [0.76, 1.05]
+  delay_factor_max: 1.35
+  priority_add_max: 0.65
+  road_capacity_factor_min: 0.68
+  freight_weather_factor_max: 1.18
+
+freight_generation:
+  weather_causality: {enabled: true, road_beta: 0.10, water_beta: 0.05}
+
+compatibility_exports:
+  # `region` is a province/city key in the simple weather contract, so v4 uses
+  # one post-2025 administrative code for every record from 2024 through 2026.
+  location_codes:
+    HUB_VITHANH: can_tho
+    HUB_LONGXUYEN: an_giang
+    HUB_SOCTRANG: can_tho
+    HUB_VINHLONG: vinh_long
+    CT_HUB: can_tho
+    HCM_MARKET: thanh_pho_ho_chi_minh
+
+analytics:
+  enabled: true
+  partition_tables: [orders, weather, fuel_prices, freight_rates, weather_bulletins, ops_notes]
+  directory_name: analytics
+  monthly_trends_filename: monthly_trends.csv
+  weather_impacts_filename: weather_logistics_impacts.csv
+  forecast_evaluation_filename: forecast_evaluation.csv
+
+validation:
+  temporal_guardrails:
+    expected_months: 36
+    commodity_month_coverage_min: 30
+    monthly_peak_trough: {min: 1.30, max: 3.00}
+    lag12_autocorrelation_min: 0.20
+    annual_index_relative_error_max: 0.05
+    july_2025_neighbor_ratio: {min: 0.70, max: 1.30}
+    same_month_year_correlation_min: 0.25
+    forecast_test_year: 2026

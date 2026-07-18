@@ -1,0 +1,8 @@
+admin_id,admin_name,admin_level,admin_version,valid_from,valid_to,merged_into_admin_id,source_ref
+CANTHO_POST2025,Cần Thơ,city,harmonized_post_2025,2024-01-01,,,NQ202_2025_QH15
+ANGIANG_POST2025,An Giang,province,harmonized_post_2025,2024-01-01,,,NQ202_2025_QH15
+VINHLONG_POST2025,Vĩnh Long,province,harmonized_post_2025,2024-01-01,,,NQ202_2025_QH15
+CAMAU_POST2025,Cà Mau,province,harmonized_post_2025,2024-01-01,,,NQ202_2025_QH15
+DONGTHAP_POST2025,Đồng Tháp,province,harmonized_post_2025,2024-01-01,,,NQ202_2025_QH15
+TAYNINH_POST2025,Tây Ninh,province,harmonized_post_2025,2024-01-01,,,NQ202_2025_QH15
+HCM_POST2025,TP.HCM,city,harmonized_post_2025,2024-01-01,,,NQ202_2025_QH15

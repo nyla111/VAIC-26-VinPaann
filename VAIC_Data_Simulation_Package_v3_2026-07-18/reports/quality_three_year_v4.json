@@ -1,0 +1,108 @@
+{
+  "assumptions": [
+    "Annual growth, production/market seasonality and weather coefficients are synthetic assumptions.",
+    "All 2024-2026 records use post-2025 harmonized province/city names by user request."
+  ],
+  "checks": {
+    "annual_index_within_tolerance": true,
+    "commodity_month_coverage": true,
+    "every_hub_has_three_years": true,
+    "monthly_peak_trough_guardrail": true,
+    "no_july_2025_artificial_jump": true,
+    "order_id_year_matches_timestamp": true,
+    "orders_cover_36_months": true,
+    "positive_lag12_autocorrelation": true,
+    "post_merger_geography_is_consistent": true,
+    "resolved_year_effects_are_recorded": true,
+    "same_month_patterns_repeat_but_differ": true,
+    "timestamps_use_plus_07": true,
+    "weather_covers_36_months": true,
+    "weather_has_no_missing_hours": true,
+    "weather_order_relation_is_not_perfect": true
+  },
+  "checks_failed": 0,
+  "checks_passed": 15,
+  "dataset_version": "4.0",
+  "metrics": {
+    "actual_annual_index": {
+      "2024": 1.0,
+      "2025": 1.032929,
+      "2026": 1.115932
+    },
+    "annual_relative_error": {
+      "2024": 0.0,
+      "2025": 0.006799,
+      "2026": 0.03327
+    },
+    "annual_tonnage": {
+      "2024": 55801.135744,
+      "2025": 57638.628447,
+      "2026": 62270.266196
+    },
+    "commodity_month_coverage": {
+      "COM_ORANGE": 36,
+      "COM_PANGASIUS": 36,
+      "COM_PINEAPPLE": 36,
+      "COM_POMELO": 36,
+      "COM_PURPLE_ONION": 36,
+      "COM_RICE": 36,
+      "COM_SHRIMP": 36,
+      "COM_SUGARCANE": 36,
+      "COM_SWEET_POTATO": 36,
+      "COM_VEGETABLE": 36
+    },
+    "hub_year_coverage": {
+      "HUB_LONGXUYEN": 3,
+      "HUB_SOCTRANG": 3,
+      "HUB_VINHLONG": 3,
+      "HUB_VITHANH": 3
+    },
+    "july_2025_comparable_ratio": 1.020302,
+    "lag12_autocorrelation": 0.671473,
+    "monthly_peak_trough": 1.572892,
+    "order_months": 36,
+    "resolved_temporal_effects": {
+      "demand_year_noise": {
+        "2024": 0.99551865,
+        "2025": 0.98799408,
+        "2026": 1.00915385
+      },
+      "year_weather_anomaly": {
+        "2024": 0.97630219,
+        "2025": 0.94777143,
+        "2026": 0.99574357
+      }
+    },
+    "same_month_year_correlations": [
+      0.657698,
+      0.846726,
+      0.68862
+    ],
+    "target_annual_index": {
+      "2024": 1.0,
+      "2025": 1.04,
+      "2026": 1.08
+    },
+    "weather_months": 36,
+    "weather_order_adverse_correlation": -0.131212
+  },
+  "period": {
+    "end": "2026-12-31T23:00:00+07:00",
+    "start": "2024-01-01T00:00:00+07:00",
+    "timezone": "Asia/Bangkok"
+  },
+  "row_counts": {
+    "commodities": 10,
+    "fleet": 77,
+    "freight_rates": 368256,
+    "fuel_prices": 237,
+    "legs": 14,
+    "nodes": 6,
+    "ops_notes": 4461,
+    "orders": 25771,
+    "policy_docs": 10,
+    "weather": 157824,
+    "weather_bulletins": 6576
+  },
+  "status": "PASS"
+}

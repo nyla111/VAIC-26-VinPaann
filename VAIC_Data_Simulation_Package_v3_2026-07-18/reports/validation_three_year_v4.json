@@ -1,0 +1,403 @@
+{
+  "checks": [
+    {
+      "detail": "data\\generated\\three_year\\csv\\nodes.csv",
+      "name": "nodes.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['node_id', 'name_vi', 'node_type', 'location_label', 'lat', 'lon', 'on_river', 'active', 'source_type']",
+      "name": "nodes.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['node_id']",
+      "name": "nodes.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=6",
+      "name": "nodes.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\legs.csv",
+      "name": "legs.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['leg_id', 'from_node_id', 'to_node_id', 'mode', 'distance_km', 'duration_hr_base', 'weather_sensitivity', 'bidirectional', 'active', 'source_type', 'source_note']",
+      "name": "legs.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['leg_id']",
+      "name": "legs.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=14",
+      "name": "legs.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\commodities.csv",
+      "name": "commodities.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['commodity_id', 'name_vi', 'category', 'perishability_level', 'max_hold_hours', 'loss_pct_per_hour', 'value_vnd_per_kg', 'needs_reefer', 'water_ok', 'compatible_vehicle_types', 'source_type']",
+      "name": "commodities.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['commodity_id']",
+      "name": "commodities.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=10",
+      "name": "commodities.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\orders.csv",
+      "name": "orders.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['order_id', 'hub_id', 'commodity_id', 'weight_kg', 'arrival_ts', 'ready_ts', 'deadline_ts', 'destination_node_id', 'priority_level', 'status']",
+      "name": "orders.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['order_id']",
+      "name": "orders.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=25771",
+      "name": "orders.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\weather.csv",
+      "name": "weather.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['ts', 'node_id', 'rainfall_mm', 'river_level_m', 'flood_risk_idx', 'road_factor', 'water_factor', 'alert_level']",
+      "name": "weather.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['ts', 'node_id']",
+      "name": "weather.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=157824",
+      "name": "weather.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\fleet.csv",
+      "name": "fleet.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['vehicle_id', 'vehicle_type', 'mode', 'capacity_ton', 'current_node_id', 'status', 'available_from_ts', 'cost_fixed_vnd', 'cost_per_km_vnd', 'speed_kmh', 'has_reefer', 'owner_hub_id']",
+      "name": "fleet.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['vehicle_id']",
+      "name": "fleet.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=77",
+      "name": "fleet.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\fuel_prices.csv",
+      "name": "fuel_prices.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['ts', 'fuel_type', 'price_vnd_per_liter', 'adjustment_date', 'source_type']",
+      "name": "fuel_prices.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['ts', 'fuel_type']",
+      "name": "fuel_prices.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=237",
+      "name": "fuel_prices.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\freight_rates.csv",
+      "name": "freight_rates.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['ts', 'mode', 'leg_id', 'vehicle_type', 'fuel_type', 'fuel_price_vnd_per_liter', 'fuel_cost_factor', 'rate_vnd_per_ton_km', 'fixed_fee_vnd', 'demand_idx', 'rate_type']",
+      "name": "freight_rates.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['ts', 'leg_id', 'vehicle_type', 'rate_type']",
+      "name": "freight_rates.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=368256",
+      "name": "freight_rates.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\weather_bulletins.csv",
+      "name": "weather_bulletins.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['bulletin_id', 'issued_at', 'valid_from', 'valid_to', 'node_id', 'severity', 'road_status', 'water_navigation_status', 'max_rainfall_mm', 'max_flood_risk_idx', 'headline', 'bulletin_text', 'evidence_ref', 'source_type']",
+      "name": "weather_bulletins.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['bulletin_id']",
+      "name": "weather_bulletins.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=6576",
+      "name": "weather_bulletins.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\ops_notes.csv",
+      "name": "ops_notes.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['note_id', 'created_at', 'hub_id', 'vehicle_id', 'note_type', 'constraint_code', 'is_blocking', 'valid_until', 'note_text', 'evidence_ref', 'source_type']",
+      "name": "ops_notes.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['note_id']",
+      "name": "ops_notes.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=4461",
+      "name": "ops_notes.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "data\\generated\\three_year\\csv\\policy_docs.csv",
+      "name": "policy_docs.exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "columns=['policy_id', 'title', 'effective_from', 'applies_to', 'policy_text', 'citation_ref', 'source_type']",
+      "name": "policy_docs.schema",
+      "status": "PASS"
+    },
+    {
+      "detail": "keys=['policy_id']",
+      "name": "policy_docs.primary_key",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=10",
+      "name": "policy_docs.row_count",
+      "status": "PASS"
+    },
+    {
+      "detail": "years=[2024, 2025, 2026]",
+      "name": "orders.partitions_years",
+      "status": "PASS"
+    },
+    {
+      "detail": "partition_rows=25771",
+      "name": "orders.partitions_conserve_rows",
+      "status": "PASS"
+    },
+    {
+      "detail": "years=[2024, 2025, 2026]",
+      "name": "weather.partitions_years",
+      "status": "PASS"
+    },
+    {
+      "detail": "partition_rows=157824",
+      "name": "weather.partitions_conserve_rows",
+      "status": "PASS"
+    },
+    {
+      "detail": "years=[2024, 2025, 2026]",
+      "name": "fuel_prices.partitions_years",
+      "status": "PASS"
+    },
+    {
+      "detail": "partition_rows=237",
+      "name": "fuel_prices.partitions_conserve_rows",
+      "status": "PASS"
+    },
+    {
+      "detail": "years=[2024, 2025, 2026]",
+      "name": "freight_rates.partitions_years",
+      "status": "PASS"
+    },
+    {
+      "detail": "partition_rows=368256",
+      "name": "freight_rates.partitions_conserve_rows",
+      "status": "PASS"
+    },
+    {
+      "detail": "years=[2024, 2025, 2026]",
+      "name": "weather_bulletins.partitions_years",
+      "status": "PASS"
+    },
+    {
+      "detail": "partition_rows=6576",
+      "name": "weather_bulletins.partitions_conserve_rows",
+      "status": "PASS"
+    },
+    {
+      "detail": "years=[2024, 2025, 2026]",
+      "name": "ops_notes.partitions_years",
+      "status": "PASS"
+    },
+    {
+      "detail": "partition_rows=4461",
+      "name": "ops_notes.partitions_conserve_rows",
+      "status": "PASS"
+    },
+    {
+      "detail": "['harmonized_post_2025']",
+      "name": "geography.single_version",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=10",
+      "name": "geography.one_mapping_per_node",
+      "status": "PASS"
+    },
+    {
+      "detail": "all active nodes map to post-2025 geography",
+      "name": "geography.active_nodes_covered",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.orders_cover_36_months",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.weather_covers_36_months",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.weather_has_no_missing_hours",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.timestamps_use_plus_07",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.every_hub_has_three_years",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.order_id_year_matches_timestamp",
+      "status": "PASS"
+    },
+    {
+      "detail": "{'COM_ORANGE': 36, 'COM_PANGASIUS': 36, 'COM_PINEAPPLE': 36, 'COM_POMELO': 36, 'COM_PURPLE_ONION': 36, 'COM_RICE': 36, 'COM_SHRIMP': 36, 'COM_SUGARCANE': 36, 'COM_SWEET_POTATO': 36, 'COM_VEGETABLE': 36}",
+      "name": "quality.commodity_month_coverage",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.monthly_peak_trough_guardrail",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.positive_lag12_autocorrelation",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.same_month_patterns_repeat_but_differ",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.annual_index_within_tolerance",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.no_july_2025_artificial_jump",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.post_merger_geography_is_consistent",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.weather_order_relation_is_not_perfect",
+      "status": "PASS"
+    },
+    {
+      "detail": "see quality report",
+      "name": "quality.resolved_year_effects_are_recorded",
+      "status": "PASS"
+    },
+    {
+      "detail": "forecast evaluation artifacts",
+      "name": "forecast.files_exist",
+      "status": "PASS"
+    },
+    {
+      "detail": "{'end': '2026-12-31', 'start': '2026-01-01'}",
+      "name": "forecast.strict_time_split",
+      "status": "PASS"
+    },
+    {
+      "detail": "model=0.328459, rolling=0.342883",
+      "name": "forecast.model_beats_rolling_wape",
+      "status": "PASS"
+    },
+    {
+      "detail": "same seed/config regenerates identical canonical tables",
+      "name": "reproducibility.canonical_checksums",
+      "status": "PASS"
+    }
+  ],
+  "checks_failed": 0,
+  "checks_passed": 78,
+  "dataset_version": "4.0",
+  "errors": [],
+  "reproducibility_checked": true,
+  "status": "PASS",
+  "warnings": [
+    "All growth, seasonality and cross-domain coefficients remain synthetic assumptions."
+  ]
+}

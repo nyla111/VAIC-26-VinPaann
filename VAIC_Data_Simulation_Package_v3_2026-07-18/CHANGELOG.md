@@ -1,5 +1,33 @@
 # Changelog
 
+## [4.0.0] - 2026-07-18
+
+### Added
+
+- Thêm pack `three_year` bao phủ 2024-2026, annual CSV partitions và hai bảng analytics `monthly_trends`/`weather_logistics_impacts`.
+- Thêm config riêng cho tăng trưởng năm, mùa vụ commodity, thời tiết theo tháng, anomaly từng năm và causal lag weather → orders/freight.
+- Thêm đánh giá forecast theo temporal holdout: train 2024-2025, test 2026; tuyệt đối không random split hoặc tune trên test.
+- Thêm quality audit 15 tiêu chí, validator 78 tiêu chí, test contract ba năm và multi-seed guardrail.
+- Thêm bảng tham chiếu địa lý `admin_units.csv` và `node_admin_history.csv`.
+
+### Changed
+
+- Khóa geography ở chế độ `harmonized_post_2025`: toàn bộ record 2024-2026 chỉ dùng tên tỉnh/thành sau sáp nhập; không sinh tên cũ theo event time.
+- Override `dataset_weather.json.region` thành mã tỉnh/thành sau sáp nhập; không còn `vi_thanh`, `soc_trang` hoặc `long_xuyen` trong field region của pack ba năm.
+- Order ID chứa năm (`ORD_2024_*`, `ORD_2025_*`, `ORD_2026_*`) và sequence khởi động lại theo năm.
+- Seasonality tổng hợp dùng trọng số shared/commodity/hub `0.35/0.50/0.15`; thêm annual index `1.00/1.04/1.08` và seeded clipped year noise.
+- Weather ảnh hưởng orders theo lag mưa/lũ 3 ngày và salinity 14 ngày; freight lưu hệ số thời tiết đã resolve.
+
+### Validation
+
+- Seed chuẩn đạt quality `15/15`, full validation `78/78` và legacy validation `534/534`.
+- Ba seed độc lập đều đạt bốn guardrail; output khác checksum/row count giữa seed nhưng cùng giữ contract và dải tín hiệu.
+- Forecast cho thấy daily grain còn nhiễu: calendar-trend ridge có WAPE `0.328459`, R² `0.070885`; rolling-28d tốt nhất ở monthly grain với WAPE `0.053960`, R² `0.669019`. Kết quả âm này được giữ lại để tránh tuyên bố learnability quá mức.
+
+### Compatibility
+
+- 11 bảng canonical v3 giữ nguyên tên cột; v4 là temporal data/config extension. Bốn compatibility JSON tiếp tục được sinh từ canonical tables.
+
 Mọi thay đổi contract, generator rule, scenario, anchor hoặc compatibility projection phải được ghi ở đây. Format theo hướng Keep a Changelog; version dataset hiện tại là `3.0`.
 
 ## [3.0.0] - 2026-07-18

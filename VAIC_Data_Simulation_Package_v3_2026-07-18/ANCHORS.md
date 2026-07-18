@@ -284,6 +284,22 @@ Quy tắc v3: technical review được dùng để sửa các provisional dista
 | River risk thresholds | 2.60/3.75 m | narrative cũ nhắc báo động III khoảng 2.0 m và peak >2.2 m | Giữ threshold mô phỏng; không gọi là ngưỡng pháp lý |
 | PDF numeric claims | Không dùng | 70-80%, 30-40%, 18 triệu tấn... | Không dùng vì citation không truy vết được |
 
+## Temporal anchors và địa lý hài hòa v4
+
+| Hạng mục | Giá trị v4 | Phân loại | Phạm vi/giới hạn |
+|---|---|---|---|
+| Annual demand index | 2024 `1.00`, 2025 `1.04`, 2026 `1.08` | `simulation_assumption` | Trend nhỏ, không phải số tăng trưởng thị trường quan sát |
+| Seasonality blend | shared `0.35`, commodity `0.50`, hub `0.15` | `simulation_assumption` | Giữ pattern có thể học nhưng không lặp cứng giữa các năm |
+| Demand year noise | seeded, clipped quanh 1 | `derived_value` | Giá trị đã resolve được lưu trong metadata để audit |
+| Weather year anomaly | seeded, clipped quanh 1 | `derived_value` | Tạo khác biệt giữa năm, không dùng dữ liệu thời tiết lịch sử |
+| Weather lag | rain/flood 3 ngày; salinity 14 ngày | `simulation_assumption` | Chỉ mô phỏng causal delay hợp lý, cần calibrate bằng pilot data |
+| Administrative names | chỉ tên tỉnh/thành sau sáp nhập cho 2024-2026 | `user_requested_harmonization` | Phục vụ consistent join; không đại diện tên pháp lý lịch sử tại event time |
+| Merger demand shock | không áp dụng | `simulation_assumption` | Ngăn bước nhảy giả tạo tháng 7/2025 do đổi nhãn địa lý |
+
+Nguồn chính thức xác nhận Nghị quyết 202/2025/QH15 và mốc chính quyền địa phương sau sắp xếp hoạt động từ 01/07/2025: <https://baochinhphu.vn/nghi-quyet-cua-quoc-hoi-ve-sap-xep-don-vi-hanh-chinh-cap-tinh-102250612191145158.htm>. MRC được dùng làm context định tính cho nhịp mùa mưa/lũ và salinity, không dùng để gán weather row quan sát: <https://www.mrcmekong.org/publications/annual-mekong-hydrology-flood-and-drought-report-2018/>.
+
+Quyết định áp dụng tên sau sáp nhập ngược cho 2024 là **analytical harmonization do người dùng yêu cầu**. Vì vậy `valid_from=2024-01-01` trong reference table mô tả phạm vi dataset, không khẳng định đơn vị hành chính đó đã tồn tại pháp lý từ ngày này.
+
 ## Verification backlog trước khi dùng ngoài demo
 
 1. Chốt địa chỉ cụ thể của bốn HTX/hub, `CT_HUB` và market/kho TP.HCM.
