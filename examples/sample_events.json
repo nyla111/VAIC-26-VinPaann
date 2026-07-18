@@ -1,0 +1,30 @@
+{
+  "shipment_routed": {
+    "schema_version": "1.0",
+    "event_id": "evt_live_001",
+    "event_type": "shipment_routed_to_can_tho",
+    "occurred_at": "2026-07-18T08:00:00+07:00",
+    "shipment": {
+      "shipment_id": "shp_live_001",
+      "hub_id": "HUB_VINHLONG",
+      "hub_name": "Hub Vĩnh Long",
+      "commodity_id": "COM_VEGETABLE",
+      "weight_kg": 4200,
+      "selected_route": "via_can_tho_road_then_road",
+      "inbound_mode_to_can_tho": "road",
+      "outbound_mode_from_can_tho": "road",
+      "created_at": "2026-07-18T08:00:00+07:00",
+      "harvested_at": "2026-07-18T05:00:00+07:00",
+      "eta_can_tho": "2026-07-18T11:30:00+07:00"
+    }
+  },
+  "shipment_arrived": {
+    "schema_version": "1.0",
+    "event_id": "evt_live_002",
+    "event_type": "shipment_arrived_can_tho",
+    "occurred_at": "2026-07-18T11:35:00+07:00",
+    "shipment_id": "shp_live_001",
+    "actual_arrival_at": "2026-07-18T11:35:00+07:00",
+    "actual_weight_kg": 4150
+  }
+}
