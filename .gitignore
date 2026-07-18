@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 
 VAIC_Data_Simulation_Package_v3_2026-07-18/data/generated/three_year/csv_adapted/
+dashboard/session_orders.json

@@ -1,0 +1,32 @@
+{% if not result %}
+  <div class="empty">Chưa có kết quả. Gửi Shipment Form để xem đủ 5 tuyến đề xuất.</div>
+{% else %}
+  <div class="summary-strip">
+    <div><span>Route AI khuyến nghị</span><strong>{{ result.recommended_route or "Không có" }}</strong></div>
+    <div><span>Priority</span><strong>{{ result.priority.tier }}</strong></div>
+    <div><span>Weather TS</span><strong>{{ result.evidence.weather_ts or "-" }}</strong></div>
+  </div>
+  {% if route_map_json %}
+  <div class="panel">
+    <div id="map" data-map='{{ route_map_json|safe }}'></div>
+  </div>
+  {% endif %}
+  <div class="route-grid">
+    {% for route in result.phuong_an %}
+      <article class="route-card {% if route.route_code == result.recommended_route %}recommended{% endif %} {% if route.trang_thai != 'available' %}disabled{% endif %}" data-route-card="{{ route.route_code }}">
+        <header>
+          <strong>{{ route.route_code }}</strong>
+          {% if route.route_code == result.recommended_route %}<span class="badge">Khuyến nghị</span>{% endif %}
+        </header>
+        <p>{{ route.ten }}</p>
+        {% if route.trang_thai == "available" %}
+          <div class="metric"><span>Chi phí</span><strong>{{ "{:,.0f}".format(route.chi_phi_du_doan_vnd) }} VND</strong></div>
+          <div class="metric"><span>Thời gian</span><strong>{{ route.thoi_gian_du_kien_gio }} giờ</strong></div>
+          <button type="button" class="route-select" data-route-code="{{ route.route_code }}">Chọn route này</button>
+        {% else %}
+          <div class="unavailable">{{ reason_labels.get(route.ly_do, "Tuyến chưa khả dụng.") }}</div>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+{% endif %}

@@ -1,0 +1,20 @@
+<div class="panel">
+  {% if not tracking %}
+    <div class="empty">Chưa có đơn nào trong session của user này.</div>
+  {% else %}
+    <table>
+      <thead><tr><th>Thời điểm</th><th>Hub</th><th>Khối lượng</th><th>Route</th><th>Khuyến nghị</th></tr></thead>
+      <tbody>
+        {% for item in tracking %}
+        <tr>
+          <td>{{ item.created_at }}</td>
+          <td>{{ item.input.hub_id }}</td>
+          <td>{{ item.input.khoi_luong_kg }}</td>
+          <td>{{ item.recommended_route or "-" }}</td>
+          <td>{{ item.khuyen_nghi or "-" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>

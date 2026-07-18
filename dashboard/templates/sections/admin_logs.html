@@ -1,0 +1,14 @@
+<div class="panel">
+  <canvas id="routeChart" data-routes='{{ route_counts_json|safe }}' height="90"></canvas>
+</div>
+<div class="panel">
+  <h2>Errors</h2>
+  {% if errors|length <= 1 %}
+    <div class="empty">Không có lỗi batch đáng kể.</div>
+  {% else %}
+    <table>
+      <thead><tr><th>Order</th><th>Error</th></tr></thead>
+      <tbody>{% for e in errors %}<tr><td>{{ e.order_id }}</td><td>{{ e.error }}</td></tr>{% endfor %}</tbody>
+    </table>
+  {% endif %}
+</div>

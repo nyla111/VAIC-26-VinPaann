@@ -1,0 +1,24 @@
+<div class="kpi-grid">
+  <div class="kpi">
+    <span>Chi phí tiết kiệm 30 ngày</span>
+    <strong>{{ "{:,.0f}".format(kpis.cost_savings) }} VND</strong>
+  </div>
+  <div class="kpi">
+    <span>CO₂e giảm so với đi thẳng</span>
+    <strong>{{ "{:,.2f}".format(kpis.co2_savings_ton) }} tấn</strong>
+  </div>
+  <div class="kpi">
+    <span>{% if kpis.time_direction == "faster" %}Thời gian rút ngắn{% else %}Thời gian tăng thêm{% endif %}</span>
+    <strong>{{ "{:,.1f}".format(kpis.time_delta_hours_abs) }} giờ</strong>
+    <small>{{ "{:,.1f}".format(kpis.time_delta_pct_abs) }}% {% if kpis.time_direction == "faster" %}nhanh hơn{% else %}chậm hơn{% endif %}</small>
+  </div>
+  <div class="kpi">
+    <span>Đơn hàng trong phép tính</span>
+    <strong>{{ kpis.compared_orders }}</strong>
+  </div>
+</div>
+<p class="note">Cửa sổ báo cáo: {{ kpis.reporting_start }} đến {{ kpis.reporting_end }}. Baseline là route A_DIRECT_ROAD; CO₂e là proxy theo mode từ legs.csv và khối lượng đơn.</p>
+<div class="panel">
+  <div id="map" data-map='{{ map_payload_json|safe }}'></div>
+  <p class="note">Các tuyến trên bản đồ là đường thẳng nối node để demo, không phải đường thực tế theo quốc lộ/sông.</p>
+</div>

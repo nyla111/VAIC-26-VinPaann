@@ -1,0 +1,14 @@
+<div class="panel">
+  {% if not ai2_live %}<span class="badge warning">DEMO DATA</span>{% endif %}
+  <table>
+    <thead><tr><th>Job</th><th>Hub</th><th>Khối lượng tích lũy</th><th>Quyết định</th><th>Thời gian chạy</th><th>Route</th></tr></thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td>{{ job.job_id }}</td><td>{{ job.hub_id }}</td><td>{{ job.khoi_luong_tich_luy_hien_tai_kg }} kg</td>
+        <td>{{ job.quyet_dinh }}</td><td>{{ job.thoi_gian_de_xuat_chay }}</td><td>{{ job.route_code }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ section_label }} - VAIC Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">V</span>
+        <div>
+          <strong>VAIC</strong>
+          <small>{{ role|capitalize }}</small>
+        </div>
+      </div>
+      <nav>
+        {% for item in menu %}
+          {% if role == "admin" and loop.index == 6 %}
+            <div class="nav-divider">Xem theo góc nhìn</div>
+          {% endif %}
+          <a class="{% if section == item.id %}active{% endif %}" href="/dashboard?section={{ item.id }}">{{ item.label }}</a>
+        {% endfor %}
+      </nav>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>{{ section_label }}</h1>
+          <p>AI 2 tầng cho trung chuyển nông sản qua Cần Thơ</p>
+        </div>
+        <div class="user-box">
+          <span>{{ user.name }} · {{ user.username }}</span>
+          <form method="post" action="/logout"><button class="secondary" type="submit">Đăng xuất</button></form>
+        </div>
+      </header>
+      <section class="content">
+        {% include section_template %}
+      </section>
+    </main>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/static/js/map.js"></script>
+  <script src="/static/js/charts.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<div class="panel">
+  <form method="post" action="/dashboard/fleet" class="inline-form">
+    <label>Trạng thái
+      <select name="status_filter">
+        <option value="">Tất cả</option>
+        {% for st in ["available", "en_route", "maintenance"] %}
+          <option value="{{ st }}" {% if status_filter == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit">Lọc</button>
+  </form>
+  <table>
+    <thead><tr><th>Vehicle</th><th>Loại</th><th>Sức chứa</th><th>Vị trí</th><th>Trạng thái</th></tr></thead>
+    <tbody>
+      {% for v in fleet[:120] %}
+      <tr><td>{{ v.vehicle_id }}</td><td>{{ v.vehicle_type }}</td><td>{{ v.capacity_ton }} tấn</td><td>{{ v.current_node_id }}</td><td><span class="status">{{ v.status }}</span></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

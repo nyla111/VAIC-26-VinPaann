@@ -1,0 +1,10 @@
+<div class="panel">
+  <table>
+    <thead><tr><th>Node</th><th>Timestamp</th><th>Road factor</th><th>Water factor</th><th>Alert</th></tr></thead>
+    <tbody>
+      {% for row in weather %}
+      <tr><td>{{ row.node_id }}</td><td>{{ row.ts }}</td><td>{{ "%.3f"|format(row.road_factor) }}</td><td>{{ "%.3f"|format(row.water_factor) }}</td><td>{{ row.alert_level }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

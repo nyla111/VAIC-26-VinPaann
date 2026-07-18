@@ -1,0 +1,10 @@
+<div class="card-list">
+  {% for d in deliveries %}
+  <article class="panel compact">
+    <strong>{{ d.delivery_id }}</strong>
+    <span>{{ d.route_code }}</span>
+    <span class="status">{{ d.status }}</span>
+    <span>ETA {{ d.eta }}</span>
+  </article>
+  {% endfor %}
+</div>

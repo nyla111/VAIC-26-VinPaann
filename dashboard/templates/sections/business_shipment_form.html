@@ -1,0 +1,31 @@
+<div class="panel">
+  <form method="post" action="/dashboard/shipment" class="grid-form">
+    <label>Hub xuất phát
+      <select name="hub_id">
+        <option value="HUB_VITHANH">Hub Vị Thanh</option>
+        <option value="HUB_LONGXUYEN">Hub Long Xuyên</option>
+        <option value="HUB_SOCTRANG">Hub Sóc Trăng</option>
+        <option value="HUB_VINHLONG">Hub Vĩnh Long</option>
+      </select>
+    </label>
+    <label>Commodity ID
+      <select name="commodity_id">
+        <option value="COM_RICE">COM_RICE</option>
+        <option value="COM_PANGASIUS">COM_PANGASIUS</option>
+        <option value="COM_SHRIMP">COM_SHRIMP</option>
+        <option value="COM_POMELO">COM_POMELO</option>
+        <option value="COM_VEGETABLE">COM_VEGETABLE</option>
+        <option value="COM_PURPLE_ONION">COM_PURPLE_ONION</option>
+      </select>
+    </label>
+    <label>Loại hàng <input name="loai_hang" placeholder="lua_gao, ca_tra, buoi..."></label>
+    <label>Khối lượng kg <input name="khoi_luong_kg" type="number" min="1" step="0.1" value="5000" required></label>
+    <label>Timestamp
+      <input name="timestamp" value="2026-01-15T08:00:00+07:00" required>
+    </label>
+    <button type="submit">Tối ưu tuyến</button>
+  </form>
+</div>
+{% if result %}
+  {% include "sections/business_recommendations.html" %}
+{% endif %}
