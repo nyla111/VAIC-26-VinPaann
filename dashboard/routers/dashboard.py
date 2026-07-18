@@ -8,8 +8,9 @@ from typing import Any
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel, Field
 
-from ..auth import require_user
+from ..auth import current_user, require_user
 from ..services.ai1_client import run_optimizer
 from ..services.ai2_client import get_deliveries, get_jobs
 from ..services.map_data import errors, fleet_rows, latest_weather, map_payload, optimizer_kpis, route_options_for_hub
@@ -56,6 +57,36 @@ REASON_LABELS = {
     "vuot_deadline": "Không đáp ứng được hạn giao hàng.",
     "missing_weather": "Thiếu dữ liệu thời tiết gần thời điểm quyết định.",
 }
+
+HUB_OPTIONS = [
+    {"value": "HUB_VITHANH", "label": "Hub Vị Thanh"},
+    {"value": "HUB_LONGXUYEN", "label": "Hub Long Xuyên"},
+    {"value": "HUB_SOCTRANG", "label": "Hub Sóc Trăng"},
+    {"value": "HUB_VINHLONG", "label": "Hub Vĩnh Long"},
+]
+
+COMMODITY_OPTIONS = [
+    "COM_RICE",
+    "COM_PANGASIUS",
+    "COM_SHRIMP",
+    "COM_POMELO",
+    "COM_VEGETABLE",
+    "COM_PURPLE_ONION",
+]
+
+
+class ShipmentPayload(BaseModel):
+    hub_id: str
+    commodity_id: str | None = None
+    loai_hang: str = ""
+    khoi_luong_kg: float = Field(gt=0)
+    timestamp: str
+
+
+def model_from_dict(model_cls, data: dict[str, Any]):
+    if hasattr(model_cls, "model_validate"):
+        return model_cls.model_validate(data)
+    return model_cls.parse_obj(data)
 
 
 def allowed_sections(role: str) -> list[str]:
@@ -124,6 +155,30 @@ def prepare_section_context(user: dict[str, Any], section: str) -> dict[str, Any
         kpis = optimizer_kpis()
         return {"errors": errors(), "kpis": kpis, "route_counts_json": json.dumps(kpis["route_counts"])}
     return {}
+
+
+def api_context(user: dict[str, Any], section: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "user": user,
+        "role": user["role"],
+        "section": section,
+        "section_label": SECTION_LABELS[section],
+        "menu": menu_for(user["role"]),
+        "reason_labels": REASON_LABELS,
+        "hub_options": HUB_OPTIONS,
+        "commodity_options": COMMODITY_OPTIONS,
+    }
+    payload.update(prepare_section_context(user, section))
+    if extra:
+        payload.update(extra)
+    return payload
+
+
+def api_user(request: Request) -> dict[str, Any] | JSONResponse:
+    user = current_user(request)
+    if user is None:
+        return JSONResponse({"error": "unauthenticated"}, status_code=401)
+    return user
 
 
 @router.get("")
@@ -200,5 +255,60 @@ def filter_fleet(request: Request, status_filter: str = Form("")):
 def map_data(request: Request):
     user = require_user(request)
     if isinstance(user, RedirectResponse):
+        return user
+    return JSONResponse(map_payload())
+
+
+@router.get("/api/view")
+def api_view(request: Request, section: str | None = None, status_filter: str = ""):
+    user = api_user(request)
+    if isinstance(user, JSONResponse):
+        return user
+    section = section or DEFAULT_SECTION[user["role"]]
+    if section not in allowed_sections(user["role"]):
+        section = DEFAULT_SECTION[user["role"]]
+    extra: dict[str, Any] = {}
+    if section == "logistics_fleet":
+        rows = fleet_rows()
+        if status_filter:
+            rows = [row for row in rows if row["status"] == status_filter]
+        extra = {"fleet": rows, "status_filter": status_filter}
+    return api_context(user, section, extra)
+
+
+@router.post("/api/shipment")
+async def api_submit_shipment(request: Request):
+    user = api_user(request)
+    if isinstance(user, JSONResponse):
+        return user
+    payload = model_from_dict(ShipmentPayload, await request.json())
+    input_data = {
+        "hub_id": payload.hub_id,
+        "commodity_id": payload.commodity_id or None,
+        "loai_hang": payload.loai_hang,
+        "khoi_luong_kg": payload.khoi_luong_kg,
+        "timestamp": payload.timestamp,
+    }
+    result = run_optimizer(input_data)
+    save_tracking(
+        user["username"],
+        {
+            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "input": input_data,
+            "recommended_route": result["recommended_route"],
+            "khuyen_nghi": result["khuyen_nghi"],
+            "routes": result["phuong_an"],
+        },
+    )
+    section = "business_recommendations" if user["role"] != "admin" else "admin_simulation"
+    route_map = route_options_for_hub(result["hub_id"])
+    route_map["activeRoute"] = result["recommended_route"]
+    return api_context(user, section, {"result": result, "input_data": input_data, "route_map": route_map})
+
+
+@router.get("/api/map-data")
+def api_map_data(request: Request):
+    user = api_user(request)
+    if isinstance(user, JSONResponse):
         return user
     return JSONResponse(map_payload())
