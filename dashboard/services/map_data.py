@@ -28,6 +28,23 @@ EMISSION_KG_CO2E_PER_TON_KM = {
     "water": 0.035,
 }
 
+# Demo water corridors follow the broad Mekong/tributary direction instead of drawing
+# endpoint-to-endpoint chords. They are visual approximations until a navigable-waterway
+# routing service or recorded GPS geometry is connected.
+WATERWAY_CORRIDORS: dict[str, list[list[float]]] = {
+    "LEG_ST_CT_WATER": [
+        [9.6025, 105.9739], [9.635, 105.961], [9.680, 105.938], [9.728, 105.912],
+        [9.775, 105.884], [9.824, 105.852], [9.872, 105.821], [9.921, 105.790],
+        [9.970, 105.760], [10.015, 105.744], [10.0452, 105.7469],
+    ],
+    "LEG_CT_HCM_WATER": [
+        [10.0452, 105.7469], [10.086, 105.801], [10.126, 105.857], [10.174, 105.918],
+        [10.224, 105.982], [10.274, 106.050], [10.326, 106.116], [10.382, 106.184],
+        [10.438, 106.252], [10.493, 106.324], [10.548, 106.397], [10.604, 106.470],
+        [10.657, 106.537], [10.705, 106.598], [10.744, 106.653], [10.7769, 106.7009],
+    ],
+}
+
 
 def read_csv(path: Path) -> list[dict[str, str]]:
     if not path.exists():
@@ -66,7 +83,9 @@ def legs() -> list[dict[str, Any]]:
                 "from_node_id": r["from_node_id"],
                 "to_node_id": r["to_node_id"],
                 "distance_km": float(r["distance_km"]),
-                "points": [[start["lat"], start["lon"]], [end["lat"], end["lon"]]],
+                "points": WATERWAY_CORRIDORS.get(
+                    r["leg_id"], [[start["lat"], start["lon"]], [end["lat"], end["lon"]]]
+                ),
             }
         )
     return items
@@ -304,3 +323,95 @@ def route_options_for_hub(hub_id: str) -> dict[str, Any]:
             )
         routes[candidate.route_code] = segments
     return {"nodes": nodes(), "fleet": fleet_by_node(), "routes": routes}
+
+
+def _point_along_segments(segments: list[dict[str, Any]], progress: float) -> tuple[float, float]:
+    """Return a deterministic demo position along a multi-leg route."""
+    if not segments:
+        return 10.05, 105.75
+    weighted = [(segment, max(float(segment.get("distance_km", 0)), 1.0)) for segment in segments]
+    total = sum(weight for _, weight in weighted)
+    target = min(max(progress, 0.0), 1.0) * total
+    traversed = 0.0
+    for segment, weight in weighted:
+        if traversed + weight >= target:
+            local = (target - traversed) / weight
+            origin = segment["origin"]
+            destination = segment["destination"]
+            return (
+                origin["lat"] + (destination["lat"] - origin["lat"]) * local,
+                origin["lon"] + (destination["lon"] - origin["lon"]) * local,
+            )
+        traversed += weight
+    destination = weighted[-1][0]["destination"]
+    return destination["lat"], destination["lon"]
+
+
+def logistics_overview_payload(jobs: list[dict[str, Any]], deliveries: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build an operational map using real hubs/fleet and deterministic demo tracking positions."""
+    map_nodes = nodes()
+    node_lookup = {node["node_id"]: node for node in map_nodes}
+    active_deliveries = [delivery for delivery in deliveries if delivery.get("status") != "hoan_tat"]
+    delivery_layers = []
+    for index, delivery in enumerate(active_deliveries):
+        fallback_hubs = ["HUB_VINHLONG", "HUB_SOCTRANG", "HUB_LONGXUYEN", "HUB_VITHANH"]
+        hub_id = delivery.get("hub_id") or fallback_hubs[index % len(fallback_hubs)]
+        route_code = delivery.get("route_code", "A_DIRECT_ROAD")
+        segments = route_options_for_hub(hub_id)["routes"].get(route_code, [])
+        delivery_layers.append({**delivery, "hub_id": hub_id, "segments": segments})
+
+    waiting_jobs = []
+    for job in jobs:
+        node = node_lookup.get(job.get("hub_id"))
+        if node:
+            waiting_jobs.append({**job, "lat": node["lat"], "lon": node["lon"]})
+
+    vehicle_points = []
+    moving_index = 0
+    for index, vehicle in enumerate(fleet_rows()):
+        status = vehicle.get("status", "maintenance")
+        node = node_lookup.get(vehicle.get("current_node_id")) or node_lookup.get(vehicle.get("owner_hub_id"))
+        if not node:
+            continue
+        delivery = None
+        if status == "en_route" and delivery_layers:
+            delivery = delivery_layers[moving_index % len(delivery_layers)]
+            progress = 0.22 + ((moving_index * 17) % 57) / 100
+            lat, lon = _point_along_segments(delivery["segments"], progress)
+            moving_index += 1
+            display_status = "in_delivery"
+        else:
+            # Stable offsets prevent vehicles at the same hub from completely overlapping.
+            lat = node["lat"] + (((index * 7) % 9) - 4) * 0.004
+            lon = node["lon"] + (((index * 11) % 9) - 4) * 0.004
+            display_status = "available" if status == "available" else "unavailable"
+        vehicle_points.append(
+            {
+                "vehicle_id": vehicle.get("vehicle_id", "Unknown vehicle"),
+                "vehicle_type": vehicle.get("vehicle_type", "vehicle"),
+                "capacity_ton": vehicle.get("capacity_ton", ""),
+                "source_status": status,
+                "display_status": display_status,
+                "current_node_id": vehicle.get("current_node_id", ""),
+                "delivery_id": delivery.get("delivery_id") if delivery else None,
+                "route_progress": progress if delivery else None,
+                "lat": lat,
+                "lon": lon,
+            }
+        )
+
+    counts = Counter(vehicle["display_status"] for vehicle in vehicle_points)
+    return {
+        "nodes": map_nodes,
+        "fleet": fleet_by_node(),
+        "vehicle_points": vehicle_points,
+        "waiting_jobs": waiting_jobs,
+        "active_deliveries": delivery_layers,
+        "summary": {
+            "waiting_jobs": len(waiting_jobs),
+            "active_deliveries": len(active_deliveries),
+            "available_vehicles": counts["available"],
+            "unavailable_vehicles": counts["unavailable"],
+        },
+        "operational": True,
+    }

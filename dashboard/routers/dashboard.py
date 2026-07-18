@@ -13,7 +13,15 @@ from pydantic import BaseModel, Field
 from ..auth import current_user, require_user
 from ..services.ai1_client import run_optimizer
 from ..services.ai2_client import get_deliveries, get_jobs
-from ..services.map_data import errors, fleet_rows, latest_weather, map_payload, optimizer_kpis, route_options_for_hub
+from ..services.map_data import (
+    errors,
+    fleet_rows,
+    latest_weather,
+    logistics_overview_payload,
+    map_payload,
+    optimizer_kpis,
+    route_options_for_hub,
+)
 
 
 router = APIRouter(prefix="/dashboard")
@@ -22,7 +30,7 @@ TRACKING_PATH = Path("dashboard/session_orders.json")
 
 ROLE_SECTIONS = {
     "business": ["business_shipment_form", "business_recommendations", "business_tracking"],
-    "logistics": ["logistics_fleet", "logistics_jobs", "logistics_deliveries"],
+    "logistics": ["logistics_overview", "logistics_jobs", "logistics_deliveries", "logistics_fleet"],
     "admin": [
         "admin_inventory",
         "admin_weather",
@@ -39,6 +47,7 @@ SECTION_LABELS = {
     "business_recommendations": "Recommendations/Analytics",
     "business_tracking": "Tracking",
     "logistics_fleet": "Fleet",
+    "logistics_overview": "Overview",
     "logistics_jobs": "Jobs",
     "logistics_deliveries": "Deliveries",
     "admin_inventory": "Inventory",
@@ -48,7 +57,7 @@ SECTION_LABELS = {
     "admin_logs": "Logs/Analytics",
 }
 
-DEFAULT_SECTION = {"business": "business_shipment_form", "logistics": "logistics_fleet", "admin": "admin_inventory"}
+DEFAULT_SECTION = {"business": "business_shipment_form", "logistics": "logistics_overview", "admin": "admin_inventory"}
 
 REASON_LABELS = {
     "hang_khong_phu_hop_duong_thuy": "Loại hàng không phù hợp vận chuyển đường thủy.",
@@ -136,6 +145,13 @@ def base_context(request: Request, user: dict[str, Any], section: str, extra: di
 def prepare_section_context(user: dict[str, Any], section: str) -> dict[str, Any]:
     if section == "business_tracking":
         return {"tracking": load_tracking(user["username"])}
+    if section == "logistics_overview":
+        jobs, live = get_jobs()
+        deliveries = get_deliveries()
+        return {
+            "logistics_overview": logistics_overview_payload(jobs, deliveries),
+            "ai2_live": live,
+        }
     if section == "logistics_fleet":
         return {"fleet": fleet_rows(), "status_filter": ""}
     if section == "logistics_jobs":

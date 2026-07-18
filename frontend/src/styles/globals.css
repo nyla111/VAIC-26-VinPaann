@@ -351,6 +351,98 @@ th {
   gap: 12px;
 }
 
+.overview-map-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel-heading h2,
+.panel-heading p {
+  margin: 0;
+}
+
+.panel-heading p {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.metric-available {
+  color: #15803d;
+}
+
+.metric-unavailable {
+  color: #dc2626;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 13px;
+}
+
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #64748b;
+}
+
+.legend-dot.available { background: #16a34a; }
+.legend-dot.legend-unavailable { background: #dc2626; }
+.legend-dot.delivery { background: #2563eb; }
+.legend-dot.job {
+  width: 12px;
+  height: 12px;
+  background: #fbbf24;
+  border: 2px solid #92400e;
+}
+
+.legend-line {
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+  background: #7c3aed;
+}
+
+.vehicle-cluster-shell {
+  background: transparent;
+  border: 0;
+}
+
+.vehicle-cluster-marker {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 999px;
+  background: var(--cluster-color);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 1px 5px rgba(15, 23, 42, 0.35);
+}
+
 .map {
   height: 540px;
   border-radius: 6px;
@@ -418,6 +510,10 @@ th {
   .topbar {
     align-items: flex-start;
     gap: 12px;
+    flex-direction: column;
+  }
+
+  .panel-heading {
     flex-direction: column;
   }
 

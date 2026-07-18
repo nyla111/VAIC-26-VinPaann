@@ -10,7 +10,7 @@ import { DashboardSection } from "@/features/dashboard/DashboardSection";
 
 const defaultSection: Record<Role, string> = {
   business: "business_shipment_form",
-  logistics: "logistics_fleet",
+  logistics: "logistics_overview",
   admin: "admin_inventory",
 };
 

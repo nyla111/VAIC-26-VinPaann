@@ -60,6 +60,7 @@ export type Job = {
 
 export type Delivery = {
   delivery_id: string;
+  hub_id?: string;
   route_code: string;
   status: string;
   eta: string;
@@ -102,6 +103,38 @@ export type MapPayload = {
   legs?: Array<{ leg_id: string; mode: string; distance_km: number; points: [number, number][] }>;
   fleet: Array<{ node_id: string; lat: number; lon: number; count: number; statuses: Record<string, number> }>;
   routes?: Record<string, Array<RouteSegment>>;
+  operational?: boolean;
+  vehicle_points?: VehicleMapPoint[];
+  waiting_jobs?: JobMapPoint[];
+  active_deliveries?: DeliveryMapItem[];
+  summary?: LogisticsSummary;
+};
+
+export type VehicleMapPoint = {
+  vehicle_id: string;
+  vehicle_type: string;
+  capacity_ton: string;
+  source_status: string;
+  display_status: "available" | "unavailable" | "in_delivery";
+  current_node_id: string;
+  delivery_id?: string | null;
+  route_progress?: number | null;
+  lat: number;
+  lon: number;
+};
+
+export type JobMapPoint = Job & { lat: number; lon: number };
+
+export type DeliveryMapItem = Delivery & {
+  hub_id: string;
+  segments: RouteSegment[];
+};
+
+export type LogisticsSummary = {
+  waiting_jobs: number;
+  active_deliveries: number;
+  available_vehicles: number;
+  unavailable_vehicles: number;
 };
 
 export type RouteSegment = {
@@ -125,6 +158,7 @@ export type DashboardView = {
   result?: OptimizeResult;
   route_map?: MapPayload;
   map_payload?: MapPayload;
+  logistics_overview?: MapPayload;
   kpis?: Kpis;
   tracking?: TrackingItem[];
   fleet?: FleetRow[];

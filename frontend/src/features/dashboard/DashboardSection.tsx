@@ -289,6 +289,51 @@ function Deliveries({ view }: { view: DashboardView }) {
   );
 }
 
+function LogisticsOverview({ view }: { view: DashboardView }) {
+  const overview = view.logistics_overview;
+  const summary = overview?.summary;
+  if (!overview || !summary) return <div className="empty">Không có dữ liệu tổng quan logistics.</div>;
+  return (
+    <>
+      <div className="kpi-grid">
+        <div className="kpi">
+          <span>Waiting jobs</span>
+          <strong>{summary.waiting_jobs}</strong>
+          <small>Awaiting provider acceptance</small>
+        </div>
+        <div className="kpi">
+          <span>Active deliveries</span>
+          <strong>{summary.active_deliveries}</strong>
+          <small>{(overview.vehicle_points || []).filter((vehicle) => vehicle.display_status === "in_delivery").length} trucks in transit</small>
+        </div>
+        <div className="kpi">
+          <span>Available vehicles</span>
+          <strong className="metric-available">{summary.available_vehicles}</strong>
+          <small>Ready and stationary</small>
+        </div>
+        <div className="kpi">
+          <span>Unavailable vehicles</span>
+          <strong className="metric-unavailable">{summary.unavailable_vehicles}</strong>
+          <small>Reserved or in maintenance</small>
+        </div>
+      </div>
+      <div className="panel overview-map-panel">
+        <div className="panel-heading">
+          <div>
+            <h2>Live Operations Map</h2>
+            <p>Active deliveries, waiting jobs, and current fleet availability across the network.</p>
+          </div>
+          {!view.ai2_live ? <span className="badge warning">SIMULATED TRACKING</span> : <span className="badge">LIVE</span>}
+        </div>
+        <VaicMap data={overview} />
+        <p className="note">
+          Vehicle positions are simulated from current fleet status and assigned routes until live GPS tracking is connected.
+        </p>
+      </div>
+    </>
+  );
+}
+
 function Inventory({ view }: { view: DashboardView }) {
   const kpis = view.kpis;
   if (!kpis) return <div className="empty">Không có dữ liệu KPI.</div>;
@@ -417,6 +462,8 @@ export function DashboardSection(props: Props) {
       );
     case "business_tracking":
       return <Tracking view={view} />;
+    case "logistics_overview":
+      return <LogisticsOverview view={view} />;
     case "logistics_fleet":
       return <Fleet {...props} />;
     case "logistics_jobs":

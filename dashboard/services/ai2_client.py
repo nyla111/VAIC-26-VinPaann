@@ -54,7 +54,25 @@ def get_jobs() -> tuple[list[dict[str, Any]], bool]:
 
 def get_deliveries() -> list[dict[str, Any]]:
     return [
-        {"delivery_id": "DLV-001", "route_code": "A_DIRECT_ROAD", "status": "dang_chay", "eta": "2h 10m"},
-        {"delivery_id": "DLV-002", "route_code": "D_WATER_VIA_CT", "status": "cho_boc_xep", "eta": "5h 40m"},
-        {"delivery_id": "DLV-003", "route_code": "B_ROAD_VIA_CT", "status": "hoan_tat", "eta": "0h"},
+        {
+            "delivery_id": "DLV-001",
+            "hub_id": "HUB_VINHLONG",
+            "route_code": "A_DIRECT_ROAD",
+            "status": "dang_chay",
+            "eta": "2h 10m",
+        },
+        {
+            "delivery_id": "DLV-002",
+            "hub_id": "HUB_SOCTRANG",
+            "route_code": "D_WATER_VIA_CT",
+            "status": "cho_boc_xep",
+            "eta": "5h 40m",
+        },
+        {
+            "delivery_id": "DLV-003",
+            "hub_id": "HUB_LONGXUYEN",
+            "route_code": "B_ROAD_VIA_CT",
+            "status": "hoan_tat",
+            "eta": "0h",
+        },
     ]
