@@ -1,0 +1,20 @@
+{
+  "trained_at": "2026-07-18T22:31:27.387836",
+  "n_rows_total": 4546,
+  "n_rows_train": 3636,
+  "n_rows_test": 910,
+  "mae_model_kg": 2290.83,
+  "mae_rolling_mean_baseline_kg": 2432.23,
+  "model_better_than_baseline": true,
+  "feature_columns": [
+    "hour_of_day",
+    "day_of_week",
+    "month",
+    "is_water",
+    "lag_count_1",
+    "lag_count_2",
+    "rolling_count_3",
+    "rolling_weight_3"
+  ],
+  "note": "Sample nhỏ (3 tháng, arrival thưa vì chỉ ~7% order đi qua Cần Thơ theo per-order routing)."
+}

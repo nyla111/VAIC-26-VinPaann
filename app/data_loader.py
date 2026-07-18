@@ -1,11 +1,3 @@
-"""Đọc data canonical thật cho AI2.
-
-Cố tình tái dùng `route_optimizer.data_loader.load_data()` (AI1) thay vì viết parser CSV
-riêng, để AI1 và AI2 luôn đọc đúng cùng một `DataStore` từ cùng một `data_dir` — tránh lệch
-data giữa 2 lớp AI như từng xảy ra với dataset simulate riêng của AI2 (xem README mục
-"Điểm khác với AI2-plan.pdf / notebook cũ").
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -14,16 +6,10 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from route_optimizer.data_loader import DEFAULT_DATA_DIR, DataStore, load_data
+from ai1_route_optimizer.data_loader import DEFAULT_DATA_DIR, DataStore, load_data
 
 CAN_THO_NODE_ID = "CT_HUB"
 HCM_NODE_ID = "HCM_MARKET"
-
-# Weather bulletin thật chỉ nói road/water status cho node đó, không có khái niệm "region"
-# (VD "can_tho_to_hcm") như AI2-plan.pdf giả định. Lấy bulletin của cả 2 đầu leg Cần Thơ -> HCM
-# và cộng dồn theo hướng "bảo thủ" (blocked nếu 1 trong 2 đầu blocked, risk = max 2 đầu) —
-# giống quy ước "lấy max factor" mà data package đề xuất cho weather 2 đầu 1 leg (xem
-# VAIC_Data_Simulation_Package_v3_2026-07-18/README.md mục "Time-series lookup").
 OUTBOUND_LEG_NODES = (CAN_THO_NODE_ID, HCM_NODE_ID)
 
 
@@ -53,10 +39,7 @@ def build_cargo_profiles(data_dir: str | Path = DEFAULT_DATA_DIR) -> dict[str, C
         profiles[commodity_id] = CargoProfile(
             commodity_id=commodity_id,
             name_vi=row["name_vi"],
-            # Assumption ghi rõ trong README: time_sensitivity = perishability_level / 5.
             time_sensitivity=round(perishability_level / 5.0, 4),
-            # Assumption: max_hold_hours canonical (toàn hành trình) được dùng thẳng làm ngân
-            # sách chờ tại Cần Thơ — có thể lạc quan vì shipment đã tốn thời gian đi từ hub.
             max_safe_wait_hours=float(row["max_hold_hours"]),
             needs_reefer=bool(row["needs_reefer"]),
             water_ok=bool(row["water_ok"]),
@@ -69,6 +52,36 @@ def build_cargo_profiles(data_dir: str | Path = DEFAULT_DATA_DIR) -> dict[str, C
 
 def get_cargo_profile(commodity_id: str, data_dir: str | Path = DEFAULT_DATA_DIR) -> CargoProfile | None:
     return build_cargo_profiles(data_dir).get(commodity_id)
+
+
+_FALLBACK_TIME_SENSITIVITY = 0.6
+
+
+@lru_cache(maxsize=8)
+def get_fallback_cargo_profile(data_dir: str | Path = DEFAULT_DATA_DIR) -> CargoProfile:
+    profiles = build_cargo_profiles(data_dir)
+    hold_hours = sorted(p.max_safe_wait_hours for p in profiles.values())
+    median_hold = hold_hours[len(hold_hours) // 2] if hold_hours else 24.0
+    return CargoProfile(
+        commodity_id="UNKNOWN",
+        name_vi="Không xác định (commodity_id không khớp canonical)",
+        time_sensitivity=_FALLBACK_TIME_SENSITIVITY,
+        max_safe_wait_hours=median_hold,
+        needs_reefer=False,
+        water_ok=True,
+        compatible_vehicle_types=tuple(),
+        value_vnd_per_kg=0.0,
+        loss_pct_per_hour=0.0,
+    )
+
+
+def get_cargo_profile_or_default(
+    commodity_id: str, data_dir: str | Path = DEFAULT_DATA_DIR
+) -> CargoProfile:
+    """Dùng ở decision_engine thay cho get_cargo_profile() — không bao giờ trả None, để một
+    commodity_id lạ không làm shipment bị bỏ sót khỏi urgency check."""
+
+    return get_cargo_profile(commodity_id, data_dir) or get_fallback_cargo_profile(data_dir)
 
 
 @dataclass(frozen=True)
@@ -127,8 +140,7 @@ def get_fleet_bootstrap_rows(
     at_node: str = CAN_THO_NODE_ID,
 ) -> list[dict[str, Any]]:
     """Vehicle canonical hiện đang ở Cần Thơ, dùng để bootstrap state_store khi service khởi
-    động (trước khi có event vehicle_status_changed thật). Không dùng lại làm real-time state
-    — xem README mục fleet."""
+    động (trước khi có event vehicle_status_changed thật)."""
 
     store = get_data_store(data_dir)
     return [row for row in store.fleet if row["current_node_id"] == at_node]

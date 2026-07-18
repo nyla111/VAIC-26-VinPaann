@@ -1,4 +1,4 @@
-"""Hard constraints + additive Priority Score, đúng thứ tự trong AI2-plan.pdf mục 3.4-3.5.
+"""Hard constraints + additive Priority Score.
 
 Priority Score không được override hard constraint. Thứ tự check:
   1. Không có phương tiện phù hợp           -> wait_for_vehicle
@@ -14,7 +14,12 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 
-from .data_loader import DEFAULT_DATA_DIR, get_data_store, get_cargo_profile, get_outbound_weather_assessment
+from .data_loader import (
+    DEFAULT_DATA_DIR,
+    get_cargo_profile_or_default,
+    get_data_store,
+    get_outbound_weather_assessment,
+)
 from .enums import Decision, Mode, ReasonCode
 from .forecasting import ForecastResult, build_forecast
 from .state_store import Shipment, StateStore, Vehicle
@@ -22,13 +27,14 @@ from .state_store import Shipment, StateStore, Vehicle
 
 @dataclass(frozen=True)
 class DecisionConfig:
-    alpha_fill: float = 0.55
-    beta_urgency: float = 0.35
+    # Tuned 2026-07-18 trên data thật
+    alpha_fill: float = 0.60
+    beta_urgency: float = 0.30
     gamma_weather: float = 0.10
-    dispatch_threshold: float = 0.75
+    dispatch_threshold: float = 0.65
     bucket_minutes: int = 30
     horizon_hours: int = 6
-    weights_source: str = "AI2-plan.pdf default (chưa tune bằng simulation)"
+    weights_source: str = "simulation_tuning_2026-07-18 (ai2_dispatch/reports/tuning_report.json)"
 
     def __post_init__(self) -> None:
         total = self.alpha_fill + self.beta_urgency + self.gamma_weather
@@ -88,9 +94,9 @@ def evaluate(
     total_weight_kg = sum(s.effective_weight_kg for s in pending)
 
     cargo_profiles = {
-        s.shipment_id: get_cargo_profile(s.commodity_id, data_dir) for s in pending
+        s.shipment_id: get_cargo_profile_or_default(s.commodity_id, data_dir) for s in pending
     }
-    needs_reefer_any = any(p.needs_reefer for p in cargo_profiles.values() if p is not None)
+    needs_reefer_any = any(p.needs_reefer for p in cargo_profiles.values())
 
     vehicle = _select_vehicle(store, outbound_mode, decision_ts, needs_reefer_any, total_weight_kg)
 

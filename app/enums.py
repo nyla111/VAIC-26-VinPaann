@@ -1,10 +1,4 @@
 """Enums và bảng map dùng chung cho AI Layer 2.
-
-Route enum ở đây dùng đúng 5 tên trong AI2-plan.pdf (draft contract của Thảo Nhi), vì đó là
-enum sẽ lộ ra ngoài API cho Backend/Frontend. AI1 thật (route_optimizer/) hiện trả route code
-dạng A_DIRECT_ROAD..E_ROAD_WATER_VIA_CT (xem INTEGRATION_LOP_AI_1.md); AI1_ROUTE_TO_AI2_ROUTE
-là bảng map giữa hai hệ enum đó, để Backend chỉ cần forward nguyên route_code của AI1 nếu muốn,
-AI2 tự dịch.
 """
 
 from __future__ import annotations
@@ -48,6 +42,12 @@ ROUTE_EXPECTED_MODES: dict[RouteEnum, tuple[Mode | None, Mode]] = {
 }
 
 
+def normalize_route(value: str) -> RouteEnum:
+    if value in AI1_ROUTE_TO_AI2_ROUTE:
+        return AI1_ROUTE_TO_AI2_ROUTE[value][0]
+    return RouteEnum(value)
+
+
 class ShipmentState(str, Enum):
     ROUTED_TO_CAN_THO = "routed_to_can_tho"
     IN_TRANSIT_TO_CAN_THO = "in_transit_to_can_tho"
@@ -58,9 +58,6 @@ class ShipmentState(str, Enum):
     CANCELLED = "cancelled"
 
 
-# Vehicle status dùng đúng 4 giá trị canonical fleet.status (SCHEMA.md mục 6), KHÔNG dùng 6
-# giá trị trong AI2-plan.pdf (available/loading/dispatched/in_transit/maintenance/unavailable).
-# Deviation có chủ đích: xem ai2_dispatch/README.md mục "Điểm khác với AI2-plan.pdf".
 class VehicleStatus(str, Enum):
     AVAILABLE = "available"
     EN_ROUTE = "en_route"

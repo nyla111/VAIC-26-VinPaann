@@ -1,9 +1,5 @@
-"""Pydantic request/response models cho AI Layer 2.
-
-Field theo tiếng Anh snake_case, đúng đề xuất trong AI2-plan.pdf mục 5.1. Một khác biệt có
-chủ đích so với AI2-plan.pdf: dùng `commodity_id` (canonical, VD `COM_VEGETABLE`) thay vì
-`cargo_type` tự do (VD "mango") vì canonical commodities.csv không có "mango"/"rambutan" —
-xem ai2_dispatch/README.md.
+"""
+Pydantic request/response models cho AI Layer 2.
 """
 
 from __future__ import annotations
@@ -11,9 +7,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from .enums import Decision, Mode, ReasonCode, RouteEnum, ShipmentState, VehicleStatus
+from .enums import Decision, Mode, ReasonCode, RouteEnum, ShipmentState, VehicleStatus, normalize_route
 
 
 # ---------------------------------------------------------------------------
@@ -27,25 +23,42 @@ class ShipmentRoutedPayload(BaseModel):
     commodity_id: str
     weight_kg: float = Field(gt=0)
 
+
     selected_route: RouteEnum
+    # nếu không gửi, AI2 tự suy ra từ selected_route (xem
+    # _resolve_and_check_modes). Nếu gửi, phải khớp — không âm thầm ghi đè giá trị caller cung
+    # cấp sai.
     inbound_mode_to_can_tho: Optional[Mode] = None
-    outbound_mode_from_can_tho: Mode
+    outbound_mode_from_can_tho: Optional[Mode] = None
 
     created_at: datetime
     harvested_at: Optional[datetime] = None
     eta_can_tho: datetime
 
+    @field_validator("selected_route", mode="before")
+    @classmethod
+    def _normalize_selected_route(cls, value):
+        if isinstance(value, str):
+            return normalize_route(value)
+        return value
+
     @model_validator(mode="after")
-    def _check_route_mode_consistency(self) -> "ShipmentRoutedPayload":
+    def _resolve_and_check_modes(self) -> "ShipmentRoutedPayload":
         from .enums import ROUTE_EXPECTED_MODES
 
         expected_inbound, expected_outbound = ROUTE_EXPECTED_MODES[self.selected_route]
-        if self.inbound_mode_to_can_tho != expected_inbound:
+
+        if self.inbound_mode_to_can_tho is None:
+            self.inbound_mode_to_can_tho = expected_inbound
+        elif self.inbound_mode_to_can_tho != expected_inbound:
             raise ValueError(
                 f"inbound_mode_to_can_tho phải là {expected_inbound} cho route "
                 f"{self.selected_route.value}"
             )
-        if self.outbound_mode_from_can_tho != expected_outbound:
+
+        if self.outbound_mode_from_can_tho is None:
+            self.outbound_mode_from_can_tho = expected_outbound
+        elif self.outbound_mode_from_can_tho != expected_outbound:
             raise ValueError(
                 f"outbound_mode_from_can_tho phải là {expected_outbound} cho route "
                 f"{self.selected_route.value}"
@@ -100,8 +113,7 @@ class VehicleStatusEvent(BaseModel):
 
 
 class WeatherUpdateEvent(BaseModel):
-    """Override thủ công cho demo. Mặc định AI2 tự đọc weather_bulletins.csv thật; event này
-    chỉ dùng khi muốn giả lập một kịch bản khác trong lúc demo (xem README mục weather)."""
+    """Override thủ công cho demo."""
 
     schema_version: str = "1.0"
     event_id: str
@@ -114,6 +126,19 @@ class WeatherUpdateEvent(BaseModel):
     water_blocked: bool
     valid_from: datetime
     valid_until: datetime
+
+
+class DispatchCompletedEvent(BaseModel):
+    """Backend gọi endpoint này sau khi đã xác
+    nhận dispatch order (proposal do AI2 đề xuất qua `dispatch_order_proposal`)."""
+
+    schema_version: str = "1.0"
+    event_id: str
+    event_type: Literal["dispatch_completed"] = "dispatch_completed"
+    occurred_at: datetime
+    shipment_ids: list[str]
+    vehicle_id: str
+    actual_departure_at: datetime
 
 
 class EventResponse(BaseModel):

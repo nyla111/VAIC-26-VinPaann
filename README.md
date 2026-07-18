@@ -1,201 +1,305 @@
-# AI Layer 2 - Forecast + Dispatch Agent (Cần Thơ)
+# AI Layer 2 — Forecast & Dispatch Agent
 
-`ai2_dispatch` là service Layer AI 2 trong hệ thống điều phối logistics nông sản ĐBSCL. Nhận
-shipment đã được Layer AI 1 chọn đi qua Cần Thơ, gom tải theo `outbound_mode` (road/water),
-forecast lượng hàng sẽ tích lũy, và ra quyết định `dispatch_now` / `wait_for_load` /
-`wait_for_vehicle` kèm giải thích.
+`ai2_dispatch` is the Layer 2 service in the ĐBSCL agricultural logistics coordination system.
+It receives shipments that have already been routed through the Cần Thơ transshipment hub by
+Layer 1 (route & cost optimization), tracks accumulated load per outbound mode (road/water),
+forecasts how load will accumulate over the next few hours, and returns a dispatch decision —
+`dispatch_now`, `wait_for_load`, or `wait_for_vehicle` — together with a machine-readable
+explanation.
 
+The service combines two complementary behaviors:
 
-## 1. Cài đặt & chạy nhanh
+- **Event-driven**: upstream systems push shipment, vehicle, and weather events; every read
+  endpoint recomputes forecast and decision state from current data, so consumers can poll it
+  safely at any time without side effects.
+- **Autonomous**: a background loop independently re-evaluates the dispatch decision on a
+  fixed interval, even with no new events and no incoming request — the classic agent cycle of
+  observe → forecast → decide → (re-)observe. See [Autonomous agent loop](#autonomous-agent-loop).
 
-```bash
-cd VAIC-26-VinPaann
-python -m pip install -r ai2_dispatch/requirements.txt
-```
+## Status
 
-Chạy server (từ `VAIC-26-VinPaann/`):
+This is a v1 implementation. It runs end-to-end against the project's real canonical dataset
+(not a synthetic placeholder). Two components are backed by real data rather than hand-picked
+defaults or pure rule logic:
 
-```bash
-python -m uvicorn ai2_dispatch.app.main:app --reload --host 127.0.0.1 --port 8001
-```
+- Priority-score weights are calibrated against a simulated replay of real historical order
+  data (see [Decision logic](#decision-logic)).
+- Load forecasting can use a trained regression model instead of a static rolling average (see
+  [Predictive model](#predictive-model)).
 
-Swagger UI: `http://127.0.0.1:8001/docs` - dùng để Backend/Frontend tự thử request mà không
-cần chờ ai viết client.
+See [Known limitations](#known-limitations) below for what is intentionally simplified in this
+version.
 
-Chạy test (không mock data, dùng đúng data canonical thật):
-
-```bash
-python -m pytest ai2_dispatch/tests/test_smoke.py -v
-```
-
-Sample request/response thật (chạy ngày 2026-07-18 trên data canonical v3) nằm ở
-`ai2_dispatch/examples/`.
-
-## 2. Cấu trúc thư mục
+## Architecture
 
 ```text
 ai2_dispatch/
 ├── app/
-│   ├── main.py            # FastAPI app, wiring toàn bộ endpoint
-│   ├── schemas.py         # Pydantic request/response models
-│   ├── enums.py           # RouteEnum, Mode, Decision, ReasonCode, map route AI1 <-> AI2
-│   ├── data_loader.py     # Đọc canonical CSV thật (tái dùng route_optimizer.data_loader)
-│   ├── state_store.py     # In-memory state: shipment, vehicle, idempotency, rolling history
-│   ├── forecasting.py     # Forecast v1: rolling-mean baseline + known ETA
-│   └── decision_engine.py # Hard constraints + additive Priority Score
+│   ├── main.py             # FastAPI application, route wiring, agent lifespan startup
+│   ├── schemas.py          # Pydantic request/response models
+│   ├── enums.py            # Route, mode, decision, and reason-code enums
+│   ├── data_loader.py      # Canonical dataset access (commodities, fleet, weather bulletins)
+│   ├── state_store.py      # In-memory shipment/vehicle state, event idempotency
+│   ├── forecasting.py      # Rolling-horizon load forecast (ML-backed, with fallback)
+│   ├── ml_forecaster.py    # Loads the trained forecasting model, if present
+│   ├── decision_engine.py  # Hard constraints + weighted priority scoring
+│   └── agent.py            # Autonomous periodic re-evaluation loop
+├── scripts/
+│   ├── simulate_and_tune.py  # Replay-based grid search for priority-score weights
+│   └── train_forecaster.py   # Trains the load-forecasting model on real historical data
+├── models/
+│   ├── arrival_forecaster.joblib   # Trained model artifact (produced by train_forecaster.py)
+│   └── training_metrics.json       # Honest evaluation metrics from the last training run
+├── reports/
+│   └── tuning_report.json    # Output of the last tuning run (evidence, not just claims)
 ├── tests/
-│   └── test_smoke.py      # End-to-end test qua FastAPI TestClient, dùng data thật
+│   └── test_smoke.py       # End-to-end tests against the real dataset
 ├── examples/
 │   ├── sample_events.json
 │   └── sample_responses.json
 └── requirements.txt
 ```
 
-Không có `config/*.json` riêng ở v1 (khác với cấu trúc `ai2_dispatch/config/` từng phác thảo ở
-bản draft cũ) - `DecisionConfig` (α/β/γ/threshold, bucket_minutes, horizon_hours) hiện là
-dataclass default trong `decision_engine.py`, dễ sửa, chưa cần externalize ra JSON vì chưa
-chạy grid-search tuning (xem Roadmap).
+## Data sources
 
-## 3. Nguồn dữ liệu
+The service reads directly from the project's canonical dataset
+(`data_package/data/generated/annual/csv/`) via the same loader used by the Layer 1 route
+optimizer, so both layers always operate on a consistent snapshot of `commodities`, `fleet`,
+`weather_bulletins`, and `nodes`.
 
-**Dùng thẳng data canonical thật** từ
-`VAIC_Data_Simulation_Package_v3_2026-07-18/data/generated/annual/csv/` - **cùng data_dir với
-AI1** (`route_optimizer`). `ai2_dispatch/app/data_loader.py` tái sử dụng
-`route_optimizer.data_loader.load_data()` thay vì viết parser CSV riêng, nên AI1 và AI2 luôn
-đọc đúng cùng một bản ghi cho `commodities`, `fleet`, `weather_bulletins`, `nodes`.
+- **Cargo profiles** (`time_sensitivity`, `max_safe_wait_hours`, refrigeration requirement,
+  compatible vehicle types) are derived from `commodities.csv` rather than hard-coded.
+- **Vehicles** are bootstrapped from `fleet.csv` (filtered to vehicles located at the Cần Thơ
+  hub) and then updated in real time via `vehicle-status` events.
+- **Weather risk and route closures** are read from `weather_bulletins.csv` for the Cần
+  Thơ → Ho Chi Minh City corridor, with a manual override endpoint available for scenario
+  testing.
 
-### Cargo profile - build từ `commodities.csv`
+## Route encoding
 
-`data_loader.build_cargo_profiles()` build cargo profile trực tiếp từ `commodities.csv`:
+Layer 1 exposes five route options identified by internal codes (`A_DIRECT_ROAD` through
+`E_ROAD_WATER_VIA_CT`). Layer 2 consumes a corresponding set of five snake_case route
+identifiers that make the inbound/outbound transport mode explicit:
 
-| Field AI2 | Nguồn canonical | Công thức/ghi chú |
+| Route | Hub → Cần Thơ | Cần Thơ → HCMC |
 |---|---|---|
-| `time_sensitivity` (0..1) | `perishability_level` (int 1..5) | `perishability_level / 5.0`|
-| `max_safe_wait_hours` | `max_hold_hours` | Dùng thẳng - **giả định**: `max_hold_hours` tính từ lúc thu hoạch cho toàn hành trình; AI2 hiện dùng nguyên số đó làm ngân sách chờ riêng tại Cần Thơ, có thể lạc quan vì chưa trừ thời gian đã đi từ hub. |
-| `needs_reefer` | `needs_reefer` | Giữ nguyên |
-| `compatible_vehicle_types` | `compatible_vehicle_types` | Giữ nguyên (dùng để lọc vehicle) |
+| `direct_hcm_road` | — (bypasses Cần Thơ) | road |
+| `via_can_tho_road_then_road` | road | road |
+| `via_can_tho_water_then_road` | water | road |
+| `via_can_tho_water_then_water` | water | water |
+| `via_can_tho_road_then_water` | road | water |
 
-Không có field `temperature_min/max_celsius` riêng theo commodity trong canonical (chỉ có
-`needs_reefer` boolean) - AI2 **không** yêu cầu nhiệt độ cụ thể ở v1.
+Only the four routes that pass through Cần Thơ are relevant to this service;
+`direct_hcm_road` shipments are rejected with `ROUTE_NOT_APPLICABLE`. The `selected_route`
+field accepts either the five snake_case identifiers above or Layer 1's internal route codes
+(`A_DIRECT_ROAD`..`E_ROAD_WATER_VIA_CT`) interchangeably — the service normalizes on input, so
+upstream callers do not need to perform this translation themselves. `inbound_mode_to_can_tho`
+and `outbound_mode_from_can_tho` are optional: if omitted, they are derived from
+`selected_route`; if provided, they must be consistent with it.
 
-### Vehicle - bootstrap từ `fleet.csv`, state runtime giữ riêng
+## API reference
 
-`fleet.csv` có 77 vehicle toàn hệ thống; AI2 chỉ bootstrap **vehicle đang ở `CT_HUB`** lúc khởi
-động service (27 vehicle trong snapshot 2026-01-01). Sau đó, state vehicle được cập nhật qua
-event `POST /api/v1/events/vehicle-status`, **không** đọc lại `fleet.csv` mỗi request - vì
-`fleet.csv` là snapshot chung của cả hệ thống, không phản ánh trạng thái real-time riêng cho
-luồng dispatch tại Cần Thơ (VD "đang load hàng" là state chỉ AI2 biết).
+### Events
 
-`vehicle.status` dùng đúng 4 giá trị canonical (`available`, `en_route`, `maintenance`,
-`reserved`) - xem mục 8 về lý do khác 6 giá trị ở bản draft cũ.
+All event endpoints are idempotent on `event_id`: resubmitting a previously seen event returns
+`duplicate: true` without mutating state.
 
-### Weather - đọc `weather_bulletins.csv` thật
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/v1/events/shipment-routed` | Register a shipment that has been routed through Cần Thơ |
+| `POST /api/v1/events/shipment-arrived` | Mark a shipment as physically arrived at Cần Thơ |
+| `POST /api/v1/events/shipment-cancelled` | Remove a shipment from the pending pool |
+| `POST /api/v1/events/vehicle-status` | Update a vehicle's availability, capacity, or location |
+| `POST /api/v1/events/weather-update` | Override the automatically-read weather assessment for scenario testing |
+| `POST /api/v1/events/dispatch-completed` | Confirm that a dispatch (typically the one proposed via `dispatch_order_proposal`) has actually departed, removing those shipments from the pending pool |
 
-`data_loader.get_outbound_weather_assessment()` lấy bulletin của cả `CT_HUB` và `HCM_MARKET`
-tại thời điểm quyết định (`decision_ts`), rồi cộng dồn theo hướng bảo thủ:
-
-- `road_blocked = True` nếu 1 trong 2 node có `road_status == "closed"`.
-- `water_blocked = True` nếu 1 trong 2 node có `water_navigation_status == "closed"`.
-- `risk` (0..1) = `max(max_flood_risk_idx)` của 2 node.
-
-Có thể override thủ công qua `POST /api/v1/events/weather-update` để demo kịch bản khác (VD
-giả lập lũ) - override hết hiệu lực ngoài `[valid_from, valid_until]`.
-
-## 4. Route enum - map với AI1 thật
-
-AI1 (`route_optimizer/`, xem `INTEGRATION_LOP_AI_1.md`) trả `route_code` dạng `A_DIRECT_ROAD`
-.. `E_ROAD_WATER_VIA_CT`. AI2 dùng route enum tiếng Anh snake_case
-(`direct_hcm_road`..`via_can_tho_road_then_water`). Bảng map cố định trong
-`app/enums.py::AI1_ROUTE_TO_AI2_ROUTE`:
-
-| Route code AI1 | Route enum AI2 | Hub→Cần Thơ | Cần Thơ→HCM |
-|---|---|---|---|
-| `A_DIRECT_ROAD` | `direct_hcm_road` | (không qua CT) | road |
-| `B_ROAD_VIA_CT` | `via_can_tho_road_then_road` | road | road |
-| `C_WATER_ROAD_VIA_CT` | `via_can_tho_water_then_road` | water | road |
-| `D_WATER_VIA_CT` | `via_can_tho_water_then_water` | water | water |
-| `E_ROAD_WATER_VIA_CT` | `via_can_tho_road_then_water` | road | water |
-
-**Backend/AI1 cần convert route code A-E sang route enum AI2 trước khi gọi
-`POST /api/v1/events/shipment-routed`** (hoặc AI2 có thể expose thêm 1 hàm convert nếu team
-muốn Backend forward nguyên route code A-E). `A_DIRECT_ROAD`/`direct_hcm_road` **không được gửi vào AI2** - validate qua
-Pydantic sẽ từ chối nếu `selected_route`/`inbound_mode`/`outbound_mode` không khớp bảng trên.
-
-## 5. API - event endpoints
-
-Tất cả event có `event_id`; gửi lại `event_id` đã thấy sẽ trả `duplicate: true`, không cộng
-state 2 lần.
-
-| Endpoint | Khi nào gọi | Field bắt buộc |
-|---|---|---|
-| `POST /api/v1/events/shipment-routed` | Ngay khi AI1/Backend chốt route đi qua Cần Thơ (4/5 route, trừ `direct_hcm_road`) | `shipment_id, hub_id, commodity_id, weight_kg, selected_route, inbound_mode_to_can_tho, outbound_mode_from_can_tho, created_at, eta_can_tho`; `harvested_at` optional nhưng nên gửi nếu có |
-| `POST /api/v1/events/shipment-arrived` | Khi shipment thực tế tới Cần Thơ | `shipment_id, actual_arrival_at, actual_weight_kg` |
-| `POST /api/v1/events/shipment-cancelled` | Khi hub/khách hủy đơn | `shipment_id, reason` |
-| `POST /api/v1/events/vehicle-status` | Khi 1 vehicle đổi status/vị trí | `vehicle_id, mode, capacity_kg, status, available_from, ...` |
-| `POST /api/v1/events/weather-update` | Optional - chỉ dùng để override demo, mặc định AI2 tự đọc `weather_bulletins.csv` | `road_risk, water_risk, road_blocked, water_blocked, valid_from, valid_until` |
-
-Response mọi event endpoint:
+Every event endpoint returns:
 
 ```json
 {"accepted": true, "event_id": "evt_001", "state_version": 3, "recomputed": true, "duplicate": false}
 ```
 
-Lỗi domain trả `{"error": {"code": ..., "message": ...}}`, HTTP status tương ứng:
+Domain errors use a structured error envelope:
 
-| `code` | HTTP | Khi nào |
+| Code | HTTP status | Condition |
 |---|---:|---|
-| `SHIPMENT_NOT_FOUND` | 404 | `shipment_id` chưa từng có event `shipment-routed` |
-| `INVALID_STATE_TRANSITION` | 409 | VD shipment đã `dispatched` mà gửi lại `shipment-arrived` |
+| `SHIPMENT_NOT_FOUND` | 404 | Referenced `shipment_id` has no prior `shipment-routed` event |
+| `INVALID_STATE_TRANSITION` | 409 | Event implies an invalid shipment lifecycle transition |
 
-Lỗi validate schema/route-mode mismatch (VD `selected_route` không khớp
-`inbound_mode_to_can_tho`) trả **422 theo format mặc định của FastAPI/Pydantic**, không phải
-envelope `{"error": {...}}` tùy biến - đây là điểm đơn giản hóa so với thiết kế lỗi custom đầy
-đủ, xem mục 8.
+Schema-level validation errors (e.g. route/mode mismatch) return the standard FastAPI/Pydantic
+422 response.
 
-## 6. API - forecast & dispatch status
+### Forecast and dispatch status
 
 ```text
 GET /api/v1/forecast?outbound_mode=road|water&decision_ts=<ISO8601>
 GET /api/v1/dispatch-status?outbound_mode=road|water&decision_ts=<ISO8601>
 ```
 
-- `outbound_mode`: bắt buộc chọn 1 trong 2 vì road/water là 2 pipeline tải riêng (mỗi pipeline
-  1 nhóm shipment + 1 vehicle pool). Nếu bỏ trống, AI2 tự chọn mode có tổng weight đang chờ lớn
-  hơn.
-- `decision_ts`: bỏ trống thì dùng thời điểm hiện tại (UTC). Backend nên **luôn truyền tường
-  minh** trong demo để kết quả tái lập được.
+`outbound_mode` is required conceptually (road and water are tracked as independent load
+pools with independent vehicle pools); if omitted, the service selects whichever pool
+currently holds more pending weight. `decision_ts` defaults to the current time and should be
+passed explicitly by callers that need reproducible results.
 
-`GET /api/v1/forecast` trả `predicted_full_load`, `buckets[]` (mỗi bucket 30 phút, mặc định
-horizon 6 giờ) - đúng shape thiết kế "rolling bucket + predicted_full_load_time", không dùng
-field cố định kiểu "dự báo 2h tới".
+`GET /api/v1/forecast` returns a rolling multi-bucket forecast (default: 30-minute buckets over
+a 6-hour horizon) plus a `predicted_full_load_time` — the earliest time at which the selected
+vehicle is expected to reach capacity, rather than a single fixed-horizon number.
 
-`GET /api/v1/dispatch-status` trả `decision`, `reason_codes[]`, `explanation`, `priority_score`
-breakdown, `selected_vehicle`, và `dispatch_order_proposal` (chỉ có khi
-`decision == dispatch_now`). Ví dụ output thật nằm ở `examples/sample_responses.json`.
+`GET /api/v1/dispatch-status` returns the current `decision`, structured `reason_codes`, a
+human-readable `explanation`, the selected vehicle, a full priority-score breakdown, and — when
+the decision is `dispatch_now` — a `dispatch_order_proposal` describing which shipments should
+be loaded onto which vehicle. See `examples/sample_responses.json` for a real response captured
+against the dataset.
 
-## 7. Cách hoạt động - decision flow
+## Decision logic
 
-Với mỗi `outbound_mode`, thứ tự check (giống nhau mỗi lần gọi, không có side effect ngoài đọc
-state - an toàn để Backend poll nhiều lần):
+For a given `outbound_mode`, the service evaluates conditions in a fixed order. Hard
+constraints take precedence over the priority score and cannot be overridden by it:
 
-1. Không có shipment nào đang `arrived_waiting` → `wait_for_load`, reason
-   `no_pending_shipments`.
-2. Không có vehicle available phù hợp (đúng mode, đủ reefer nếu cần) → `wait_for_vehicle`,
-   reason `vehicle_unavailable`.
-3. Tuyến outbound bị `closed` theo weather bulletin → `wait_for_load`, reason
-   `weather_blocked`.
-4. Có shipment đã chạm/vượt `max_safe_wait_hours` (tính từ `harvested_at`, hoặc `created_at`
-   nếu không có `harvested_at`) → `dispatch_now`, reason `safe_wait_limit_reached`.
-5. `fill_ratio >= 1.0` → `dispatch_now`, reason `vehicle_full`.
-6. Còn lại: tính `priority_score = 0.55×fill + 0.35×urgency + 0.10×weather`; nếu
-   `>= 0.75` → `dispatch_now` (`priority_score_reached`), ngược lại `wait_for_load`
-   (`score_below_threshold`, kèm `full_load_expected_soon` nếu forecast có
-   `predicted_full_load_time` trong horizon).
+1. No shipments currently waiting → `wait_for_load`.
+2. No compatible vehicle available (matching mode and refrigeration requirement) →
+   `wait_for_vehicle`.
+3. The outbound route is closed per the current weather bulletin → `wait_for_load`
+   (`weather_blocked`).
+4. Any waiting shipment has reached its maximum safe wait time → `dispatch_now`
+   (`safe_wait_limit_reached`), regardless of current fill level.
+5. The selected vehicle is at or above capacity → `dispatch_now` (`vehicle_full`).
+6. Otherwise, a weighted priority score determines the outcome:
 
-`urgency_component` = `max` qua các shipment đang chờ của
-`min(elapsed_hours / max_safe_wait_hours × time_sensitivity, 1.0)` - loại hàng nhạy cảm nhất
-quyết định mức khẩn cấp của cả lô, đúng thiết kế additive score (không dùng phép nhân, để một
-component = 0 không kéo cả điểm về 0).
+```text
+priority_score = 0.60 × fill_component + 0.30 × urgency_component + 0.10 × weather_component
+```
 
+`fill_component` is the current load as a fraction of vehicle capacity. `urgency_component` is
+the maximum, across all waiting shipments, of `elapsed_time / max_safe_wait_hours ×
+time_sensitivity` — the most time-sensitive cargo in a mixed load drives the urgency of the
+whole batch. `weather_component` reflects current flood/route risk. The score is additive by
+design so that a single zero-valued component cannot suppress the others; if the score reaches
+`0.65`, the service returns `dispatch_now`, otherwise `wait_for_load`.
 
-  8.3), và cách AI2 cộng dồn weather 2 node CT_HUB/HCM_MARKET (mục 8.8) có hợp lý không.
+### How the weights were chosen
+
+The weights and threshold above are not hand-picked defaults — they were selected by
+`scripts/simulate_and_tune.py`, a grid search that replays real historical orders (drawn from
+the canonical dataset across three sample months) through the actual routing logic used by
+Layer 1 and this service's own decision engine, including a modeled vehicle turnaround time
+derived from real leg durations. Each candidate weight combination is scored against a proxy
+objective (waiting time, underfill, and unresolved-shipment cost); the selected combination
+reduced that proxy loss by roughly 25% relative to an unweighted default. The objective is a
+documented approximation, not a real-cost model — see `reports/tuning_report.json` for the
+full grid results and `scripts/simulate_and_tune.py` for the methodology and its stated
+caveats before treating these numbers as final.
+
+## Predictive model
+
+The `predicted_unknown_kg` component of the forecast (load not yet known via any confirmed
+shipment, i.e. arrivals the service hasn't been told about yet) is produced by a trained
+regression model when one is available, rather than a single global average.
+
+`scripts/train_forecaster.py` builds a bucketed (30-minute) time series of real Cần Thơ-bound
+arrivals from the canonical order history — reusing the same real-data extraction used for
+priority-score tuning — with features for hour of day, day of week, month, outbound mode, and
+short-term lag/rolling statistics, and fits a gradient-boosted regression model against it. The
+resulting artifact (`models/arrival_forecaster.joblib`) is loaded lazily by
+`app/ml_forecaster.py` and consumed by `forecasting.py` on every forecast computation, using
+lag features drawn from the service's own observed arrival history at request time.
+
+If the artifact is missing, or `scikit-learn`/`joblib` are unavailable at runtime, the service
+falls back to the rolling-mean baseline automatically — no request ever fails because of a
+missing or broken model file. `GET /api/v1/forecast` reports which one produced a given result
+via `config.model_name` (`gradient_boosting_arrival_forecaster_v1` or `rolling_mean_v1`).
+
+The model currently offers a modest, not dramatic, improvement over the rolling-mean baseline
+(see `models/training_metrics.json` for the exact figures) on a fairly small, sparse historical
+sample. It should be read as a working predictive pipeline rather than a finished, tuned
+forecaster — see [Known limitations](#known-limitations).
+
+## Autonomous agent loop
+
+Independently of any inbound request, `app/agent.py` runs a background loop (started at
+process startup via FastAPI's lifespan hook) that periodically re-evaluates the dispatch
+decision for every outbound mode with shipments currently waiting, and logs whenever a decision
+changes. This is what makes the service an *agent* rather than a pure request/response API: a
+shipment approaching its safe-wait limit will eventually trigger a `dispatch_now` decision on
+its own, without any client needing to poll at the right moment. The tick interval is
+configurable via `AI2_AGENT_TICK_SECONDS` (default 30s) and the loop can be disabled entirely
+with `AI2_DISABLE_AGENT_TICK=1`, primarily for test environments.
+
+## Installation and usage
+
+**Requirements:** Python 3.10+. Dependencies are listed in `requirements.txt`
+(FastAPI, Pydantic, pandas, NumPy, scikit-learn, joblib, pytest, httpx).
+
+```bash
+cd VAIC-26-VinPaann
+python -m pip install -r ai2_dispatch/requirements.txt
+```
+
+Run the service:
+
+```bash
+python -m uvicorn ai2_dispatch.app.main:app --reload --host 127.0.0.1 --port 8001
+```
+
+Interactive API docs are available at `http://127.0.0.1:8001/docs`.
+
+Run tests (executed against the real canonical dataset, no mocked data):
+
+```bash
+python -m pytest ai2_dispatch/tests/test_smoke.py -v
+```
+
+(Re-)train the forecasting model and (re-)run priority-score tuning (optional — a trained
+model and tuning report are already committed; only needed if the underlying dataset or
+methodology changes):
+
+```bash
+python -m ai2_dispatch.scripts.train_forecaster
+python -m ai2_dispatch.scripts.simulate_and_tune
+```
+
+### Configuration
+
+All configuration is via environment variables; none are required to run with sensible
+defaults.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `AI2_STATE_FILE` | `ai2_dispatch/.state/ai2_state.pkl` | Path to the local state snapshot file (see [Known limitations](#known-limitations)) |
+| `AI2_AGENT_TICK_SECONDS` | `30` | Interval, in seconds, between autonomous re-evaluation ticks (see [Autonomous agent loop](#autonomous-agent-loop)) |
+| `AI2_DISABLE_AGENT_TICK` | unset (loop enabled) | Set to `1` to disable the autonomous loop entirely, e.g. in test environments |
+
+## Known limitations
+
+- **State persistence is a local snapshot file, not a database.** The service writes its full
+  in-memory state to a local file after every accepted event and reloads it on startup, so a
+  process restart does not lose data. This is sufficient for single-instance demo/integration
+  use but is not a substitute for a shared, multi-instance-safe store in production.
+- **Unknown commodity codes do not fail the request.** If `commodity_id` does not match the
+  canonical commodity list, the service falls back to a moderate, cargo-agnostic urgency
+  profile rather than rejecting the shipment or silently excluding it from scoring — trading a
+  small amount of decision accuracy for pipeline robustness.
+- **The trained forecasting model is a directional check, not a tuned production model.** It
+  was trained on a relatively small, sparse historical sample (see
+  [Predictive model](#predictive-model)) and offers only a modest improvement over the
+  rolling-mean baseline. Lag/rolling features used at inference time are held static across the
+  whole forecast horizon rather than updated recursively bucket-by-bucket, which is a
+  simplification, not a limitation of the underlying data.
+- **The agent loop's lag/rolling features come from this service's own observed history**,
+  which is empty on a fresh process start — early forecasts after a restart are less informed
+  than ones made after the service has been running and observing arrivals for a while.
+- **Priority score weights are tuned against a proxy objective, not a real cost model.**
+  Simulation-based tuning (see [Decision logic](#decision-logic)) improves on hand-picked
+  defaults but still optimizes a hand-defined approximation of waiting/underfill/unresolved
+  cost, not actual transport or spoilage cost in VND — real cost data would change the result.
+- **No forecasting model has been trained on this system's own event history yet.** The
+  forecasting baseline (above) and the priority-score tuning both currently draw on the
+  canonical historical dataset via replay, not on live production traffic; both should be
+  revisited once real operational event logs accumulate.
+- **Cargo urgency parameters** (`time_sensitivity`, `max_safe_wait_hours`) are derived from the
+  dataset's `perishability_level` and `max_hold_hours` fields via a documented but unverified
+  conversion; they should be reviewed against the original data-generation intent before being
+  treated as authoritative.
+- Concurrency is handled with a single process-wide lock, sufficient for demo-scale traffic but
+  not load-tested.
+- No authentication, rate limiting, or production logging is implemented.

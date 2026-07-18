@@ -4,24 +4,27 @@ Chạy:
     uvicorn ai2_dispatch.app.main:app --reload --host 127.0.0.1 --port 8001
 
 Swagger UI: http://127.0.0.1:8001/docs
-
-Endpoint theo đúng contract AI2-plan.pdf (mục 6-13), trừ những điểm ghi rõ trong
-ai2_dispatch/README.md mục "Điểm khác với AI2-plan.pdf".
 """
 
 from __future__ import annotations
 
+import asyncio
+import os
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from . import decision_engine
+from .agent import periodic_tick_loop
 from .data_loader import DEFAULT_DATA_DIR
-from .enums import Mode, ShipmentState
+from .enums import Mode, ROUTES_REQUIRING_AI2, ShipmentState
 from .schemas import (
     CurrentState,
+    DispatchCompletedEvent,
     DispatchOrderProposal,
     DispatchStatusResponse,
     ErrorDetail,
@@ -42,10 +45,29 @@ from .schemas import (
 )
 from .state_store import Shipment, StateStore, Vehicle
 
-app = FastAPI(title="AI Layer 2 - Forecast + Dispatch Agent", version="0.1.0")
+# AI2_STATE_FILE cho phép override đường dẫn persist (tests dùng tmp_path riêng để không đụng
+# state thật / không bị leftover giữa các lần chạy test — xem tests/test_smoke.py).
+_DEFAULT_STATE_FILE = Path(__file__).resolve().parents[1] / ".state" / "ai2_state.pkl"
+STATE_FILE = Path(os.environ.get("AI2_STATE_FILE", str(_DEFAULT_STATE_FILE)))
 
-store = StateStore(data_dir=DEFAULT_DATA_DIR)
+store = StateStore(data_dir=DEFAULT_DATA_DIR, persist_path=STATE_FILE)
 DEFAULT_CONFIG = decision_engine.DecisionConfig()
+
+# AI2_DISABLE_AGENT_TICK=1 tắt vòng lặp agentic
+_AGENT_TICK_ENABLED = os.environ.get("AI2_DISABLE_AGENT_TICK") != "1"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = None
+    if _AGENT_TICK_ENABLED:
+        task = asyncio.create_task(periodic_tick_loop(store, DEFAULT_CONFIG))
+    yield
+    if task is not None:
+        task.cancel()
+
+
+app = FastAPI(title="AI Layer 2 - Forecast + Dispatch Agent", version="0.1.0", lifespan=lifespan)
 
 
 def _error(status_code: int, code: str, message: str, details: Optional[dict] = None):
@@ -80,6 +102,13 @@ def shipment_routed(event: ShipmentRoutedEvent):
         )
 
     payload = event.shipment
+    if payload.selected_route not in ROUTES_REQUIRING_AI2:
+        return _error(
+            422,
+            "ROUTE_NOT_APPLICABLE",
+            f"Route {payload.selected_route.value} không đi qua Cần Thơ, không thuộc phạm vi AI2.",
+            {"selected_route": payload.selected_route.value},
+        )
     store.add_shipment(
         Shipment(
             shipment_id=payload.shipment_id,
@@ -157,8 +186,6 @@ def vehicle_status(event: VehicleStatusEvent):
 
 @app.post("/api/v1/events/weather-update", response_model=EventResponse)
 def weather_update(event: WeatherUpdateEvent):
-    """Override thủ công cho demo — mặc định AI2 tự đọc weather_bulletins.csv thật
-    (xem README). Dùng endpoint này để giả lập kịch bản khác trong lúc trình bày."""
 
     if store.is_duplicate_event(event.event_id):
         return EventResponse(
@@ -172,6 +199,24 @@ def weather_update(event: WeatherUpdateEvent):
         "valid_from": event.valid_from,
         "valid_until": event.valid_until,
     }
+    version = store.mark_event_seen(event.event_id)
+    return EventResponse(accepted=True, event_id=event.event_id, state_version=version, recomputed=True)
+
+
+@app.post("/api/v1/events/dispatch-completed", response_model=EventResponse)
+def dispatch_completed(event: DispatchCompletedEvent):
+    """Backend gọi sau khi đã xác nhận dispatch order (dựa trên `dispatch_order_proposal` mà
+    `GET /api/v1/dispatch-status` trả về). Không có event này, shipment đã dispatch sẽ tiếp
+    tục bị tính vào pending pool."""
+
+    if store.is_duplicate_event(event.event_id):
+        return EventResponse(
+            accepted=True, event_id=event.event_id, state_version=store.state_version, duplicate=True
+        )
+    missing = [sid for sid in event.shipment_ids if store.get_shipment(sid) is None]
+    if missing:
+        return _error(404, "SHIPMENT_NOT_FOUND", f"Shipment(s) not found: {missing}", {"shipment_ids": missing})
+    store.mark_dispatched(event.shipment_ids, event.vehicle_id, event.actual_departure_at)
     version = store.mark_event_seen(event.event_id)
     return EventResponse(accepted=True, event_id=event.event_id, state_version=version, recomputed=True)
 
@@ -193,7 +238,11 @@ def get_forecast(
     return ForecastResponse(
         forecast_id=f"forecast_{store.state_version:03d}",
         generated_at=forecast.generated_at,
-        config=ForecastConfig(bucket_minutes=forecast.bucket_minutes, horizon_hours=forecast.horizon_hours),
+        config=ForecastConfig(
+            bucket_minutes=forecast.bucket_minutes,
+            horizon_hours=forecast.horizon_hours,
+            model_name=forecast.model_name,
+        ),
         current_load_kg=forecast.current_load_kg,
         predicted_full_load=PredictedFullLoad(
             vehicle_id=forecast.target_vehicle.vehicle_id if forecast.target_vehicle else None,

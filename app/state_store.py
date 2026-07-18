@@ -1,11 +1,14 @@
-"""In-memory state cho AI2 (v1). Không dùng SQLite — MVP ưu tiên ra output nhanh; xem README
-mục "Storage" / roadmap cho việc chuyển sang Backend-as-source-of-truth."""
+"""
+Quyết định: thêm persistence tối thiểu bằng pickle thay vì chờ quyết định SQLite/Backend-as-source-of-truth — restart service
+demo giữa chừng không còn mất sạch state."""
 
 from __future__ import annotations
 
+import pickle
 import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Optional
 
 from .data_loader import get_fleet_bootstrap_rows
@@ -27,6 +30,8 @@ class Shipment:
     state: ShipmentState = ShipmentState.ROUTED_TO_CAN_THO
     actual_arrival_at: Optional[datetime] = None
     actual_weight_kg: Optional[float] = None
+    dispatched_at: Optional[datetime] = None
+    dispatch_vehicle_id: Optional[str] = None
 
     @property
     def urgency_reference_ts(self) -> datetime:
@@ -57,10 +62,11 @@ class ArrivalObservation:
 
 
 class StateStore:
-    """Đơn giản, single-process, thread-safe bằng 1 lock chung — đủ cho demo hackathon."""
+    """Đơn giản, single-process, thread-safe bằng 1 lock chung."""
 
-    def __init__(self, data_dir=None) -> None:
+    def __init__(self, data_dir=None, persist_path: Optional[Path] = None) -> None:
         self._lock = threading.RLock()
+        self.persist_path = Path(persist_path) if persist_path else None
         self.shipments: dict[str, Shipment] = {}
         self.vehicles: dict[str, Vehicle] = {}
         self.seen_event_ids: dict[str, int] = {}
@@ -69,7 +75,45 @@ class StateStore:
         self.proposal_counter: int = 0
         self.arrival_history: list[ArrivalObservation] = []
         self.manual_weather_override: Optional[dict] = None
-        self._bootstrap_fleet(data_dir)
+
+        if self.persist_path and self.persist_path.exists():
+            self._load()
+        else:
+            self._bootstrap_fleet(data_dir)
+            self._save()
+
+    def _snapshot(self) -> dict:
+        return {
+            "shipments": self.shipments,
+            "vehicles": self.vehicles,
+            "seen_event_ids": self.seen_event_ids,
+            "state_version": self.state_version,
+            "decision_counter": self.decision_counter,
+            "proposal_counter": self.proposal_counter,
+            "arrival_history": self.arrival_history,
+            "manual_weather_override": self.manual_weather_override,
+        }
+
+    def _save(self) -> None:
+        if not self.persist_path:
+            return
+        self.persist_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp_path = self.persist_path.with_suffix(".tmp")
+        with tmp_path.open("wb") as f:
+            pickle.dump(self._snapshot(), f)
+        tmp_path.replace(self.persist_path)
+
+    def _load(self) -> None:
+        with self.persist_path.open("rb") as f:
+            snapshot = pickle.load(f)
+        self.shipments = snapshot["shipments"]
+        self.vehicles = snapshot["vehicles"]
+        self.seen_event_ids = snapshot["seen_event_ids"]
+        self.state_version = snapshot["state_version"]
+        self.decision_counter = snapshot["decision_counter"]
+        self.proposal_counter = snapshot["proposal_counter"]
+        self.arrival_history = snapshot["arrival_history"]
+        self.manual_weather_override = snapshot.get("manual_weather_override")
 
     def _bootstrap_fleet(self, data_dir) -> None:
         for row in get_fleet_bootstrap_rows(data_dir) if data_dir else get_fleet_bootstrap_rows():
@@ -92,6 +136,7 @@ class StateStore:
         with self._lock:
             self.state_version += 1
             self.seen_event_ids[event_id] = self.state_version
+            self._save()
             return self.state_version
 
     def next_decision_id(self) -> str:
@@ -126,6 +171,20 @@ class StateStore:
     def cancel_shipment(self, shipment_id: str) -> None:
         with self._lock:
             self.shipments[shipment_id].state = ShipmentState.CANCELLED
+
+    def mark_dispatched(self, shipment_ids: list[str], vehicle_id: str, dispatched_at: datetime) -> None:
+        """Đánh dấu shipment đã lên xe rời Cần Thơ — bù lỗ hổng bản đầu: trước đây không có
+        cách nào đưa shipment ra khỏi pending pool sau khi `dispatch_now`, nên pool không bao
+        giờ vơi và forecast/decision sau đó bị sai. Gọi từ event `dispatch-completed`."""
+
+        with self._lock:
+            for shipment_id in shipment_ids:
+                shipment = self.shipments[shipment_id]
+                shipment.state = ShipmentState.DISPATCHED
+                shipment.dispatched_at = dispatched_at
+                shipment.dispatch_vehicle_id = vehicle_id
+            if vehicle_id in self.vehicles:
+                self.vehicles[vehicle_id].status = VehicleStatus.EN_ROUTE
 
     def pending_shipments(self, outbound_mode: Optional[Mode] = None) -> list[Shipment]:
         result = [
@@ -168,7 +227,7 @@ class StateStore:
         (kể cả bucket không có hàng đến), không chỉ chia cho số bucket có dữ liệu — nếu không sẽ
         overestimate khi arrival thưa (VD 1 shipment 4 tấn trong 1 bucket sẽ bị hiểu nhầm là
         "4 tấn/bucket" thay vì trung bình loãng ra theo thời gian). Với rất ít lịch sử (1-2
-        event), số này vẫn nhiễu — xem README mục forecast v1 / confidence."""
+        event), số này vẫn nhiễu."""
 
         if not self.arrival_history:
             return 0.0
