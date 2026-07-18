@@ -5,7 +5,6 @@ from sqlmodel import Session, select
 from app.config import CANTHO_DISPATCH_THRESHOLD_KG, CARGO_TYPES
 from app.database import engine
 from app.models import CargoInventory, SystemLog, SystemSettings, SystemState
-from app.ai.layer2_helper import evaluate_dispatch
 
 class SystemStateManager:
     """
@@ -84,60 +83,72 @@ class SystemStateManager:
 
     def _sync_evaluate_and_dispatch(self) -> Tuple[SystemState, bool]:
         """
-        Runs Layer 2 dispatch logic.
-        If decision is DISPATCH, resets inventories, records logs, and updates status.
-        Returns the updated SystemState and a boolean indicating if a dispatch occurred.
+        Runs the actual Layer 2 dispatch forecasting engine for ROAD and WATER outbound pipelines.
+        If any pipeline decisions return DISPATCH_NOW, updates the DB order states, resets cargo metrics, and marks vehicles.
         """
+        from app.routes.layer2 import store, DEFAULT_CONFIG
+        from app.ai.forecast_dispatch import decision_engine
+        from app.ai.forecast_dispatch.enums import Mode, Decision
+        from app.models import Order as DBOrder, Vehicle as DBVehicle
+        from datetime import timezone
+
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        now_utc = datetime.now(timezone.utc)
         dispatch_occurred = False
         
         with Session(engine) as session:
-            # 1. Fetch current inventory and weather
-            inventory_map = {c: 0.0 for c in CARGO_TYPES}
-            inventories = session.exec(select(CargoInventory)).all()
-            for inv in inventories:
-                if inv.cargo_type in inventory_map:
-                    inventory_map[inv.cargo_type] = inv.volume
-
-            weather_setting = session.get(SystemSettings, "weather")
-            weather = weather_setting.value if weather_setting else "Clear"
-
-            # 2. Evaluate Layer 2 decision
-            decision, reason = evaluate_dispatch(inventory_map, weather, CANTHO_DISPATCH_THRESHOLD_KG)
-
-            if decision == "DISPATCH":
-                dispatch_occurred = True
+            for outbound_mode in [Mode.ROAD, Mode.WATER]:
+                result = decision_engine.evaluate(store, now_utc, outbound_mode, DEFAULT_CONFIG)
                 
-                # Update dispatch setting temporarily to DISPATCH
-                dispatch_setting = session.get(SystemSettings, "dispatch_status")
-                if dispatch_setting:
-                    dispatch_setting.value = "DISPATCH"
+                if result.decision == Decision.DISPATCH_NOW:
+                    dispatch_occurred = True
+                    
+                    # 1. Update all waiting shipments for this mode to dispatched state in SQLite DB
+                    pending_shipments = store.pending_shipments(outbound_mode)
+                    for ship in pending_shipments:
+                        order_id = int(ship.shipment_id) if ship.shipment_id.isdigit() else None
+                        if order_id:
+                            order = session.get(DBOrder, order_id)
+                            if order:
+                                order.state = "dispatched"
+                                session.add(order)
+                    
+                    # 2. Reset the inventory tracking metrics (compatible with old UI charts)
+                    inventories = session.exec(select(CargoInventory)).all()
+                    for inv in inventories:
+                        inv.volume = 0.0
+                        session.add(inv)
+                    
+                    # 3. Mark selected vehicle as en_route
+                    if result.selected_vehicle:
+                        veh = session.get(DBVehicle, result.selected_vehicle.vehicle_id)
+                        if veh:
+                            veh.status = "en_route"
+                            session.add(veh)
+
+                    # Update dispatch status key temporarily to trigger UI events
+                    dispatch_setting = session.get(SystemSettings, "dispatch_status")
+                    if dispatch_setting:
+                        dispatch_setting.value = "DISPATCH"
+                    else:
+                        session.add(SystemSettings(key="dispatch_status", value="DISPATCH"))
+
+                    # Log dispatch event
+                    session.add(SystemLog(timestamp=timestamp, message=f"LAYER 2 DECISION ({outbound_mode.value.upper()}): DISPATCH. {result.explanation}"))
                 else:
-                    session.add(SystemSettings(key="dispatch_status", value="DISPATCH"))
+                    # Log wait decision details
+                    session.add(SystemLog(timestamp=timestamp, message=f"LAYER 2 DECISION ({outbound_mode.value.upper()}): WAIT. {result.explanation}"))
 
-                # Log dispatch event
-                session.add(SystemLog(timestamp=timestamp, message=f"LAYER 2 DECISION: DISPATCH. {reason}"))
-
-                # Reset all inventories
-                for inv in inventories:
-                    inv.volume = 0.0
-                
-                # Log clearing of inventory
-                clear_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                session.add(SystemLog(timestamp=clear_timestamp, message="Can Tho Consolidation Hub inventory cleared. Truck/Barge in transit to HCM."))
-
-                # Revert status to WAIT for next cycle
+            if dispatch_occurred:
+                # Revert status to WAIT for the next orchestration cycle
                 dispatch_setting = session.get(SystemSettings, "dispatch_status")
                 if dispatch_setting:
                     dispatch_setting.value = "WAIT"
 
-            else:
-                # Log evaluation decision
-                session.add(SystemLog(timestamp=timestamp, message=f"LAYER 2 DECISION: WAIT. {reason}"))
-
             session.commit()
 
         return self._sync_get_state(), dispatch_occurred
+
 
 
     # ----------------- Async Interface Wrappers -----------------

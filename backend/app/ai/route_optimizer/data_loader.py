@@ -8,12 +8,19 @@ from pathlib import Path
 from typing import Any
 
 
-DEFAULT_DATA_DIR = (
-    Path(__file__).resolve().parents[3]
-    / "data"
-    / "generated"
-    / "annual"
-    / "csv"
+import os
+
+DEFAULT_DATA_DIR = Path(
+    os.getenv(
+        "DATA_DIR",
+        str(
+            Path(__file__).resolve().parents[3]
+            / "data"
+            / "generated"
+            / "three_year"
+            / "csv_adapted"
+        ),
+    )
 )
 
 
@@ -145,10 +152,14 @@ def load_data(data_dir: str | Path = DEFAULT_DATA_DIR) -> DataStore:
 
 
 def nearest_previous(rows: list[dict[str, Any]], decision_ts: datetime, dt_key: str = "_dt") -> dict[str, Any] | None:
-    chosen = None
-    for row in rows:
-        if row[dt_key] <= decision_ts:
-            chosen = row
+    left = 0
+    right = len(rows)
+    while left < right:
+        mid = (left + right) // 2
+        if rows[mid][dt_key] <= decision_ts:
+            left = mid + 1
         else:
-            break
-    return chosen
+            right = mid
+    if left == 0:
+        return None
+    return rows[left - 1]

@@ -42,6 +42,26 @@ class Order(SQLModel, table=True):
     timestamp: str
     deadline_ts: Optional[str] = None
     created_at: str
+    
+    # Layer 2 trip tracking fields
+    selected_route_id: Optional[str] = None
+    state: str = Field(default="ROUTED_TO_CAN_THO")
+    actual_arrival_at: Optional[str] = None
+    actual_weight_kg: Optional[float] = None
+
+
+class Vehicle(SQLModel, table=True):
+    """
+    Tracks vehicle state and refrigeration features consolidated at Can Tho Hub.
+    """
+    vehicle_id: str = Field(primary_key=True)
+    mode: str
+    capacity_kg: float
+    status: str
+    available_from: str
+    supports_refrigeration: bool = False
+    location: str = "can_tho"
+
 
 # ----------------- API Request & Response Schemas -----------------
 
@@ -55,6 +75,8 @@ class RouteSelectRequest(BaseModel):
     cargo_type: str = PydanticField(..., description="Type of cargo (tier: seafood, vegetable, etc.)")
     volume: float = PydanticField(..., description="Weight in kg")
     weather: Optional[str] = PydanticField("Clear", description="Active weather condition")
+    order_id: Optional[str] = PydanticField(None, description="Optional ID of the order being selected")
+
 
 
 class SystemState(BaseModel):

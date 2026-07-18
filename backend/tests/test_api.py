@@ -16,10 +16,9 @@ def setup_db():
     # Setup test database tables
     SQLModel.metadata.create_all(engine)
     yield
-    # Teardown: drop all tables and delete test db file
+    # Teardown: drop all tables cleanly
     SQLModel.metadata.drop_all(engine)
-    if os.path.exists("test_agri.db"):
-        os.remove("test_agri.db")
+
 
 
 def test_root_endpoint():

@@ -1,7 +1,5 @@
 fastapi
 uvicorn[standard]
 sqlmodel
-joblib
-onnxruntime
 pytest
 httpx

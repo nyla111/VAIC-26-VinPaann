@@ -26,195 +26,114 @@ uvicorn app.main:app --reload --port 8000
 ### 3. Run the Test Suite
 Ensure the backend services are fully operational:
 ```bash
-pytest tests/test_api.py
+pytest tests/
 ```
 
 ---
 
-## Configuration Settings (`app/config.py`)
+## Multiple Views Frontend Architecture Support
 
-* **Supported Hubs**: `HUB_VITHANH`, `HUB_LONGXUYEN`, `HUB_SOCTRANG`, `HUB_VINHLONG`, `CT_HUB`
-* **Supported Cargo Types / Priority Tiers**: `seafood`, `vegetable`, `hard_fruit`, `grain_dry`
-* **Supported Weather Conditions**: `Clear`, `Rainy`, `Stormy`
-* **Can Tho Dispatch Threshold**: `50,000.0 kg` (50 tons)
+The backend fully supports building two decoupled frontend views/sites running on separate hosts or ports (e.g., Customer Portal on Port 3000 and Can Tho Hub Admin Portal on Port 3001). Cross-Origin Resource Sharing (CORS) is enabled (`*`) to allow seamless cross-port communication.
 
----
+### View 1: Customer / Sender Portal
+Allows provincial senders to submit cargo parameters, get recommended routes from **Layer 1 AI Route Optimizer**, and select a route.
+* **Flow**:
+  1. Customer inputs parameters -> calls `POST /api/layer1/optimize`.
+  2. Frontend displays the 5 comparison cards.
+  3. Customer clicks "Select Route" -> calls `POST /api/hub/select-route` with the `order_id` and chosen `selected_route_id`.
 
-## API Endpoints
-
-### 1. Root Status
-* **Endpoint**: `GET /`
-* **Purpose**: Quick check to verify if the server is running.
-* **Response Example**:
-  ```json
-  {
-    "project": "Mekong Delta Agri-Logistics Orchestrator",
-    "region": "Đồng bằng sông Cửu Long (ĐBSCL) to HCMC",
-    "architecture": "2-Layer AI Consolidation Loop",
-    "docs_url": "/docs",
-    "status": "Operational"
-  }
-  ```
+### View 2: Can Tho Hub Admin Portal
+Allows logistics supervisors to view consolidated inventory, track weather warnings, view rolling demand forecasts, check auto-dispatch decisions, and override environment parameters.
+* **Flow**:
+  1. Open Dashboard -> Connects to WebSocket `/ws/status` to receive live inventory levels and system logs.
+  2. Call `GET /api/layer2/dispatch-status` and `GET /api/layer2/forecast` to fetch AI recommendations and rolling-demand graphs.
+  3. (Optional) Dispatchers can manually override vehicle statuses or weather events.
 
 ---
 
-### 2. Route Optimizer (Layer 1)
+## Timezone Management (Important GMT+7 Guidelines)
+
+To prevent visual inconsistencies (such as 7-hour timezone shift issues for local judges), both backend algorithms and frontend rendering must align on the ISO 8601 standard:
+
+1. **Storage and Database (UTC)**:
+   * The backend strictly calculates and saves database records (`Order.timestamp`, `Order.actual_arrival_at`, and `predicted_full_load_time`) in the **UTC (+00:00)** timezone.
+2. **Frontend Requests (GMT+7 Offset)**:
+   * When submitting payloads containing date/time strings (e.g., to `/api/layer1/optimize` or `/api/hub/select-route`), the frontend MUST format dates using ISO 8601 with the local timezone offset representation, e.g., `2026-07-18T17:30:00+07:00`.
+3. **Frontend Display (GMT+7 Conversion)**:
+   * When receiving ISO datetime strings from backend APIs or WebSocket streams (e.g., `"predicted_full_load_time": "2026-07-18T11:00:00+00:00"`), the frontend MUST convert them to the user's local timezone.
+   * *JavaScript Example*:
+     ```javascript
+     const utcDateStr = "2026-07-18T11:00:00+00:00";
+     const localTime = new Date(utcDateStr).toLocaleTimeString("vi-VN"); 
+     // Will correctly output "18:00:00" in Vietnam Timezone (+07:00)
+     ```
+
+---
+
+## API Endpoints Reference
+
+### 1. Route Optimizer (Layer 1)
 * **Endpoint**: `POST /api/layer1/optimize`
-* **Purpose**: Evaluates agricultural cargo parameters, saves the order dynamically in SQLite, runs the predictive models, and returns 5 routing options indicating which is recommended.
 * **Request Payload (`RouteOptimizeRequest`)**:
   ```json
   {
-    "order_id": null, 
+    "order_id": null,
     "hub_id": "HUB_VINHLONG",
     "commodity_id": "COM_VEGETABLE",
     "loai_hang": "rau_mau",
     "khoi_luong_kg": 3495.7,
-    "timestamp": "2026-01-01T09:58:52+07:00",
-    "deadline_ts": "2026-01-01T23:27:12+07:00"
+    "timestamp": "2026-07-18T17:42:00+07:00",
+    "deadline_ts": "2026-07-19T17:42:00+07:00"
   }
   ```
 * **Response Payload (`RouteOptimizeResponse`)**:
-  ```json
-  {
-    "hub_id": "HUB_VINHLONG",
-    "priority": {
-      "tier": "vegetable",
-      "score": 0.8,
-      "label": "High Spoilage Risk"
-    },
-    "recommended_route": "B_ROAD_VIA_CT",
-    "phuong_an": [
-      {
-        "ten": "Đường bộ đi thẳng HCM",
-        "route_code": "A_DIRECT_ROAD",
-        "chi_phi_du_doan_vnd": 4500000.0,
-        "thoi_gian_du_kien_gio": 3.5,
-        "trang_thai": "available",
-        "ly_do": null,
-        "cost_breakdown": {
-          "raw_transport_cost_vnd": 3800000.0,
-          "spoilage_cost_vnd": 700000.0,
-          "transshipment_fee_vnd": 0.0,
-          "total_cost_vnd": 4500000.0,
-          "pricing_source": "dynamic_routing_model"
-        }
-      },
-      {
-        "ten": "Đường bộ qua trung chuyển Cần Thơ",
-        "route_code": "B_ROAD_VIA_CT",
-        "chi_phi_du_doan_vnd": 3200000.0,
-        "thoi_gian_du_kien_gio": 5.0,
-        "trang_thai": "available",
-        "ly_do": null,
-        "cost_breakdown": {
-          "raw_transport_cost_vnd": 2500000.0,
-          "spoilage_cost_vnd": 500000.0,
-          "transshipment_fee_vnd": 200000.0,
-          "total_cost_vnd": 3200000.0,
-          "pricing_source": "dynamic_routing_model"
-        }
-      }
-      // ... up to 5 routes matching RouteCode literals
-    ],
-    "khuyen_nghi": "duong_bo_qua_can_tho",
-    "evidence": {
-      "weather_ts": "2026-01-01 09:00:00",
-      "price_ts": "2026-01-01 09:00:00"
-    },
-    "order_id": "1"
-  }
-  ```
-* **Supported `RouteCode` literals**:
-  - `A_DIRECT_ROAD` (Direct Road to HCM)
-  - `B_ROAD_VIA_CT` (Road to CT Hub, then Road to HCM)
-  - `C_WATER_ROAD_VIA_CT` (Waterway to CT Hub, then Road to HCM)
-  - `D_WATER_VIA_CT` (Waterway to CT Hub, then Waterway to HCM)
-  - `E_ROAD_WATER_VIA_CT` (Road to CT Hub, then Waterway to HCM)
+  Returns 5 comparison routes (A-E) showing transport costs, handling fees, predicted spoilage costs, and availability. Includes the dynamic auto-generated `order_id` in SQLite.
 
 ---
 
-### 3. Route Selection
+### 2. Route Selection
 * **Endpoint**: `POST /api/hub/select-route`
-* **Purpose**: Registers a hub's final route choice. If the route passes through Can Tho (`B_ROAD_VIA_CT`, `C_WATER_ROAD_VIA_CT`, `D_WATER_VIA_CT`, `E_ROAD_WATER_VIA_CT`), the cargo is added to the consolidation inventory. Triggers a background evaluation of the Layer 2 dispatch logic.
+* **Purpose**: Locks in the customer's route choice.
+  * If the route goes through Can Tho (`B` to `E` codes), the order is saved in the state `routed_to_can_tho`, and a **Background Task** is initiated to simulate travel.
+  * After **3 seconds** (simulated travel time for demo), the order state changes to `arrived_waiting`, its weight is added to Can Tho's inventory, and the **Layer 2 Decision Engine** is automatically triggered to evaluate dispatch choices.
 * **Request Payload (`RouteSelectRequest`)**:
   ```json
   {
     "hub_id": "HUB_VINHLONG",
     "selected_route_id": "B_ROAD_VIA_CT",
     "cargo_type": "vegetable",
-    "volume": 2000.0,
-    "weather": "Clear"
-  }
-  ```
-* **Response Payload (`SystemState`)**: Returns the updated system state snapshot.
-
----
-
-### 4. Can Tho Hub Status (Pull Fallback)
-* **Endpoint**: `GET /api/hub/status`
-* **Purpose**: Retrieve the current consolidated status (inventory, weather, logs, and dispatch state).
-* **Response Example (`SystemState`)**:
-  ```json
-  {
-    "inventory": {
-      "seafood": 12500.0,
-      "vegetable": 2000.0,
-      "hard_fruit": 0.0,
-      "grain_dry": 0.0
-    },
-    "dispatch_status": "WAIT",
+    "volume": 3495.7,
     "weather": "Clear",
-    "logs": [
-      {
-        "timestamp": "2026-07-18 16:30:00",
-        "message": "Hub Incoming: Received 2000.00 kg of vegetable from HUB_VINHLONG."
-      }
-    ],
-    "last_updated": "2026-07-18 16:30:00"
+    "order_id": "1"
   }
   ```
 
 ---
 
-### 5. Simulator Hook
-* **Endpoint**: `POST /api/hub/simulate-incoming`
-* **Purpose**: Utility for testing or demo purposes. Generates a randomized shipment from a provincial hub, queries the Layer 1 Optimizer, selects the recommended route, and runs the entire Layer 2 dispatch pipeline.
-* **Response Example**:
-  ```json
-  {
-    "message": "Simulation Event Triggered: Inbound cargo from HUB_VINHLONG.",
-    "cargo_details": {
-      "origin": "HUB_VINHLONG",
-      "cargo_type": "seafood",
-      "volume_kg": 14230.5,
-      "weather": "Clear"
-    },
-    "optimized_decision": {
-      "route_id": "B_ROAD_VIA_CT",
-      "route_name": "duong_bo_qua_can_tho",
-      "recommendation_reason": "Recommended by Layer 1 actual Optimizer model"
-    },
-    "current_system_state": { ... }
-  }
-  ```
+### 3. Layer 2 Forecast & Dispatch Status
+* **Get Forecast**: `GET /api/layer2/forecast?outbound_mode=road`
+  * Returns rolling accumulation demand forecast buckets (30-minute steps up to 6 hours) and predicts the exact datetime the target vehicle will be full.
+* **Get Dispatch Status**: `GET /api/layer2/dispatch-status?outbound_mode=road`
+  * Evaluates constraints (vehicle, route weather blocks, maximum safe waiting hours for produce, and fill capacity).
+  * Returns the current decision: `DISPATCH_NOW`, `WAIT_FOR_LOAD`, or `WAIT_FOR_VEHICLE` along with detailed priority score components (`fill`, `urgency`, `weather`).
+  * If `DISPATCH_NOW`, it provides a concrete `dispatch_order_proposal` assigning waiting shipment IDs to a selected vehicle.
 
 ---
 
-## WebSockets Guide (Real-time Pushes)
-
-To construct reactive frontends without periodic API polling:
-
-1. **Connect**: Open a persistent WebSocket connection to `ws://localhost:8000/ws/status`.
-2. **On Initial Connection**: The server immediately sends a snapshot of the current `SystemState` JSON.
-3. **On state update**: The server broadcasts a new `SystemState` message to all connected clients whenever:
-   - Cargo is accumulated at the hub.
-   - The weather state changes.
-   - The dispatch process transitions (e.g. dispatch threshold met -> state becomes `DISPATCH` and inventories are cleared to `0.0`).
+### 4. Admin Event Overrides (Demo Scenarios)
+* **Update Vehicle Status**: `POST /api/layer2/events/vehicle-status`
+  * Registers or changes Can Tho fleet availability parameters.
+* **Update Weather Override**: `POST /api/layer2/events/weather-update`
+  * Simulates natural disaster blocks (floods, rain, storm indexes) to test routing flexibility and alert triggers.
 
 ---
 
-## Extensibility
+## WebSockets Guide (Real-time Dashboard Status)
 
-The ML predictive components are isolated from the routers to ease modular upgrades:
-* **Layer 1 Optimization**: Logic is located in [optimizer.py](file:///mnt/data/VAIC/backend/app/ai/route_optimizer/optimizer.py), [pricing.py](file:///mnt/data/VAIC/backend/app/ai/route_optimizer/pricing.py), and [feasibility.py](file:///mnt/data/VAIC/backend/app/ai/route_optimizer/feasibility.py).
-* **Layer 2 Dispatch State Management**: Configured inside [state.py](file:///mnt/data/VAIC/backend/app/state.py).
+Connect to the WebSocket gateway at:
+```text
+ws://localhost:8000/ws/status
+```
+
+* **On Initial Connection**: The server instantly pushes a JSON snapshot of the consolidated `SystemState`.
+* **State Updates**: Whenever a shipment changes state (`routed_to_can_tho` -> `arrived_waiting` -> `dispatched`), a new `SystemState` message is pushed to all listening clients, allowing both the Customer site and the Can Tho Hub Admin site to refresh dynamically.
