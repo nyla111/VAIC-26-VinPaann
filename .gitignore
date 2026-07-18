@@ -1,0 +1,37 @@
+# Python virtual environments
+.venv/
+backend/.venv/
+venv/
+ENV/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Testing / Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases and locks
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Logs and OS files
+*.log
+.DS_Store
+
+# Node / Frontend ignores
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+frontend/.env
+
+# IDEs
+.vscode/
+.idea/
