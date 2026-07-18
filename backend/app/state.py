@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 import anyio
 from sqlmodel import Session, select
-from app.config import CANTHO_DISPATCH_THRESHOLD_TONS, CARGO_TYPES
+from app.config import CANTHO_DISPATCH_THRESHOLD_KG, CARGO_TYPES
 from app.database import engine
 from app.models import CargoInventory, SystemLog, SystemSettings, SystemState
 from app.ai.layer2_helper import evaluate_dispatch
@@ -21,7 +21,8 @@ class SystemStateManager:
             inventory_map = {c: 0.0 for c in CARGO_TYPES}
             inventories = session.exec(select(CargoInventory)).all()
             for inv in inventories:
-                inventory_map[inv.cargo_type] = inv.volume
+                if inv.cargo_type in inventory_map:
+                    inventory_map[inv.cargo_type] = inv.volume
 
             # 2. Fetch settings
             weather_setting = session.get(SystemSettings, "weather")
@@ -58,7 +59,7 @@ class SystemStateManager:
             inv.volume += volume
 
             # Insert activity log
-            log_msg = f"Hub Incoming: Received {volume:.2f} tons of {cargo_type} from {hub_id}."
+            log_msg = f"Hub Incoming: Received {volume:.2f} kg of {cargo_type} from {hub_id}."
             session.add(SystemLog(timestamp=timestamp, message=log_msg))
             session.commit()
             
@@ -92,16 +93,17 @@ class SystemStateManager:
         
         with Session(engine) as session:
             # 1. Fetch current inventory and weather
-            inventory_map = {}
+            inventory_map = {c: 0.0 for c in CARGO_TYPES}
             inventories = session.exec(select(CargoInventory)).all()
             for inv in inventories:
-                inventory_map[inv.cargo_type] = inv.volume
+                if inv.cargo_type in inventory_map:
+                    inventory_map[inv.cargo_type] = inv.volume
 
             weather_setting = session.get(SystemSettings, "weather")
             weather = weather_setting.value if weather_setting else "Clear"
 
             # 2. Evaluate Layer 2 decision
-            decision, reason = evaluate_dispatch(inventory_map, weather, CANTHO_DISPATCH_THRESHOLD_TONS)
+            decision, reason = evaluate_dispatch(inventory_map, weather, CANTHO_DISPATCH_THRESHOLD_KG)
 
             if decision == "DISPATCH":
                 dispatch_occurred = True
@@ -136,6 +138,7 @@ class SystemStateManager:
             session.commit()
 
         return self._sync_get_state(), dispatch_occurred
+
 
     # ----------------- Async Interface Wrappers -----------------
 

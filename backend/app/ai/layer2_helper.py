@@ -47,34 +47,35 @@ layer2_model = Layer2ModelWrapper("models/layer2_dispatcher.onnx")
 # =====================================================================
 # Dispatch Orchestrator Business Logic
 # =====================================================================
-def evaluate_dispatch(inventory: Dict[str, float], weather: str, threshold: float = 50.0) -> Tuple[str, str]:
+def evaluate_dispatch(inventory: Dict[str, float], weather: str, threshold: float = 50000.0) -> Tuple[str, str]:
     """
     Layer 2 Decision Engine:
-    Evaluates current inventory at Can Tho Hub and weather to determine:
+    Evaluates current inventory at Can Tho Hub (in kg) and weather to determine:
     - DISPATCH: Send a truck/barge cargo to HCM
     - WAIT: Keep accumulating cargo to achieve loading efficiency
     """
     total_volume = sum(inventory.values())
-    seafood_volume = inventory.get("Seafood", 0.0)
+    seafood_volume = inventory.get("seafood", 0.0)
     
     # 1. Weather Stormy override:
     # If weather is Stormy and there is seafood or high volume, we must dispatch via road immediately to avoid spoilage.
     if weather == "Stormy":
-        if total_volume >= 25.0:
+        if total_volume >= 25000.0:
             if seafood_volume > 0.0:
-                return "DISPATCH", f"Stormy weather detected! Dispatching {total_volume:.1f} tons (including {seafood_volume:.1f} tons Seafood) immediately via road convoy to prevent spoilage."
-            return "DISPATCH", f"Stormy weather safety dispatch: {total_volume:.1f} tons consolidated cargo routed via secure road transportation."
+                return "DISPATCH", f"Stormy weather detected! Dispatching {total_volume:.0f} kg (including {seafood_volume:.0f} kg Seafood) immediately via road convoy to prevent spoilage."
+            return "DISPATCH", f"Stormy weather safety dispatch: {total_volume:.0f} kg consolidated cargo routed via secure road transportation."
         else:
-            return "WAIT", f"Stormy weather active. Low cargo load ({total_volume:.1f} tons / {threshold:.1f} tons). Holding shipments for consolidation."
+            return "WAIT", f"Stormy weather active. Low cargo load ({total_volume:.0f} kg / {threshold:.0f} kg). Holding shipments for consolidation."
 
     # 2. Normal operational threshold check
     if total_volume >= threshold:
-        return "DISPATCH", f"Capacity threshold reached! Dispatching {total_volume:.1f} tons of agricultural goods (Limit: {threshold:.1f} tons)."
+        return "DISPATCH", f"Capacity threshold reached! Dispatching {total_volume:.0f} kg of agricultural goods (Limit: {threshold:.0f} kg)."
 
     # 3. Time-sensitive/perishable cargo priority dispatch
-    # If seafood is sitting in Can Tho hub and reaches a minor threshold (e.g. 15 tons), we dispatch to keep it fresh
-    if seafood_volume >= 15.0:
-        return "DISPATCH", f"Perishable alert! Dispatching cargo due to high seafood accumulation ({seafood_volume:.1f} tons) to meet storage guidelines."
+    # If seafood is sitting in Can Tho hub and reaches a minor threshold (e.g. 15,000 kg), we dispatch to keep it fresh
+    if seafood_volume >= 15000.0:
+        return "DISPATCH", f"Perishable alert! Dispatching cargo due to high seafood accumulation ({seafood_volume:.0f} kg) to meet storage guidelines."
 
     # 4. Otherwise, continue accumulating
-    return "WAIT", f"Consolidating cargo. Current hub load is {total_volume:.1f} tons ({round(total_volume/threshold * 100, 1)}% of {threshold:.1f} tons capacity)."
+    return "WAIT", f"Consolidating cargo. Current hub load is {total_volume:.0f} kg ({round(total_volume/threshold * 100, 1)}% of {threshold:.0f} kg capacity)."
+

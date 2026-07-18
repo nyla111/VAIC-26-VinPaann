@@ -1,59 +1,52 @@
-from typing import List
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, status
-from app.config import CARGO_TYPES, HUBS, WEATHER_CONDITIONS
-from app.models import OptimizeRequest, RouteOption
-from app.ai.layer1_helper import predict_routes
+from sqlmodel import Session
+from app.database import engine
+from app.models import Order, RouteOptimizeRequest, RouteOptimizeResponse
+from app.ai.route_optimizer.optimizer import optimize_route
 
 router = APIRouter()
 
-@router.post("/optimize", response_model=List[RouteOption], status_code=status.HTTP_200_OK)
-async def optimize_route(request: OptimizeRequest):
+
+@router.post("/optimize", response_model=RouteOptimizeResponse, status_code=status.HTTP_200_OK)
+async def optimize_route_endpoint(request: RouteOptimizeRequest):
     """
-    Evaluates cargo transportation parameters and returns 3 optimized routing options.
+    Evaluates agricultural cargo transportation parameters, saves the order in SQLite, and returns optimized routing options.
     """
-    # Validate inputs
-    if request.hub_id not in HUBS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid hub_id '{request.hub_id}'. Supported hubs: {HUBS}"
-        )
-        
-    if request.cargo_type not in CARGO_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid cargo_type '{request.cargo_type}'. Supported cargo: {CARGO_TYPES}"
-        )
-
-    if request.volume <= 0.0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Volume must be greater than 0 tons."
-        )
-
-    if request.urgency_level not in ["Low", "Medium", "High"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Urgency level must be one of: Low, Medium, High."
-        )
-
-    if request.weather not in WEATHER_CONDITIONS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid weather condition '{request.weather}'. Supported: {WEATHER_CONDITIONS}"
-        )
-
-    # Calculate routes
     try:
-        routes = predict_routes(
-            hub_id=request.hub_id,
-            cargo_type=request.cargo_type,
-            volume=request.volume,
-            urgency_level=request.urgency_level,
-            weather=request.weather
+        # 1. Save the new order dynamically to the SQLite database
+        with Session(engine) as session:
+            new_order = Order(
+                hub_id=request.hub_id,
+                commodity_id=request.commodity_id,
+                loai_hang=request.loai_hang or "",
+                khoi_luong_kg=request.khoi_luong_kg,
+                timestamp=request.timestamp,
+                deadline_ts=request.deadline_ts,
+                created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+            session.add(new_order)
+            session.commit()
+            session.refresh(new_order)
+            order_id = str(new_order.id)
+
+        # 2. Execute the actual Layer 1 optimizer model using the order_id from database
+        payload_dict = request.model_dump()
+        payload_dict["order_id"] = order_id
+        
+        result = optimize_route(payload_dict)
+        # Ensure order_id is returned in the response
+        result["order_id"] = order_id
+        return result
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
-        return routes
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to execute route prediction models: {str(e)}"
         )
+

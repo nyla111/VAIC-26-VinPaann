@@ -23,6 +23,7 @@ def setup_db():
 
 
 def test_root_endpoint():
+    # Set CWD properly in env if needed by model loader
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
@@ -32,54 +33,59 @@ def test_root_endpoint():
 
 def test_layer1_optimize_valid():
     payload = {
-        "hub_id": "An Giang",
-        "cargo_type": "Fruit",
-        "volume": 12.5,
-        "urgency_level": "Medium",
-        "weather": "Clear"
+        "hub_id": "HUB_VINHLONG",
+        "commodity_id": "COM_VEGETABLE",
+        "loai_hang": "rau_mau",
+        "khoi_luong_kg": 3495.7,
+        "timestamp": "2026-01-01T09:58:52+07:00",
+        "deadline_ts": "2026-01-01T23:27:12+07:00"
     }
     response = client.post("/api/layer1/optimize", json=payload)
     assert response.status_code == 200
-    routes = response.json()
-    assert len(routes) == 3
+    result = response.json()
     
-    # Assert fields are present
-    for route in routes:
-        assert "route_id" in route
-        assert "route_name" in route
-        assert "estimated_cost" in route
-        assert "eta" in route
-        assert "recommendation_flag" in route
-        assert "reason" in route
+    assert result["hub_id"] == "HUB_VINHLONG"
+    assert "priority" in result
+    assert result["priority"]["tier"] == "vegetable"
+    assert "phuong_an" in result
+    assert len(result["phuong_an"]) == 5
+    
+    # Assert fields are present in each option
+    for route in result["phuong_an"]:
+        assert "route_code" in route
+        assert "ten" in route
+        assert "trang_thai" in route
+        assert "chi_phi_du_doan_vnd" in route
+        assert "thoi_gian_du_kien_gio" in route
 
-    # Exactly one route should be recommended
-    recs = [r for r in routes if r["recommendation_flag"]]
-    assert len(recs) == 1
+    # There should be a recommended route recommended_route
+    assert "recommended_route" in result
+    assert result["recommended_route"] is not None
 
 
 def test_layer1_optimize_invalid():
-    # Invalid Cargo Type
+    # Invalid Hub ID (value error map)
     payload = {
-        "hub_id": "An Giang",
-        "cargo_type": "Meat", # Invalid
-        "volume": 12.5,
-        "urgency_level": "Medium",
-        "weather": "Clear"
+        "hub_id": "HUB_UNKNOWN",
+        "commodity_id": "COM_VEGETABLE",
+        "loai_hang": "rau_mau",
+        "khoi_luong_kg": 3495.7,
+        "timestamp": "2026-01-01T09:58:52+07:00"
     }
     response = client.post("/api/layer1/optimize", json=payload)
     assert response.status_code == 400
-    assert "Invalid cargo_type" in response.json()["detail"]
+    assert "Unknown hub_id" in response.json()["detail"]
 
-    # Negative Volume
+    # Negative Volume (Pydantic ValidationError > gt=0)
     payload = {
-        "hub_id": "An Giang",
-        "cargo_type": "Fruit",
-        "volume": -5.0, # Invalid
-        "urgency_level": "Medium",
-        "weather": "Clear"
+        "hub_id": "HUB_VINHLONG",
+        "commodity_id": "COM_VEGETABLE",
+        "loai_hang": "rau_mau",
+        "khoi_luong_kg": -50.0,
+        "timestamp": "2026-01-01T09:58:52+07:00"
     }
     response = client.post("/api/layer1/optimize", json=payload)
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_hub_select_route_and_state():
@@ -87,15 +93,15 @@ def test_hub_select_route_and_state():
     status_response = client.get("/api/hub/status")
     assert status_response.status_code == 200
     state = status_response.json()
-    assert state["inventory"]["Fruit"] == 0.0
+    assert state["inventory"]["vegetable"] == 0.0
     assert state["dispatch_status"] == "WAIT"
 
-    # 2. Select direct route (should not accumulate cargo in Can Tho hub)
+    # 2. Select direct route (A_DIRECT_ROAD should not accumulate cargo in Can Tho hub)
     payload_direct = {
-        "hub_id": "Hau Giang",
-        "selected_route_id": "direct_road",
-        "cargo_type": "Fruit",
-        "volume": 15.0,
+        "hub_id": "HUB_VINHLONG",
+        "selected_route_id": "A_DIRECT_ROAD",
+        "cargo_type": "vegetable",
+        "volume": 1500.0,
         "weather": "Clear"
     }
     response_direct = client.post("/api/hub/select-route", json=payload_direct)
@@ -103,14 +109,14 @@ def test_hub_select_route_and_state():
     
     status_response = client.get("/api/hub/status")
     state_after_direct = status_response.json()
-    assert state_after_direct["inventory"]["Fruit"] == 0.0 # Bypassed Can Tho
+    assert state_after_direct["inventory"]["vegetable"] == 0.0 # Bypassed Can Tho
 
-    # 3. Select Can Tho route (should accumulate cargo in Can Tho hub)
+    # 3. Select Can Tho route (B_ROAD_VIA_CT should accumulate cargo in Can Tho hub)
     payload_cantho = {
-        "hub_id": "An Giang",
-        "selected_route_id": "cantho_road",
-        "cargo_type": "Fruit",
-        "volume": 20.0,
+        "hub_id": "HUB_VINHLONG",
+        "selected_route_id": "B_ROAD_VIA_CT",
+        "cargo_type": "vegetable",
+        "volume": 2000.0,
         "weather": "Clear"
     }
     response_cantho = client.post("/api/hub/select-route", json=payload_cantho)
@@ -118,7 +124,7 @@ def test_hub_select_route_and_state():
     
     status_response = client.get("/api/hub/status")
     state_after_cantho = status_response.json()
-    assert state_after_cantho["inventory"]["Fruit"] == 20.0 # Accumulated
+    assert state_after_cantho["inventory"]["vegetable"] == 2000.0 # Accumulated in kg
 
 
 def test_simulate_incoming():
@@ -138,3 +144,4 @@ def test_websocket_connection():
         assert "dispatch_status" in data
         assert "weather" in data
         assert "logs" in data
+

@@ -24,3 +24,7 @@ htmlcov/
 # Logs and OS files
 *.log
 .DS_Store
+
+
+frontend/
+VAIC-26-VinPaann-person3-route-optimizer/

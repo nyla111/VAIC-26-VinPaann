@@ -6,7 +6,7 @@ from app.config import CARGO_TYPES, HUBS, WEATHER_CONDITIONS
 from app.models import RouteSelectRequest, SystemState
 from app.state import state_manager
 from app.routes.websocket import ws_manager
-from app.ai.layer1_helper import predict_routes
+from app.ai.route_optimizer.optimizer import optimize_route
 
 router = APIRouter()
 
@@ -47,13 +47,13 @@ async def select_route(request: RouteSelectRequest, background_tasks: Background
     # 1. Update weather setting and broadcast intermediate state
     state = await state_manager.set_weather(request.weather)
     
-    # 2. Accumulate cargo if routed via Can Tho
-    if request.selected_route_id in ["cantho_road", "cantho_waterway"]:
+    # 2. Accumulate cargo if routed via Can Tho (B, C, D, E routes)
+    if request.selected_route_id in ["B_ROAD_VIA_CT", "C_WATER_ROAD_VIA_CT", "D_WATER_VIA_CT", "E_ROAD_WATER_VIA_CT"]:
         state = await state_manager.add_cargo(request.hub_id, request.cargo_type, request.volume)
     else:
-        # Direct shipment bypassing Can Tho
+        # Direct shipment bypassing Can Tho (A_DIRECT_ROAD)
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_msg = f"Direct Route: {request.volume:.2f} tons of {request.cargo_type} from {request.hub_id} dispatched directly to HCM."
+        log_msg = f"Direct Route: {request.volume:.2f} kg of {request.cargo_type} from {request.hub_id} dispatched directly to HCM."
         # Update database with direct log
         class SyncDirectLog:
             def __call__(self):
@@ -91,28 +91,41 @@ async def simulate_incoming(background_tasks: BackgroundTasks):
     selects recommended path, and runs the entire pipeline end-to-end.
     """
     # Pick a random hub (excluding Can Tho to simulate provincial inbound cargo)
-    provincial_hubs = [h for h in HUBS if h != "Can Tho"]
+    provincial_hubs = [h for h in HUBS if h != "CT_HUB"]
     hub = random.choice(provincial_hubs)
     cargo = random.choice(CARGO_TYPES)
-    volume = round(random.uniform(5.0, 25.0), 2)
-    urgency = random.choice(["Low", "Medium", "High"])
+    
+    # Simulate volume in kg (e.g. 5,000 to 25,000 kg)
+    volume = round(random.uniform(5000.0, 25000.0), 2)
     weather = random.choice(WEATHER_CONDITIONS)
+    timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+07:00")
 
     # 1. Call Layer 1 Optimizer to get recommended route
-    options = predict_routes(hub, cargo, volume, urgency, weather)
-    recommended_option = next(opt for opt in options if opt.recommendation_flag)
+    try:
+        result = optimize_route({
+            "hub_id": hub,
+            "commodity_id": None,
+            "loai_hang": cargo,
+            "khoi_luong_kg": volume,
+            "timestamp": timestamp
+        })
+        recommended_route = result["recommended_route"]
+        khuyen_nghi_ten = result["khuyen_nghi"]
+    except Exception as e:
+        # Fallback in case of optimization error during simulation
+        recommended_route = "A_DIRECT_ROAD"
+        khuyen_nghi_ten = "di_thang_hcm"
 
     # 2. Structure RouteSelectRequest payload
     select_payload = RouteSelectRequest(
         hub_id=hub,
-        selected_route_id=recommended_option.route_id,
+        selected_route_id=recommended_route or "A_DIRECT_ROAD",
         cargo_type=cargo,
         volume=volume,
         weather=weather
     )
 
     # 3. Register route selection and add to background task
-    # We call select_route directly
     state = await select_route(select_payload, background_tasks)
 
     return {
@@ -120,14 +133,14 @@ async def simulate_incoming(background_tasks: BackgroundTasks):
         "cargo_details": {
             "origin": hub,
             "cargo_type": cargo,
-            "volume_tons": volume,
-            "urgency": urgency,
+            "volume_kg": volume,
             "weather": weather
         },
         "optimized_decision": {
-            "route_id": recommended_option.route_id,
-            "route_name": recommended_option.route_name,
-            "recommendation_reason": recommended_option.reason
+            "route_id": recommended_route,
+            "route_name": khuyen_nghi_ten,
+            "recommendation_reason": "Recommended by Layer 1 actual Optimizer model"
         },
         "current_system_state": state
     }
+
