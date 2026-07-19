@@ -1,0 +1,1572 @@
+[
+  {
+    "shipment_id": "ORD_2026_000007",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 25607.980488,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-01T10:05:41+07:00",
+    "eta_can_tho": "2026-01-01T19:05:41+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000017",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15884.956982,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-02T10:34:29+07:00",
+    "eta_can_tho": "2026-01-02T18:04:29+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000041",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 18751.611243,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-03T16:40:15+07:00",
+    "eta_can_tho": "2026-01-03T23:10:15+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000065",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 16285.279152,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-05T09:33:39+07:00",
+    "eta_can_tho": "2026-01-05T17:03:39+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000069",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 19800.302827,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-05T12:17:24+07:00",
+    "eta_can_tho": "2026-01-05T18:47:24+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000073",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 26465.045941,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-05T15:24:42+07:00",
+    "eta_can_tho": "2026-01-05T21:54:42+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000072",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20346.364963,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-05T15:28:49+07:00",
+    "eta_can_tho": "2026-01-05T21:58:49+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000091",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15858.876786,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-06T19:19:13+07:00",
+    "eta_can_tho": "2026-01-07T04:19:13+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000100",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 19969.875387,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-07T15:45:21+07:00",
+    "eta_can_tho": "2026-01-07T22:15:21+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000127",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 19806.945197,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-09T11:41:48+07:00",
+    "eta_can_tho": "2026-01-09T17:29:48+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000143",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15172.69363,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-10T13:07:10+07:00",
+    "eta_can_tho": "2026-01-10T20:37:10+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000148",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 15497.438851,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-10T19:30:09+07:00",
+    "eta_can_tho": "2026-01-11T01:18:09+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000157",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17948.197452,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-11T07:31:04+07:00",
+    "eta_can_tho": "2026-01-11T14:01:04+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000173",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 15687.644356,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-12T10:14:19+07:00",
+    "eta_can_tho": "2026-01-12T16:44:19+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000185",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 36822.187649,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-13T09:56:13+07:00",
+    "eta_can_tho": "2026-01-13T16:26:13+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000188",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 21562.319992,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-13T12:59:52+07:00",
+    "eta_can_tho": "2026-01-13T21:59:52+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000204",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 23962.165899,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-14T11:11:28+07:00",
+    "eta_can_tho": "2026-01-14T17:41:28+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000229",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 25681.975601,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-15T15:41:43+07:00",
+    "eta_can_tho": "2026-01-16T00:41:43+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000235",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 23232.724785,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-15T17:02:01+07:00",
+    "eta_can_tho": "2026-01-16T00:32:01+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000268",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 19556.809678,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-18T11:45:01+07:00",
+    "eta_can_tho": "2026-01-18T18:15:01+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000301",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18305.47388,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-20T15:48:42+07:00",
+    "eta_can_tho": "2026-01-20T22:18:42+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000303",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 24839.01772,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-20T17:07:14+07:00",
+    "eta_can_tho": "2026-01-20T23:37:14+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000317",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20919.799382,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-21T12:41:23+07:00",
+    "eta_can_tho": "2026-01-21T19:11:23+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000319",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_ORANGE",
+    "weight_kg": 17688.759034,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-21T15:07:37+07:00",
+    "eta_can_tho": "2026-01-21T20:55:37+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000325",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 27080.292985,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-21T22:17:29+07:00",
+    "eta_can_tho": "2026-01-22T04:47:29+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000375",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 25882.713423,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-24T18:05:33+07:00",
+    "eta_can_tho": "2026-01-25T00:35:33+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000427",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21461.137588,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-27T16:47:22+07:00",
+    "eta_can_tho": "2026-01-27T23:17:22+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000448",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 24773.057251,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-28T10:43:42+07:00",
+    "eta_can_tho": "2026-01-28T17:13:42+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000456",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 26563.912412,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-28T23:35:52+07:00",
+    "eta_can_tho": "2026-01-29T06:05:52+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000462",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 26650.314822,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-29T09:17:21+07:00",
+    "eta_can_tho": "2026-01-29T15:47:21+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000467",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15882.186668,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-29T12:22:52+07:00",
+    "eta_can_tho": "2026-01-29T19:52:52+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000481",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 32211.123638,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-29T21:31:12+07:00",
+    "eta_can_tho": "2026-01-30T04:01:12+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000495",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18019.527018,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-30T12:42:00+07:00",
+    "eta_can_tho": "2026-01-30T19:12:00+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000508",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 23307.71257,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-31T13:19:43+07:00",
+    "eta_can_tho": "2026-01-31T19:49:43+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_000514",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20790.361568,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-01-31T23:38:18+07:00",
+    "eta_can_tho": "2026-02-01T06:08:18+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002368",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21432.449226,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-01T10:01:56+07:00",
+    "eta_can_tho": "2026-05-01T16:31:56+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002384",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 25280.399436,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-01T18:49:58+07:00",
+    "eta_can_tho": "2026-05-02T01:19:58+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002396",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20484.097109,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-02T08:45:42+07:00",
+    "eta_can_tho": "2026-05-02T15:15:42+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002420",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 15966.250227,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-03T10:30:29+07:00",
+    "eta_can_tho": "2026-05-03T19:30:29+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002425",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 25488.225795,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-03T12:49:43+07:00",
+    "eta_can_tho": "2026-05-03T21:49:43+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002441",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 26630.962421,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-04T09:13:59+07:00",
+    "eta_can_tho": "2026-05-04T18:13:59+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002457",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20676.741423,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-04T17:51:59+07:00",
+    "eta_can_tho": "2026-05-05T00:21:59+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002482",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 20572.412795,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-05T11:25:03+07:00",
+    "eta_can_tho": "2026-05-05T20:25:03+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002523",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18385.569073,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-06T18:07:56+07:00",
+    "eta_can_tho": "2026-05-07T01:37:56+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002549",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 24956.680489,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-07T22:10:56+07:00",
+    "eta_can_tho": "2026-05-08T04:40:56+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002599",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 21975.562768,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-09T22:36:44+07:00",
+    "eta_can_tho": "2026-05-10T05:06:44+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002620",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 15788.984273,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-11T06:52:29+07:00",
+    "eta_can_tho": "2026-05-11T13:22:29+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002636",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 16617.857375,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-11T17:28:17+07:00",
+    "eta_can_tho": "2026-05-11T23:58:17+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002645",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 15955.694793,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-12T11:37:01+07:00",
+    "eta_can_tho": "2026-05-12T18:07:01+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002660",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 31946.580318,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-12T19:14:40+07:00",
+    "eta_can_tho": "2026-05-13T01:44:40+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002693",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 22663.785839,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-14T07:47:18+07:00",
+    "eta_can_tho": "2026-05-14T14:17:18+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002721",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15192.144234,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-15T11:19:53+07:00",
+    "eta_can_tho": "2026-05-15T17:49:53+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002743",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 20056.510924,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-16T09:19:29+07:00",
+    "eta_can_tho": "2026-05-16T15:49:29+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002744",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 22303.957312,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-16T10:23:21+07:00",
+    "eta_can_tho": "2026-05-16T16:53:21+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002750",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15725.408569,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-16T12:28:18+07:00",
+    "eta_can_tho": "2026-05-16T18:58:18+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002779",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 43188.147794,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-17T19:07:19+07:00",
+    "eta_can_tho": "2026-05-18T01:37:19+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002819",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 32956.427514,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-19T12:06:20+07:00",
+    "eta_can_tho": "2026-05-19T18:36:20+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002823",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 28772.446942,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-19T16:04:06+07:00",
+    "eta_can_tho": "2026-05-19T22:34:06+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002832",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 16873.965519,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-19T18:08:56+07:00",
+    "eta_can_tho": "2026-05-19T23:56:56+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002834",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 30355.605399,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-19T22:34:00+07:00",
+    "eta_can_tho": "2026-05-20T05:04:00+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002859",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20482.879482,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-20T17:18:39+07:00",
+    "eta_can_tho": "2026-05-20T23:48:39+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002866",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21114.628488,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-20T20:45:35+07:00",
+    "eta_can_tho": "2026-05-21T03:15:35+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002914",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 53334.717432,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-22T16:11:25+07:00",
+    "eta_can_tho": "2026-05-22T22:41:25+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002920",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21858.379933,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-22T18:39:22+07:00",
+    "eta_can_tho": "2026-05-23T01:09:22+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002940",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 18756.112536,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-23T13:15:32+07:00",
+    "eta_can_tho": "2026-05-23T19:45:32+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_002990",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 32932.700736,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-25T18:25:22+07:00",
+    "eta_can_tho": "2026-05-26T03:25:22+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003000",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15114.361547,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-26T08:58:32+07:00",
+    "eta_can_tho": "2026-05-26T15:28:32+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003026",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17929.634323,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-27T10:07:08+07:00",
+    "eta_can_tho": "2026-05-27T16:37:08+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003040",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17277.174751,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-27T17:34:16+07:00",
+    "eta_can_tho": "2026-05-28T00:04:16+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003051",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 19456.287723,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-27T21:49:33+07:00",
+    "eta_can_tho": "2026-05-28T04:19:33+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003049",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 15963.145829,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-27T23:20:18+07:00",
+    "eta_can_tho": "2026-05-28T08:20:18+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003064",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 23001.489863,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-28T15:07:32+07:00",
+    "eta_can_tho": "2026-05-28T21:37:32+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003078",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 15511.541835,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-29T09:03:27+07:00",
+    "eta_can_tho": "2026-05-29T14:51:27+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003101",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21128.656406,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-29T17:17:10+07:00",
+    "eta_can_tho": "2026-05-29T23:47:10+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003114",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 17700.703955,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-30T07:09:49+07:00",
+    "eta_can_tho": "2026-05-30T12:57:49+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_003125",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17647.275117,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-05-30T13:10:34+07:00",
+    "eta_can_tho": "2026-05-30T19:40:34+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006017",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 16783.102111,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-01T10:18:52+07:00",
+    "eta_can_tho": "2026-09-01T16:48:52+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006026",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 12447.002383,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-01T14:25:34+07:00",
+    "eta_can_tho": "2026-09-01T20:55:34+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006037",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 18775.674895,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-01T17:15:51+07:00",
+    "eta_can_tho": "2026-09-01T23:45:51+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006039",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 16844.843341,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-01T18:43:34+07:00",
+    "eta_can_tho": "2026-09-02T01:13:34+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006041",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 24135.229993,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-01T21:41:31+07:00",
+    "eta_can_tho": "2026-09-02T04:11:31+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006045",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 16322.489846,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-02T08:56:49+07:00",
+    "eta_can_tho": "2026-09-02T15:26:49+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006058",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 22318.538317,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-02T23:43:20+07:00",
+    "eta_can_tho": "2026-09-03T06:13:20+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006063",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 34026.894489,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-03T07:09:46+07:00",
+    "eta_can_tho": "2026-09-03T13:39:46+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006082",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 17914.713508,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-03T16:37:40+07:00",
+    "eta_can_tho": "2026-09-04T01:37:40+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006123",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 18527.059578,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-04T20:45:26+07:00",
+    "eta_can_tho": "2026-09-05T03:15:26+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006124",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 15229.688154,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-04T22:30:53+07:00",
+    "eta_can_tho": "2026-09-05T05:00:53+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006136",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 18762.359217,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-05T14:27:51+07:00",
+    "eta_can_tho": "2026-09-05T20:57:51+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006141",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 37625.380843,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-05T19:55:35+07:00",
+    "eta_can_tho": "2026-09-06T02:25:35+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006144",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17874.29226,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-06T07:52:36+07:00",
+    "eta_can_tho": "2026-09-06T14:22:36+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006155",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 17054.364704,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-06T13:58:59+07:00",
+    "eta_can_tho": "2026-09-06T22:58:59+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006190",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18999.527686,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-07T18:02:10+07:00",
+    "eta_can_tho": "2026-09-08T00:32:10+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006198",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 22952.523707,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-07T19:19:17+07:00",
+    "eta_can_tho": "2026-09-08T01:49:17+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006208",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 50438.040533,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-08T07:59:37+07:00",
+    "eta_can_tho": "2026-09-08T14:29:37+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006216",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 24853.400547,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-08T09:48:50+07:00",
+    "eta_can_tho": "2026-09-08T18:48:50+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006219",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 17222.857401,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-08T10:38:25+07:00",
+    "eta_can_tho": "2026-09-08T17:08:25+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006261",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 26034.511925,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-09T15:54:32+07:00",
+    "eta_can_tho": "2026-09-10T00:54:32+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006271",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 15730.633869,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-09T21:13:58+07:00",
+    "eta_can_tho": "2026-09-10T03:43:58+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006273",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 22863.687661,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-10T01:14:17+07:00",
+    "eta_can_tho": "2026-09-10T07:44:17+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006280",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 26710.383898,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-10T08:23:09+07:00",
+    "eta_can_tho": "2026-09-10T14:53:09+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006294",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 17009.794212,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-10T18:41:45+07:00",
+    "eta_can_tho": "2026-09-11T00:29:45+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006300",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17792.181727,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-10T21:18:31+07:00",
+    "eta_can_tho": "2026-09-11T03:48:31+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006306",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20189.046496,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-11T12:54:27+07:00",
+    "eta_can_tho": "2026-09-11T19:24:27+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006312",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18057.646394,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-11T15:22:41+07:00",
+    "eta_can_tho": "2026-09-12T00:22:41+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006309",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21141.29294,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-11T15:26:03+07:00",
+    "eta_can_tho": "2026-09-11T21:56:03+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006313",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 23781.248923,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-11T15:36:46+07:00",
+    "eta_can_tho": "2026-09-11T22:06:46+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006334",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 22823.922066,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-12T08:17:56+07:00",
+    "eta_can_tho": "2026-09-12T14:47:56+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006331",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 17943.343919,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-12T09:08:29+07:00",
+    "eta_can_tho": "2026-09-12T18:08:29+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006357",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 36970.761886,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-13T06:01:32+07:00",
+    "eta_can_tho": "2026-09-13T12:31:32+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006374",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 46900.158798,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-13T19:54:49+07:00",
+    "eta_can_tho": "2026-09-14T02:24:49+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006389",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_PINEAPPLE",
+    "weight_kg": 17910.782679,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-14T12:34:54+07:00",
+    "eta_can_tho": "2026-09-14T19:04:54+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006394",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15906.594314,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-14T15:49:28+07:00",
+    "eta_can_tho": "2026-09-14T23:19:28+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006412",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 15492.617044,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-15T10:59:32+07:00",
+    "eta_can_tho": "2026-09-15T17:29:32+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006420",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 30619.356064,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-15T16:23:56+07:00",
+    "eta_can_tho": "2026-09-15T22:53:56+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006424",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21981.538261,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-15T19:32:06+07:00",
+    "eta_can_tho": "2026-09-16T02:02:06+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006436",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 16257.378915,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-16T06:25:36+07:00",
+    "eta_can_tho": "2026-09-16T12:55:36+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006467",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 21158.576502,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-16T16:07:32+07:00",
+    "eta_can_tho": "2026-09-16T22:37:32+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006488",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 17790.497103,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-17T10:40:57+07:00",
+    "eta_can_tho": "2026-09-17T17:10:57+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006492",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 16001.7669,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-17T13:21:46+07:00",
+    "eta_can_tho": "2026-09-17T22:21:46+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006512",
+    "hub_id": "HUB_VINHLONG",
+    "commodity_id": "COM_SWEET_POTATO",
+    "weight_kg": 16380.586422,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-17T21:01:26+07:00",
+    "eta_can_tho": "2026-09-18T02:49:26+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006516",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18452.083173,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-18T09:37:10+07:00",
+    "eta_can_tho": "2026-09-18T18:37:10+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006525",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 23842.762419,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-18T12:46:09+07:00",
+    "eta_can_tho": "2026-09-18T19:16:09+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006533",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 26427.278639,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-18T15:58:59+07:00",
+    "eta_can_tho": "2026-09-18T22:28:59+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006535",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 42568.652457,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-18T17:43:03+07:00",
+    "eta_can_tho": "2026-09-19T00:13:03+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006559",
+    "hub_id": "HUB_LONGXUYEN",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15092.645405,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-19T11:47:05+07:00",
+    "eta_can_tho": "2026-09-19T20:47:05+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006561",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 46778.77051,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-19T14:35:57+07:00",
+    "eta_can_tho": "2026-09-19T21:05:57+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006569",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 26582.83521,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-19T18:58:29+07:00",
+    "eta_can_tho": "2026-09-20T01:28:29+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006574",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 16446.405752,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-19T19:00:18+07:00",
+    "eta_can_tho": "2026-09-20T01:30:18+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006596",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 5603.453622,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-20T15:29:41+07:00",
+    "eta_can_tho": "2026-09-20T21:59:41+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006595",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 6179.137465,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-20T15:30:55+07:00",
+    "eta_can_tho": "2026-09-20T22:00:55+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006601",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 8534.781294,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-20T20:32:17+07:00",
+    "eta_can_tho": "2026-09-21T03:02:17+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006604",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_PINEAPPLE",
+    "weight_kg": 4622.80776,
+    "selected_route": "via_can_tho_road_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-20T21:38:00+07:00",
+    "eta_can_tho": "2026-09-21T00:09:10.650000+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006605",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 19466.671166,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-20T23:06:27+07:00",
+    "eta_can_tho": "2026-09-21T05:36:27+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006607",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 27116.203608,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-21T01:03:48+07:00",
+    "eta_can_tho": "2026-09-21T07:33:48+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006641",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 43223.278727,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-22T10:18:18+07:00",
+    "eta_can_tho": "2026-09-22T16:48:18+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006664",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17890.998283,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-22T16:47:27+07:00",
+    "eta_can_tho": "2026-09-22T23:17:27+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006677",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 17807.41945,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-23T01:08:38+07:00",
+    "eta_can_tho": "2026-09-23T07:38:38+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006681",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15023.167183,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-23T06:31:02+07:00",
+    "eta_can_tho": "2026-09-23T13:01:02+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006685",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18600.212924,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-23T07:49:55+07:00",
+    "eta_can_tho": "2026-09-23T15:19:55+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006691",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 19835.742431,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-23T10:54:19+07:00",
+    "eta_can_tho": "2026-09-23T17:24:19+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006692",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 18262.407329,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-23T11:10:57+07:00",
+    "eta_can_tho": "2026-09-23T17:40:57+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006694",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 43644.103281,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-23T11:43:49+07:00",
+    "eta_can_tho": "2026-09-23T18:13:49+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006715",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 52728.442968,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-23T20:17:43+07:00",
+    "eta_can_tho": "2026-09-24T02:47:43+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006724",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 23007.571156,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-24T08:53:01+07:00",
+    "eta_can_tho": "2026-09-24T15:23:01+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006751",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_PINEAPPLE",
+    "weight_kg": 16077.000278,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-24T22:47:47+07:00",
+    "eta_can_tho": "2026-09-25T05:17:47+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006755",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15123.03469,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-25T08:32:08+07:00",
+    "eta_can_tho": "2026-09-25T15:02:08+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006769",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 40993.835248,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-25T12:09:23+07:00",
+    "eta_can_tho": "2026-09-25T18:39:23+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006784",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20088.251837,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-25T22:06:00+07:00",
+    "eta_can_tho": "2026-09-26T04:36:00+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006790",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 18248.667211,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-26T08:40:08+07:00",
+    "eta_can_tho": "2026-09-26T15:10:08+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006799",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 43912.131716,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-26T15:36:17+07:00",
+    "eta_can_tho": "2026-09-26T22:06:17+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006810",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15461.305153,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-26T19:07:02+07:00",
+    "eta_can_tho": "2026-09-27T02:37:02+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006814",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 18393.596463,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-26T20:27:35+07:00",
+    "eta_can_tho": "2026-09-27T03:57:35+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006844",
+    "hub_id": "HUB_SOCTRANG",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 35551.497671,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-27T17:46:14+07:00",
+    "eta_can_tho": "2026-09-28T01:16:14+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006856",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_RICE",
+    "weight_kg": 15895.831806,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-28T09:35:28+07:00",
+    "eta_can_tho": "2026-09-28T16:05:28+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006876",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 39137.054062,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-28T16:27:09+07:00",
+    "eta_can_tho": "2026-09-28T22:57:09+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006897",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 20497.694551,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-29T11:11:37+07:00",
+    "eta_can_tho": "2026-09-29T17:41:37+07:00"
+  },
+  {
+    "shipment_id": "ORD_2026_006922",
+    "hub_id": "HUB_VITHANH",
+    "commodity_id": "COM_SUGARCANE",
+    "weight_kg": 19559.7035,
+    "selected_route": "via_can_tho_water_then_water",
+    "outbound_mode": "water",
+    "created_at": "2026-09-30T11:53:13+07:00",
+    "eta_can_tho": "2026-09-30T18:23:13+07:00"
+  }
+]
