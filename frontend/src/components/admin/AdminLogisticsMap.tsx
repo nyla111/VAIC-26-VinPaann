@@ -46,12 +46,12 @@ export function AdminLogisticsMap({ backendMapPayload }: Props) {
         minZoom: ADMIN_MAP_VIEW.minZoom,
         maxZoom: ADMIN_MAP_VIEW.maxZoom,
         maxBounds: ADMIN_MAP_VIEW.maxBounds,
+        attributionControl: false,
         // viscosity 1.0 → map snaps back immediately; user cannot drag outside bounds
         maxBoundsViscosity: 1.0,
       });
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: ADMIN_MAP_VIEW.maxZoom,
-        attribution: "&copy; OpenStreetMap contributors",
       }).addTo(map);
 
       // Road segment layer

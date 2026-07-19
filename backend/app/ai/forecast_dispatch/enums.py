@@ -65,6 +65,7 @@ class ShipmentState(str, Enum):
 class VehicleStatus(str, Enum):
     AVAILABLE = "available"
     EN_ROUTE = "en_route"
+    IN_TRANSIT = "in_transit"
     MAINTENANCE = "maintenance"
     RESERVED = "reserved"
 

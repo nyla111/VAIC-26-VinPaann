@@ -1,5 +1,7 @@
 "use client";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 type Variant =
   | "active"
   | "pending"
@@ -54,8 +56,23 @@ const CONFIG: Record<string, { bg: string; color: string; label?: string }> = {
 };
 
 export function StatusBadge({ status, label }: { status: Variant; label?: string }) {
+  const { language } = useLanguage();
   const cfg = CONFIG[status] ?? { bg: "#f1f5f9", color: "#475569" };
-  const text = label ?? cfg.label ?? status.replace(/_/g, " ");
+  const translated: Record<string, string> = language === "vi" ? {
+    active: "Đang hoạt động", pending: "Đang chờ", suspended: "Tạm dừng", available: "Sẵn sàng",
+    busy: "Đang bận", inactive: "Không hoạt động", assigned: "Đã phân công", in_transit: "Đang vận chuyển",
+    delivered: "Đã giao", delayed: "Trễ", cancelled: "Đã hủy", optimizing: "Đang tối ưu",
+    awaiting_assignment: "Chờ phân công", on_track: "Đúng tiến độ", at_hub: "Tại hub", road: "Đường bộ",
+    waterway: "Đường thủy", multimodal: "Đa phương thức", high: "Cao", medium: "Trung bình", low: "Thấp",
+    critical: "Nghiêm trọng",
+  } : {
+    active: "Active", pending: "Pending", suspended: "Suspended", available: "Available", busy: "Busy",
+    inactive: "Inactive", assigned: "Assigned", in_transit: "In transit", delivered: "Delivered",
+    delayed: "Delayed", cancelled: "Cancelled", optimizing: "Optimizing", awaiting_assignment: "Awaiting assignment",
+    on_track: "On track", at_hub: "At hub", road: "Road", waterway: "Waterway", multimodal: "Multimodal",
+    high: "High", medium: "Medium", low: "Low", critical: "Critical",
+  };
+  const text = label ?? translated[status] ?? cfg.label ?? status.replace(/_/g, " ");
   return (
     <span
       style={{

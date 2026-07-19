@@ -65,7 +65,8 @@ def _default_outbound_mode() -> Mode:
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "state_version": store.state_version, "shipments": len(store.shipments)}
+    shipments = store.pending_shipments() + store.in_transit_shipments()
+    return {"status": "ok", "state_version": store.state_version, "shipments": len(shipments)}
 
 
 # ---------------------------------------------------------------------------

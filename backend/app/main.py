@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import asyncio
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +12,11 @@ from app.routes.layer2 import router as layer2_router
 from app.routes.websocket import router as ws_router
 from app.routes.auth import router as auth_router
 from app.routes.dashboard import router as dashboard_router
-
+from app.routes.logistics import router as logistics_router
+from app.routes.orders import router as orders_router
+from app.routes.simulation import router as simulation_router
+from app.simulation import run_simulation_loop
+from app.services.layer2_supervisor import run_layer2_supervisor
 
 
 @asynccontextmanager
@@ -21,7 +26,16 @@ async def lifespan(app: FastAPI):
     Initializes SQLite schemas and settings values.
     """
     create_db_and_tables()
-    yield
+    stop_event = asyncio.Event()
+    sim_loop = asyncio.create_task(run_simulation_loop(stop_event))
+    layer2_loop = asyncio.create_task(run_layer2_supervisor(stop_event))
+    try:
+        yield
+    finally:
+        stop_event.set()
+        sim_loop.cancel()
+        layer2_loop.cancel()
+        await asyncio.gather(sim_loop, layer2_loop, return_exceptions=True)
 
 app = FastAPI(
     title="Mekong Delta Agri-Logistics Orchestrator API",
@@ -48,11 +62,14 @@ app.add_middleware(
 )
 
 # Register routers
+app.include_router(simulation_router, tags=["Simulation Config"])
 app.include_router(layer1_router, prefix="/api/layer1", tags=["Layer 1 Route Optimizer"])
 app.include_router(hub_router, prefix="/api/hub", tags=["Hub Operations"])
 app.include_router(layer2_router, prefix="/api/layer2", tags=["Layer 2 Dispatch & Forecast"])
 app.include_router(ws_router, tags=["Real-time Dashboard (WebSockets)"])
 app.include_router(auth_router, tags=["Dashboard Auth"])
+app.include_router(logistics_router, tags=["Logistics Provider Portal"])
+app.include_router(orders_router, tags=["Role-scoped Orders"])
 
 app.include_router(dashboard_router, tags=["Dashboard View/Operations"])
 

@@ -10,6 +10,8 @@ import {
   ROUTE_MIX, SAVINGS_BY_ROUTE, DISPATCH_MIX, FORECAST_VS_ACTUAL,
   STATUS_DISTRIBUTION, BUSINESSES, PROVIDERS, ORDERS,
 } from "@/data/adminMockData";
+import { useLanguage } from "@/context/LanguageContext";
+import { formatDate } from "@/lib/labels";
 
 type Tab = "overview" | "orders" | "businesses" | "logistics" | "ai";
 
@@ -23,30 +25,72 @@ const COLORS = {
   gray: "#64748b",
 };
 
+const ANALYTICS_TEXT: Record<string, { vi: string; en: string }> = {
+  "Orders Over Time": { vi: "Đơn hàng theo thời gian", en: "Orders over time" },
+  "Total vs Delivered": { vi: "Tổng số và đã giao", en: "Total vs delivered" },
+  "Orders by Status": { vi: "Đơn hàng theo trạng thái", en: "Orders by status" },
+  "Current distribution": { vi: "Phân bổ hiện tại", en: "Current distribution" },
+  "Transport Volume by Mode": { vi: "Sản lượng theo phương thức", en: "Transport volume by mode" },
+  "Monthly tonnage (tons)": { vi: "Sản lượng theo tháng (tấn)", en: "Monthly tonnage (tons)" },
+  "Stacked by road, waterway, and multimodal": { vi: "Phân theo đường bộ, đường thủy và đa phương thức", en: "Stacked by road, waterway, and multimodal" },
+  "Total Transport Cost Over Time": { vi: "Tổng chi phí vận chuyển theo thời gian", en: "Total transport cost over time" },
+  "Millions VND": { vi: "Triệu VND", en: "Millions VND" },
+  "Orders by Commodity": { vi: "Đơn hàng theo nông sản", en: "Orders by commodity" },
+  "Order Volume by Origin Province": { vi: "Sản lượng theo tỉnh xuất phát", en: "Order volume by origin province" },
+  "Total tonnage": { vi: "Tổng sản lượng", en: "Total tonnage" },
+  "Average Delivery Time by Route (hours)": { vi: "Thời gian giao hàng trung bình theo tuyến (giờ)", en: "Average delivery time by route (hours)" },
+  "Cancellation Rate": { vi: "Tỷ lệ hủy", en: "Cancellation rate" },
+  "Delay Rate": { vi: "Tỷ lệ trễ", en: "Delay rate" },
+  "Avg Weight per Order": { vi: "Khối lượng trung bình mỗi đơn", en: "Average weight per order" },
+  "Top Businesses by Order Volume": { vi: "Doanh nghiệp có nhiều đơn nhất", en: "Top businesses by order volume" },
+  "Top Businesses by Transport Spend": { vi: "Doanh nghiệp có chi phí vận chuyển cao nhất", en: "Top businesses by transport spend" },
+  "On-time Delivery Rate by Provider": { vi: "Tỷ lệ giao đúng hạn theo provider", en: "On-time delivery rate by provider" },
+  "Fleet Utilization by Provider": { vi: "Mức sử dụng đội xe theo provider", en: "Fleet utilization by provider" },
+  "Active Orders vs Available Vehicles by Provider": { vi: "Đơn đang chạy và xe sẵn sàng theo provider", en: "Active orders vs available vehicles by provider" },
+  "Recommended Route Adoption": { vi: "Tỷ lệ chọn tuyến được khuyến nghị", en: "Recommended route adoption" },
+  "Total Cost Savings vs Direct": { vi: "Tổng tiền tiết kiệm so với đường thẳng", en: "Total cost savings vs direct" },
+  "Most Used Route": { vi: "Tuyến được dùng nhiều nhất", en: "Most used route" },
+  "AI2 Dispatch Accuracy": { vi: "Độ chính xác dispatch AI2", en: "AI2 dispatch accuracy" },
+  "Route Selection Mix": { vi: "Cơ cấu lựa chọn tuyến", en: "Route selection mix" },
+  "Estimated Savings by Route vs A_DIRECT_ROAD": { vi: "Tiền tiết kiệm theo tuyến so với A_DIRECT_ROAD", en: "Estimated savings by route vs A_DIRECT_ROAD" },
+  "Forecast Demand vs Actual Orders": { vi: "Nhu cầu forecast và đơn thực tế", en: "Forecast demand vs actual orders" },
+  "Dispatch Decision Mix": { vi: "Cơ cấu quyết định dispatch", en: "Dispatch decision mix" },
+  "Platform performance, route optimization, and AI metrics": { vi: "Hiệu suất nền tảng, tối ưu tuyến và chỉ số AI", en: "Platform performance, route optimization, and AI metrics" },
+  "Overview": { vi: "Tổng quan", en: "Overview" }, "Orders": { vi: "Đơn hàng", en: "Orders" },
+  "Businesses": { vi: "Doanh nghiệp", en: "Businesses" }, "Logistics": { vi: "Logistics", en: "Logistics" },
+  "AI Performance": { vi: "Hiệu suất AI", en: "AI performance" }, "Export CSV": { vi: "Xuất CSV", en: "Export CSV" },
+};
+
+function analyticsText(value: string, language: "vi" | "en") {
+  return ANALYTICS_TEXT[value]?.[language] || value;
+}
+
 function ChartCard({ title, subtitle, children, note }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   note?: string;
 }) {
+  const { language } = useLanguage();
   return (
     <div className="panel" style={{ display: "grid", gap: 12 }}>
       <div>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>{title}</div>
-        {subtitle && <div style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>{subtitle}</div>}
+        <div style={{ fontWeight: 700, fontSize: 15 }}>{analyticsText(title, language)}</div>
+        {subtitle && <div style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>{analyticsText(subtitle, language)}</div>}
       </div>
       {children}
-      {note && <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>{note}</p>}
+      {note && <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>{analyticsText(note, language)}</p>}
     </div>
   );
 }
 
 function KpiMini({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+  const { language } = useLanguage();
   return (
     <div style={{ background: "#f8fafc", borderRadius: 8, padding: "12px 16px" }}>
-      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>{analyticsText(label, language)}</div>
       <div style={{ fontSize: 22, fontWeight: 700 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{analyticsText(sub, language)}</div>}
     </div>
   );
 }
@@ -379,17 +423,18 @@ const TABS: { key: Tab; label: string }[] = [
 ];
 
 export default function AnalyticsPage() {
+  const { language } = useLanguage();
   const [tab, setTab] = useState<Tab>("overview");
   const [dateRange, setDateRange] = useState("2026-07");
 
-  const today = new Date().toLocaleDateString("en-GB");
+  const today = formatDate(new Date(), language);
 
   return (
     <div className="admin-page">
       <div className="admin-page-header">
         <div>
-          <h1>Analytics</h1>
-          <p className="page-subtitle">Platform performance, route optimization, and AI metrics</p>
+          <h1>{analyticsText("Analytics", language)}</h1>
+          <p className="page-subtitle">{analyticsText("Platform performance, route optimization, and AI metrics", language)}</p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input
@@ -399,13 +444,13 @@ export default function AnalyticsPage() {
             style={{ padding: "8px 12px", border: "1px solid #dbe2ea", borderRadius: 6, fontSize: 13 }}
           />
           <button className="secondary" onClick={() => alert("CSV export — demo only")}>
-            Export CSV
+            {analyticsText("Export CSV", language)}
           </button>
         </div>
       </div>
 
       <p style={{ color: "#64748b", fontSize: 13, margin: "0 0 4px" }}>
-        Data as of {today}. Mock data for hackathon demo purposes.
+        {language === "vi" ? "Dữ liệu tính đến" : "Data as of"} {today}. {language === "vi" ? "Dữ liệu mock phục vụ demo hackathon." : "Mock data for hackathon demo purposes."}
       </p>
 
       {/* Tabs */}
@@ -416,7 +461,7 @@ export default function AnalyticsPage() {
             onClick={() => setTab(key)}
             className={`ops-tab${tab === key ? " active" : ""}`}
           >
-            {label}
+            {analyticsText(label, language)}
           </button>
         ))}
       </div>

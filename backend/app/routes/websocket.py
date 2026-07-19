@@ -1,13 +1,17 @@
 import logging
 import asyncio
+import json
 from datetime import datetime, timezone
 from typing import List, Dict, Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlmodel import Session, select
-from app.models import SystemState, Order, SystemLog
+from app.models import SystemState, Order, SystemLog, User, Vehicle
 from app.state import state_manager
 from app.database import engine
 from app.ai.route_optimizer.optimizer import optimize_route
+from app.order_times import effective_harvested_at
+from app.services.order_lifecycle import create_direct_dispatch
+from app.services.order_views import can_view_order
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -70,14 +74,17 @@ class ConnectionManager:
             self.active_connections.remove(websocket)
             logger.info(f"WebSocket client disconnected. Total clients: {len(self.active_connections)}")
 
-    async def broadcast(self, state: SystemState):
-        """
-        Sends the SystemState JSON payload to all connected clients.
-        """
+    async def broadcast_event(self, event: str, data: Any):
+        """Broadcast a versionable event to every dashboard connection."""
         if not self.active_connections:
             return
-            
-        payload = state.model_dump_json()
+
+        if isinstance(data, SystemState):
+            state_data = data.model_dump(mode="json")
+            payload_obj = {"event": event, "data": state_data, **state_data}
+        else:
+            payload_obj = {"event": event, "data": data}
+        payload = json.dumps(payload_obj, ensure_ascii=False)
         
         disconnected_clients = []
         for connection in self.active_connections:
@@ -90,12 +97,48 @@ class ConnectionManager:
         for client in disconnected_clients:
             self.disconnect(client)
 
+    async def broadcast(self, state: SystemState):
+        await self.broadcast_event("STATE_UPDATE", state)
+
 
 # Global WebSocket connection manager instance
 ws_manager = ConnectionManager()
 
 
-async def stream_cargo_tracking(websocket: WebSocket, order_id: int):
+def websocket_user(websocket: WebSocket) -> dict[str, Any] | None:
+    """Resolve the signed SessionMiddleware identity for a WebSocket.
+
+    The browser may include a user id in an old client payload, but that value
+    is never trusted.  Cookies/session data are the authority for this
+    endpoint, just as they are for the HTTP APIs.
+    """
+
+    session_data = websocket.scope.get("session") or {}
+    user_id = session_data.get("user_id")
+    role = session_data.get("role")
+    if not user_id or not role:
+        return None
+    with Session(engine) as session:
+        user = session.get(User, user_id)
+        if not user or user.role != role:
+            return None
+        return {"id": user.id, "role": user.role, "email": user.email}
+
+
+async def send_websocket_auth_error(websocket: WebSocket, message: str = "Authentication required") -> None:
+    await websocket.send_json({"event": "ERROR", "code": "UNAUTHORIZED", "message": message})
+
+
+def order_visible_to_websocket_user(order: Order, viewer: dict[str, Any]) -> bool:
+    with Session(engine) as session:
+        vehicles = {
+            vehicle.license_plate: vehicle
+            for vehicle in session.exec(select(Vehicle)).all()
+        }
+        return can_view_order(order, viewer, vehicles)
+
+
+async def stream_cargo_tracking(websocket: WebSocket, order_id: int, viewer: dict[str, Any]):
     """
     Continuously queries the order state and interpolates real-time location.
     Streams geolocation markers back to the client every 1 second.
@@ -116,60 +159,61 @@ async def stream_cargo_tracking(websocket: WebSocket, order_id: int):
                 if not order:
                     await websocket.send_json({"event": "CARGO_TRACKING_ERROR", "message": f"Order #{order_id} not found."})
                     break
+                vehicles = {
+                    vehicle.license_plate: vehicle
+                    for vehicle in session.exec(select(Vehicle)).all()
+                }
+                if not can_view_order(order, viewer, vehicles):
+                    await websocket.send_json({
+                        "event": "CARGO_TRACKING_ERROR",
+                        "message": "You do not have access to this order.",
+                    })
+                    break
 
                 origin = HUB_COORDS.get(order.hub_id, (10.0, 105.0))
                 ct = HUB_COORDS["CT_HUB"]
                 hcm = HUB_COORDS["HCM_MARKET"]
                 
+                from app.simulation import SYSTEM_CLOCK
+                from datetime import datetime, timezone
+                from app.services.map_data import route_options_for_hub, _point_along_segments
+                
+                route_code = order.selected_route_id or "B_ROAD_VIA_CT"
+                route_data = route_options_for_hub(order.hub_id)
+                segments = route_data.get("routes", {}).get(route_code, [])
+                
                 state = order.state
+                
+                from app.mappings import enrich_order_payload
+                enriched = enrich_order_payload(order, session)
+                progress = enriched["progress"] / 100.0
                 lat, lon = origin
-                progress = 0.0
                 
                 if state == "created":
                     lat, lon = origin
-                    progress = 0.0
                 elif state in ["routed_to_can_tho", "in_transit_to_can_tho"]:
-                    try:
-                        dt = datetime.fromisoformat(order.timestamp)
-                    except:
-                        dt = datetime.now(timezone.utc)
-                    if dt.tzinfo is None:
-                        dt = dt.replace(tzinfo=timezone.utc)
-                    elapsed = (datetime.now(timezone.utc) - dt).total_seconds()
-                    progress = min(elapsed / 3.0, 1.0)
-                    lat = origin[0] + (ct[0] - origin[0]) * progress
-                    lon = origin[1] + (ct[1] - origin[1]) * progress
+                    inbound_segs = [s for s in segments if s["to_node_id"] != "HCM_MARKET"]
+                    if not inbound_segs:
+                        inbound_segs = segments
+                    lat, lon = _point_along_segments(inbound_segs, progress)
                 elif state == "arrived_waiting":
                     lat, lon = ct
-                    progress = 1.0
                 elif state == "dispatched":
-                    start_point = origin if order.selected_route_id == "A_DIRECT_ROAD" else ct
-                    if order.dispatched_at:
-                        try:
-                            dt = datetime.fromisoformat(order.dispatched_at)
-                        except:
-                            dt = datetime.now(timezone.utc)
-                    else:
-                        try:
-                            dt = datetime.fromisoformat(order.actual_arrival_at) if order.actual_arrival_at else datetime.now(timezone.utc)
-                        except:
-                            dt = datetime.now(timezone.utc)
-                    if dt.tzinfo is None:
-                        dt = dt.replace(tzinfo=timezone.utc)
-                    elapsed = (datetime.now(timezone.utc) - dt).total_seconds()
-                    progress = min(elapsed / 5.0, 1.0)
-                    lat = start_point[0] + (hcm[0] - start_point[0]) * progress
-                    lon = start_point[1] + (hcm[1] - start_point[1]) * progress
+                    outbound_segs = [s for s in segments if s["to_node_id"] == "HCM_MARKET"]
+                    if not outbound_segs:
+                        outbound_segs = segments
+                    lat, lon = _point_along_segments(outbound_segs, progress)
                 else:
                     lat, lon = hcm
-                    progress = 1.0
                 
                 await websocket.send_json({
                     "event": "CARGO_TRACKING",
                     "order_id": order_id,
                     "state": state,
                     "location": {"lat": lat, "lon": lon},
-                    "progress": progress
+                    "progress": progress,
+                    "provider_name": enriched.get("provider_name"),
+                    "timeline": enriched.get("timeline")
                 })
                 
             await asyncio.sleep(1.0)
@@ -184,14 +228,22 @@ async def websocket_client_endpoint(websocket: WebSocket):
     """
     Unified client action WebSocket endpoint for submit-to-track workflow.
     """
-    await websocket.accept()
+    await ws_manager.connect(websocket)
     tracking_task = None
     try:
         while True:
             data = await websocket.receive_json()
             action = data.get("action")
+            viewer = websocket_user(websocket)
+
+            if viewer is None:
+                await send_websocket_auth_error(websocket)
+                continue
             
             if action == "CREATE_ORDER":
+                if viewer["role"] != "enterprise":
+                    await send_websocket_auth_error(websocket, "Only enterprise users can create orders.")
+                    continue
                 hub_id = data.get("hub_id")
                 loai_hang = data.get("loai_hang", "")
                 commodity_id = resolve_commodity_id(loai_hang)
@@ -199,7 +251,8 @@ async def websocket_client_endpoint(websocket: WebSocket):
                 timestamp = data.get("timestamp")
                 delivery_deadline = data.get("delivery_deadline")
                 harvested_at = data.get("harvested_at")
-                user_id = data.get("user_id")
+                created_at = datetime.now(timezone.utc).isoformat()
+                harvested_at = effective_harvested_at(harvested_at, created_at)
 
 
                 with Session(engine) as session:
@@ -209,11 +262,11 @@ async def websocket_client_endpoint(websocket: WebSocket):
                         loai_hang=loai_hang,
                         khoi_luong_kg=khoi_luong_kg,
                         timestamp=timestamp or datetime.now(timezone.utc).isoformat(),
-                        created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        created_at=created_at,
                         state="created",
                         delivery_deadline=delivery_deadline,
                         harvested_at=harvested_at,
-                        user_id=int(user_id) if user_id else None
+                        user_id=viewer["id"]
                     )
                     session.add(db_order)
                     session.commit()
@@ -234,6 +287,19 @@ async def websocket_client_endpoint(websocket: WebSocket):
                 from app.services.map_data import route_options_for_hub
                 route_map = route_options_for_hub(hub_id)
 
+                # Attach the complete Layer 1 snapshot to the same SQLite
+                # order that Layer 2 will later query.
+                with Session(engine) as session:
+                    persisted_order = session.get(Order, order_id)
+                    if persisted_order:
+                        persisted_order.route_options_json = json.dumps(result.get("phuong_an", []), ensure_ascii=False)
+                        persisted_order.selected_route_geometry_json = json.dumps(
+                            route_map.get("routes", {}), ensure_ascii=False
+                        )
+                        persisted_order.optimizer_version = "route_optimizer_v1"
+                        session.add(persisted_order)
+                        session.commit()
+
                 await websocket.send_json({
                     "event": "ROUTE_OPTIONS",
                     "data": result,
@@ -250,23 +316,70 @@ async def websocket_client_endpoint(websocket: WebSocket):
 
                 with Session(engine) as session:
                     order = session.get(Order, order_id)
-                    if order:
+                    if order and order_visible_to_websocket_user(order, viewer):
+                        if not order.harvested_at:
+                            order.harvested_at = order.created_at
+                        available_routes = {
+                            option.get("route_code")
+                            for option in (json.loads(order.route_options_json) if order.route_options_json else [])
+                        }
+                        if available_routes and selected_route_id not in available_routes:
+                            await websocket.send_json({
+                                "event": "ERROR",
+                                "code": "ROUTE_NOT_IN_OPTIONS",
+                                "message": "Selected route was not returned by Layer 1.",
+                            })
+                            continue
                         order.selected_route_id = selected_route_id
+                        selected_option = next(
+                            (option for option in (json.loads(order.route_options_json) if order.route_options_json else [])
+                             if option.get("route_code") == selected_route_id),
+                            None,
+                        )
+                        if selected_option:
+                            order.selected_route_cost_vnd = selected_option.get("chi_phi_du_doan_vnd")
+                            order.selected_route_eta_hours = selected_option.get("thoi_gian_du_kien_gio")
                         if selected_route_id == "A_DIRECT_ROAD":
                             order.state = "dispatched"
                             order.dispatched_at = now_str
+                            create_direct_dispatch(session, order, datetime.now(timezone.utc))
                             log_msg = f"Direct Route: Shipment #{order_id} ({order.khoi_luong_kg:.1f} kg) dispatched directly to HCM bypassing Can Tho."
                         else:
                             order.state = "routed_to_can_tho"
                             order.timestamp = now_str
-                            log_msg = f"Route Selected: Shipment #{order_id} ({order.khoi_luong_kg:.1f} kg) routed via Can Tho. In transit to Can Tho..."
+                            
+                            from app.simulation import SYSTEM_CLOCK
+                            from datetime import timedelta
+                            from app.models import Vehicle
+                            
+                            inbound_mode = "water" if selected_route_id in ["D_WATER_VIA_CT", "E_ROAD_WATER_VIA_CT"] else "road"
+                            veh = session.exec(select(Vehicle).where(Vehicle.mode == inbound_mode, Vehicle.status == "available")).first()
+                            
+                            if veh:
+                                order.assigned_vehicle_id = veh.license_plate
+                                order.assigned_provider_id = veh.provider_id
+                                order.provider_assignment_status = "assigned"
+                                order.provider_assigned_at = now_str
+                                veh.status = "en_route"
+                                veh.location = order.hub_id
+                                session.add(veh)
+                            
+                            eta_hours = order.selected_route_eta_hours or 2.0
+                            order.eta_can_tho = (SYSTEM_CLOCK + timedelta(hours=eta_hours)).isoformat()
+                            
+                            log_msg = f"Route Selected: Shipment #{order_id} ({order.khoi_luong_kg:.1f} kg) routed via Can Tho. In transit via vehicle {veh.license_plate if veh else 'None'}..."
                         
                         session.add(order)
                         session.add(SystemLog(timestamp=timestamp_log, message=log_msg))
                         session.commit()
                         state_val = order.state
                     else:
-                        state_val = "error"
+                        await websocket.send_json({
+                            "event": "ERROR",
+                            "code": "ORDER_NOT_FOUND",
+                            "message": "Order not found or not accessible.",
+                        })
+                        continue
 
                 # Broadcast system state
                 updated_state = await state_manager.get_state()
@@ -278,16 +391,19 @@ async def websocket_client_endpoint(websocket: WebSocket):
                     "state": state_val
                 })
 
-                if selected_route_id != "A_DIRECT_ROAD" and state_val == "routed_to_can_tho":
-                    # Trigger simulation in background
-                    from app.routes.hub import simulate_shipment_arrival
-                    asyncio.create_task(simulate_shipment_arrival(order_id))
-
             elif action == "TRACK_CARGO":
                 order_id = int(data.get("order_id"))
+                with Session(engine) as session:
+                    order = session.get(Order, order_id)
+                    if not order or not order_visible_to_websocket_user(order, viewer):
+                        await websocket.send_json({
+                            "event": "CARGO_TRACKING_ERROR",
+                            "message": "Order not found or not accessible.",
+                        })
+                        continue
                 if tracking_task:
                     tracking_task.cancel()
-                tracking_task = asyncio.create_task(stream_cargo_tracking(websocket, order_id))
+                tracking_task = asyncio.create_task(stream_cargo_tracking(websocket, order_id, viewer))
 
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected from action endpoint.")
@@ -296,6 +412,7 @@ async def websocket_client_endpoint(websocket: WebSocket):
     finally:
         if tracking_task:
             tracking_task.cancel()
+        ws_manager.disconnect(websocket)
 
 
 @router.websocket("/ws/status")
@@ -308,7 +425,8 @@ async def websocket_status_endpoint(websocket: WebSocket):
     
     try:
         current_state = await state_manager.get_state()
-        await websocket.send_text(current_state.model_dump_json())
+        state_data = current_state.model_dump(mode="json")
+        await websocket.send_json({"event": "STATE_UPDATE", "data": state_data, **state_data})
     except Exception as e:
         logger.error(f"Failed to send initial state to socket: {e}")
         ws_manager.disconnect(websocket)

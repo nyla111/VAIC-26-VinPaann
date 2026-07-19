@@ -1,16 +1,44 @@
-from datetime import datetime
-from typing import Dict, List, Tuple
+from datetime import datetime, timedelta
+from typing import Dict, List, Tuple, Optional
+import json
+import threading
+import uuid
+from dataclasses import asdict
 import anyio
 from sqlmodel import Session, select
 from app.config import CANTHO_DISPATCH_THRESHOLD_KG, CARGO_TYPES
 from app.database import engine
-from app.models import CargoInventory, SystemLog, SystemSettings, SystemState
+from app.models import CargoInventory, DispatchOrder, Order, SystemLog, SystemSettings, SystemState, Vehicle
+
+
+def _select_dispatch_batch(shipments: list, capacity_kg: float) -> list:
+    """Select an oldest-first batch that fits the selected vehicle.
+
+    Layer 2 evaluates the aggregate queue, but one dispatch record represents
+    one physical vehicle. The integration must therefore avoid marking every
+    waiting order as dispatched when the queue is larger than that vehicle.
+    """
+    if capacity_kg <= 0:
+        return []
+
+    selected = []
+    remaining = capacity_kg
+    for shipment in sorted(shipments, key=lambda item: item.urgency_reference_ts):
+        weight = max(float(shipment.effective_weight_kg), 0.0)
+        if weight <= remaining + 1e-6:
+            selected.append(shipment)
+            remaining -= weight
+    return selected
+
 
 class SystemStateManager:
     """
     Manages SQLite database transactions using SQLModel.
     Exposes async wrapper methods to prevent blocking the FastAPI event loop.
     """
+
+    def __init__(self) -> None:
+        self._dispatch_lock = threading.Lock()
 
     # ----------------- Sync Database Operations -----------------
 
@@ -81,7 +109,7 @@ class SystemStateManager:
             session.commit()
         return self._sync_get_state()
 
-    def _sync_evaluate_and_dispatch(self) -> Tuple[SystemState, bool]:
+    def _sync_evaluate_and_dispatch(self, decision_ts: Optional[datetime] = None) -> Tuple[SystemState, bool]:
         """
         Runs the actual Layer 2 dispatch forecasting engine for ROAD and WATER outbound pipelines.
         If any pipeline decisions return DISPATCH_NOW, updates the DB order states, resets cargo metrics, and marks vehicles.
@@ -89,54 +117,145 @@ class SystemStateManager:
         from app.routes.layer2 import store, DEFAULT_CONFIG
         from app.ai.forecast_dispatch import decision_engine
         from app.ai.forecast_dispatch.enums import Mode, Decision
-        from app.models import Order as DBOrder, Vehicle as DBVehicle
         from datetime import timezone
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        now_utc = datetime.now(timezone.utc)
+        now_utc = decision_ts or datetime.now(timezone.utc)
         dispatch_occurred = False
         
-        with Session(engine) as session:
+        # A single process may receive several arrival events concurrently.
+        # Serialize the decision/commit boundary so the same vehicle cannot be
+        # selected by two overlapping evaluations.
+        with self._dispatch_lock, Session(engine) as session:
             for outbound_mode in [Mode.ROAD, Mode.WATER]:
                 result = decision_engine.evaluate(store, now_utc, outbound_mode, DEFAULT_CONFIG)
                 
-                if result.decision == Decision.DISPATCH_NOW:
-                    dispatch_occurred = True
-                    
-                    # 1. Update all waiting shipments for this mode to dispatched state in SQLite DB
+                if result.decision == Decision.DISPATCH_NOW and result.selected_vehicle:
+                    # One vehicle cannot carry the complete queue when the
+                    # aggregate load exceeds its capacity. Keep the remainder
+                    # in arrived_waiting for the next evaluation.
                     pending_shipments = store.pending_shipments(outbound_mode)
-                    for ship in pending_shipments:
-                        order_id = int(ship.shipment_id) if ship.shipment_id.isdigit() else None
-                        if order_id:
-                            order = session.get(DBOrder, order_id)
-                            if order:
-                                order.state = "dispatched"
-                                order.dispatched_at = now_utc.isoformat()
-                                session.add(order)
+                    # A provider-accepted order is held for the provider's
+                    # explicit dispatch action. This prevents the background
+                    # supervisor from silently changing its carrier/vehicle.
+                    provider_accepted_ids = {
+                        str(order.id)
+                        for order in session.exec(
+                            select(Order).where(
+                                Order.state == "arrived_waiting",
+                                Order.provider_assignment_status == "accepted",
+                            )
+                        ).all()
+                    }
+                    pending_shipments = [
+                        shipment
+                        for shipment in pending_shipments
+                        if shipment.shipment_id not in provider_accepted_ids
+                    ]
+                    batch = _select_dispatch_batch(
+                        pending_shipments,
+                        result.selected_vehicle.capacity_kg,
+                    )
+                    shipment_ids: list[str] = []
+                    batch_weight = sum(ship.effective_weight_kg for ship in batch)
+                    if batch:
+                        dispatch_occurred = True
+                        selected_vehicle_record = session.get(
+                            Vehicle,
+                            result.selected_vehicle.vehicle_id,
+                        )
+                        selected_provider_id = (
+                            selected_vehicle_record.provider_id
+                            if selected_vehicle_record is not None
+                            else None
+                        )
+                        for ship in batch:
+                            order_id = int(ship.shipment_id) if ship.shipment_id.isdigit() else None
+                            if order_id:
+                                order = session.get(Order, order_id)
+                                if order:
+                                    order.state = "dispatched"
+                                    order.dispatched_at = now_utc.isoformat()
+                                    order.assigned_vehicle_id = result.selected_vehicle.vehicle_id
+                                    order.assigned_provider_id = selected_provider_id
+                                    order.provider_assignment_status = "assigned"
+                                    order.provider_assigned_at = now_utc.isoformat()
+                                    order.reason_codes_json = json.dumps([code.value for code in result.reason_codes])
+                                    order.priority_score_json = (
+                                        json.dumps(asdict(result.priority_score))
+                                        if result.priority_score is not None else None
+                                    )
+                                    order.predicted_full_load_time = (
+                                        result.forecast.predicted_full_load_time.isoformat()
+                                        if result.forecast.predicted_full_load_time else None
+                                    )
+                                    shipment_ids.append(ship.shipment_id)
+                                    session.add(order)
 
-                    
-                    # 2. Reset the inventory tracking metrics (compatible with old UI charts)
-                    inventories = session.exec(select(CargoInventory)).all()
-                    for inv in inventories:
-                        inv.volume = 0.0
-                        session.add(inv)
-                    
-                    # 3. Mark selected vehicle as en_route
-                    if result.selected_vehicle:
-                        veh = session.get(DBVehicle, result.selected_vehicle.vehicle_id)
+                                    # Keep the compatibility inventory metric in
+                                    # sync without erasing cargo that remains
+                                    # in the consolidation queue.
+                                    from app.ai.normalizers import classify_priority
+                                    cargo_type = classify_priority(order.commodity_id, order.loai_hang)["tier"]
+                                    inventory = session.get(CargoInventory, cargo_type)
+                                    if inventory:
+                                        inventory.volume = max(
+                                            0.0,
+                                            inventory.volume - ship.effective_weight_kg,
+                                        )
+                                        session.add(inventory)
+
+                        veh = selected_vehicle_record
                         if veh:
-                            veh.status = "en_route"
+                            veh.status = "in_transit"
                             session.add(veh)
 
-                    # Update dispatch status key temporarily to trigger UI events
-                    dispatch_setting = session.get(SystemSettings, "dispatch_status")
-                    if dispatch_setting:
-                        dispatch_setting.value = "DISPATCH"
-                    else:
-                        session.add(SystemSettings(key="dispatch_status", value="DISPATCH"))
+                        proposal_id = f"dispatch_{uuid.uuid4().hex}"
+                        dispatch = DispatchOrder(
+                            proposal_id=proposal_id,
+                            vehicle_id=result.selected_vehicle.vehicle_id,
+                            outbound_mode=outbound_mode.value,
+                            shipment_ids_json=json.dumps(shipment_ids),
+                            total_weight_kg=batch_weight,
+                            capacity_kg=result.selected_vehicle.capacity_kg,
+                            fill_ratio=min(batch_weight / result.selected_vehicle.capacity_kg, 1.0),
+                            predicted_full_load_time=(
+                                result.forecast.predicted_full_load_time.isoformat()
+                                if result.forecast.predicted_full_load_time else None
+                            ),
+                            reason_codes_json=json.dumps([code.value for code in result.reason_codes]),
+                            priority_score_json=(
+                                json.dumps(asdict(result.priority_score))
+                                if result.priority_score is not None else None
+                            ),
+                            created_at=timestamp,
+                            dispatched_at=now_utc.isoformat(),
+                            eta_hcm=(now_utc + timedelta(hours=5)).isoformat(),
+                        )
+                        session.add(dispatch)
+                        for shipment_id in shipment_ids:
+                            order = session.get(Order, int(shipment_id))
+                            if order:
+                                order.dispatch_proposal_id = proposal_id
+                                session.add(order)
 
-                    # Log dispatch event
-                    session.add(SystemLog(timestamp=timestamp, message=f"LAYER 2 DECISION ({outbound_mode.value.upper()}): DISPATCH. {result.explanation}"))
+                        # Update dispatch status key temporarily to trigger UI events
+                        dispatch_setting = session.get(SystemSettings, "dispatch_status")
+                        if dispatch_setting:
+                            dispatch_setting.value = "DISPATCH"
+                        else:
+                            session.add(SystemSettings(key="dispatch_status", value="DISPATCH"))
+
+                        # Log dispatch event
+                        session.add(SystemLog(timestamp=timestamp, message=f"LAYER 2 DECISION ({outbound_mode.value.upper()}): DISPATCH. {result.explanation}"))
+                    else:
+                        session.add(SystemLog(
+                            timestamp=timestamp,
+                            message=(
+                                f"LAYER 2 DECISION ({outbound_mode.value.upper()}): WAIT. "
+                                "No waiting batch fits the selected vehicle capacity."
+                            ),
+                        ))
                 else:
                     # Log wait decision details
                     session.add(SystemLog(timestamp=timestamp, message=f"LAYER 2 DECISION ({outbound_mode.value.upper()}): WAIT. {result.explanation}"))
@@ -164,8 +283,23 @@ class SystemStateManager:
     async def set_weather(self, weather: str) -> SystemState:
         return await anyio.to_thread.run_sync(self._sync_set_weather, weather)
 
-    async def evaluate_and_dispatch(self) -> Tuple[SystemState, bool]:
-        return await anyio.to_thread.run_sync(self._sync_evaluate_and_dispatch)
+    async def evaluate_and_dispatch(self, decision_ts: Optional[datetime] = None) -> Tuple[SystemState, bool]:
+        return await anyio.to_thread.run_sync(self._sync_evaluate_and_dispatch, decision_ts)
+
+    def _sync_record_ai_error(self, message: str) -> SystemState:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with Session(engine) as session:
+            session.add(SystemLog(
+                timestamp=timestamp,
+                message=f"AI2 ERROR: {message}",
+                event_type="AI_ERROR",
+                level="ERROR",
+            ))
+            session.commit()
+        return self._sync_get_state()
+
+    async def record_ai_error(self, message: str) -> SystemState:
+        return await anyio.to_thread.run_sync(self._sync_record_ai_error, message)
 
 
 # Global Singleton State Manager

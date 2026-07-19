@@ -1,0 +1,1012 @@
+{
+  "enterprise1@vaic.vn": [
+    {
+      "created_at": "2026-07-19T05:31:26",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:19:22",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:19:09",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:18:58",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:06:28",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:03:04",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:02:44",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:02:25",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:02:15",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:01:54",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:01:27",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    },
+    {
+      "created_at": "2026-07-19T05:01:01",
+      "input": {
+        "hub_id": "HUB_VITHANH",
+        "commodity_id": "COM_RICE",
+        "loai_hang": "Rice",
+        "khoi_luong_kg": 7500.0,
+        "timestamp": "2026-07-19T05:00:00Z"
+      },
+      "recommended_route": "D_WATER_VIA_CT",
+      "khuyen_nghi": "qua_can_tho_duong_thuy",
+      "routes": [
+        {
+          "ten": "di_thang_hcm",
+          "route_code": "A_DIRECT_ROAD",
+          "chi_phi_du_doan_vnd": 4674154.15,
+          "thoi_gian_du_kien_gio": 5.56,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4607440.12,
+            "spoilage_cost_vnd": 66714.02,
+            "transshipment_fee_vnd": 0.0,
+            "total_cost_vnd": 4674154.15,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo",
+          "route_code": "B_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 5434003.37,
+          "thoi_gian_du_kien_gio": 5.31,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 4245287.76,
+            "spoilage_cost_vnd": 63715.6,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 5434003.37,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_sa_lan_duong_bo",
+          "route_code": "C_WATER_ROAD_VIA_CT",
+          "chi_phi_du_doan_vnd": 4760201.87,
+          "thoi_gian_du_kien_gio": 10.21,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 3512730.69,
+            "spoilage_cost_vnd": 122471.17,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 4760201.87,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_thuy",
+          "route_code": "D_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3131506.45,
+          "thoi_gian_du_kien_gio": 25.5,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 1700506.45,
+            "spoilage_cost_vnd": 306000.0,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3131506.45,
+            "pricing_source": "fuel_fallback"
+          }
+        },
+        {
+          "ten": "qua_can_tho_duong_bo_sa_lan",
+          "route_code": "E_ROAD_WATER_VIA_CT",
+          "chi_phi_du_doan_vnd": 3805307.95,
+          "thoi_gian_du_kien_gio": 20.6,
+          "trang_thai": "available",
+          "cost_breakdown": {
+            "raw_transport_cost_vnd": 2433063.52,
+            "spoilage_cost_vnd": 247244.43,
+            "transshipment_fee_vnd": 1125000.0,
+            "total_cost_vnd": 3805307.95,
+            "pricing_source": "fuel_fallback"
+          }
+        }
+      ]
+    }
+  ]
+}

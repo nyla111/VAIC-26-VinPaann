@@ -1,17 +1,20 @@
 import random
 from datetime import datetime
 import anyio
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from app.config import CARGO_TYPES, HUBS, WEATHER_CONDITIONS
 from app.models import RouteSelectRequest, SystemState
 from app.state import state_manager
-from sqlmodel import Session
+from sqlmodel import Session, select
 from datetime import timezone
-from app.models import RouteSelectRequest, SystemState, Order, CargoInventory, SystemLog
+from app.models import RouteSelectRequest, SystemState, Order, CargoInventory, SystemLog, Vehicle
 from app.state import state_manager
 from app.routes.websocket import ws_manager
 from app.ai.route_optimizer.optimizer import optimize_route
 from app.database import engine
+from app.order_times import effective_harvested_at
+from app.services.order_lifecycle import create_direct_dispatch
+from app.routes.auth import current_user
 
 router = APIRouter()
 
@@ -34,7 +37,16 @@ async def simulate_shipment_arrival(order_id: int):
             order.state = "arrived_waiting"
             order.actual_arrival_at = actual_arrival
             order.actual_weight_kg = order.khoi_luong_kg
+            if not order.harvested_at:
+                order.harvested_at = effective_harvested_at(None, order.created_at)
             session.add(order)
+
+            if order.assigned_vehicle_id:
+                inbound_vehicle = session.get(Vehicle, order.assigned_vehicle_id)
+                if inbound_vehicle:
+                    inbound_vehicle.status = "available"
+                    inbound_vehicle.location = "can_tho"
+                    session.add(inbound_vehicle)
             
             # Log arrival details
             log_msg = f"Hub Incoming: Shipment #{order_id} ({order.khoi_luong_kg:.1f} kg of {order.commodity_id or order.loai_hang}) arrived at Can Tho Hub from {order.hub_id}."
@@ -62,7 +74,11 @@ async def simulate_shipment_arrival(order_id: int):
 
 
 @router.post("/select-route", response_model=SystemState, status_code=status.HTTP_200_OK)
-async def select_route(request: RouteSelectRequest, background_tasks: BackgroundTasks):
+async def select_route(
+    request: RouteSelectRequest,
+    background_tasks: BackgroundTasks,
+    http_request: Request,
+):
     """
     Registers route choice for shipments. If routing through Can Tho, initiates background transport simulation.
     """
@@ -81,6 +97,7 @@ async def select_route(request: RouteSelectRequest, background_tasks: Background
     
     target_order_id = None
     timestamp_log = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    viewer = current_user(http_request) if http_request is not None else None
 
     # 2. Process route selection
     if request.selected_route_id in ["B_ROAD_VIA_CT", "C_WATER_ROAD_VIA_CT", "D_WATER_VIA_CT", "E_ROAD_WATER_VIA_CT"]:
@@ -94,34 +111,60 @@ async def select_route(request: RouteSelectRequest, background_tasks: Background
                     pass
             
             if db_order:
+                if viewer is None or (
+                    viewer.role != "admin" and db_order.user_id != viewer.id
+                ):
+                    raise HTTPException(status_code=403, detail="Order is not accessible")
                 db_order.selected_route_id = request.selected_route_id
                 db_order.state = "routed_to_can_tho"
             else:
+                created_at = datetime.now(timezone.utc).isoformat()
                 db_order = Order(
                     hub_id=request.hub_id,
                     commodity_id=None,
                     loai_hang=request.cargo_type,
                     khoi_luong_kg=request.volume,
                     timestamp=datetime.now(timezone.utc).isoformat(),
-                    created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    created_at=created_at,
+                    harvested_at=effective_harvested_at(None, created_at),
                     selected_route_id=request.selected_route_id,
-                    state="routed_to_can_tho"
+                    state="routed_to_can_tho",
+                    user_id=viewer.id if viewer and viewer.role == "enterprise" else None,
                 )
+                db_order.harvested_at = effective_harvested_at(None, db_order.created_at)
+                
+            from app.simulation import SYSTEM_CLOCK
+            from datetime import timedelta
+            from app.models import Vehicle
+            
+            inbound_mode = "water" if request.selected_route_id in ["D_WATER_VIA_CT", "E_ROAD_WATER_VIA_CT"] else "road"
+            veh = session.exec(select(Vehicle).where(Vehicle.mode == inbound_mode, Vehicle.status == "available")).first()
+            
+            if veh:
+                db_order.assigned_vehicle_id = veh.license_plate
+                db_order.assigned_provider_id = veh.provider_id
+                db_order.provider_assignment_status = "assigned"
+                db_order.provider_assigned_at = datetime.now(timezone.utc).isoformat()
+                veh.status = "en_route"
+                veh.location = db_order.hub_id
+                session.add(veh)
+            
+            eta_hours = db_order.selected_route_eta_hours or 2.0
+            db_order.eta_can_tho = (SYSTEM_CLOCK + timedelta(hours=eta_hours)).isoformat()
+            
             session.add(db_order)
             session.commit()
             session.refresh(db_order)
             target_order_id = db_order.id
             
             # Ghi log chọn tuyến Cần Thơ
-            log_msg = f"Route Selected: Shipment #{target_order_id} ({request.volume:.1f} kg of {request.cargo_type}) from {request.hub_id} routed via Can Tho. Dispatching to Can Tho..."
+            log_msg = f"Route Selected: Shipment #{target_order_id} ({request.volume:.1f} kg of {request.cargo_type}) from {request.hub_id} routed via Can Tho. In transit via vehicle {veh.license_plate if veh else 'None'}..."
             session.add(SystemLog(timestamp=timestamp_log, message=log_msg))
             session.commit()
             
         state = await state_manager.get_state()
         await ws_manager.broadcast(state)
-        
-        # Start the background task to simulate travel & arrival
-        background_tasks.add_task(simulate_shipment_arrival, target_order_id)
+        # Background arrival simulation task is removed as the simulation loop will handle it based on system clock.
         
     else:
         # Direct shipment bypassing Can Tho (A_DIRECT_ROAD)
@@ -134,23 +177,33 @@ async def select_route(request: RouteSelectRequest, background_tasks: Background
                     pass
             now_str = datetime.now(timezone.utc).isoformat()
             if db_order:
+                if viewer is None or (
+                    viewer.role != "admin" and db_order.user_id != viewer.id
+                ):
+                    raise HTTPException(status_code=403, detail="Order is not accessible")
                 db_order.selected_route_id = request.selected_route_id
                 db_order.state = "dispatched"
                 db_order.dispatched_at = now_str
+                create_direct_dispatch(session, db_order, datetime.now(timezone.utc))
                 session.add(db_order)
             else:
+                created_at = datetime.now(timezone.utc).isoformat()
                 db_order = Order(
                     hub_id=request.hub_id,
                     commodity_id=None,
                     loai_hang=request.cargo_type,
                     khoi_luong_kg=request.volume,
                     timestamp=now_str,
-                    created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    created_at=created_at,
+                    harvested_at=effective_harvested_at(None, created_at),
                     selected_route_id=request.selected_route_id,
                     state="dispatched",
-                    dispatched_at=now_str
+                    dispatched_at=now_str,
+                    user_id=viewer.id if viewer and viewer.role == "enterprise" else None,
                 )
                 session.add(db_order)
+                session.flush()
+                create_direct_dispatch(session, db_order, datetime.now(timezone.utc))
 
                 
             log_msg = f"Direct Route: {request.volume:.2f} kg of {request.cargo_type} from {request.hub_id} dispatched directly to HCM."
@@ -215,7 +268,7 @@ async def simulate_incoming(background_tasks: BackgroundTasks):
     )
 
     # 3. Register route selection and add to background task
-    state = await select_route(select_payload, background_tasks)
+    state = await select_route(select_payload, background_tasks, None)
 
     return {
         "message": f"Simulation Event Triggered: Inbound cargo from {hub}.",
@@ -232,4 +285,3 @@ async def simulate_incoming(background_tasks: BackgroundTasks):
         },
         "current_system_state": state
     }
-

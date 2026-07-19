@@ -5,6 +5,7 @@ import { Suspense, useCallback, useMemo, useState } from "react";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DetailDrawer } from "@/components/admin/DetailDrawer";
 import { ToastContainer, type ToastMessage } from "@/components/admin/Toast";
+import { useLanguage } from "@/context/LanguageContext";
 import { BUSINESSES, ORDERS, type Business, type BusinessStatus } from "@/data/adminMockData";
 
 function fmtVnd(n: number) {
@@ -31,6 +32,7 @@ function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { language, t } = useLanguage();
   if (!open) return null;
   return (
     <>
@@ -56,7 +58,7 @@ function ConfirmDialog({
         <p style={{ margin: "0 0 20px", color: "#64748b" }}>{message}</p>
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
           <button className="secondary" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             style={danger ? { background: "#dc2626" } : {}}
@@ -79,15 +81,16 @@ function BusinessDrawer({
   onClose: () => void;
   onStatusChange: (id: string, status: BusinessStatus) => void;
 }) {
+  const { language, t } = useLanguage();
   const [tab, setTab] = useState<"overview" | "orders" | "performance" | "activity">("overview");
   const orders = ORDERS.filter((o) => o.business_id === biz.id);
 
   const tabs = ["overview", "orders", "performance", "activity"] as const;
   const tabLabels: Record<typeof tabs[number], string> = {
-    overview: "Overview",
-    orders: "Orders",
-    performance: "Performance",
-    activity: "Activity",
+    overview: t("businesses.overview", "Overview"),
+    orders: t("common.orders"),
+    performance: t("businesses.performance", "Performance"),
+    activity: t("businesses.activity", "Activity"),
   };
 
   return (
@@ -107,35 +110,31 @@ function BusinessDrawer({
 
       {tab === "overview" && (
         <div className="drawer-section-grid">
-          <DrawerField label="Company" value={biz.name} />
-          <DrawerField label="Contact" value={biz.contact} />
+          <DrawerField label={t("businesses.company")} value={biz.name} />
+          <DrawerField label={t("businesses.contact")} value={biz.contact} />
           <DrawerField label="Email" value={biz.email} />
           <DrawerField label="Phone" value={biz.phone} />
-          <DrawerField label="Province" value={biz.province} />
-          <DrawerField label="Address" value={biz.address} />
-          <DrawerField label="Status" value={<StatusBadge status={biz.status} />} />
-          <DrawerField label="Registered" value={biz.registered_at} />
-          <DrawerField label="Total Orders" value={biz.total_orders} />
-          <DrawerField label="Active Orders" value={biz.active_orders} />
-          <DrawerField label="Total Volume" value={`${biz.total_volume_ton} ton`} />
-          <DrawerField label="Total Spend" value={`${fmtVnd(biz.total_spend_vnd)} VND`} />
-          <DrawerField label="Last Active" value={biz.last_active} />
+          <DrawerField label={t("businesses.province")} value={biz.province} />
+          <DrawerField label={t("businesses.address", "Address")} value={biz.address} />
+          <DrawerField label={t("common.status")} value={<StatusBadge status={biz.status} />} />
+          <DrawerField label={t("businesses.registered", "Registered")} value={biz.registered_at} />
+          <DrawerField label={t("businesses.total_orders")} value={biz.total_orders} />
+          <DrawerField label={t("businesses.active_orders")} value={biz.active_orders} />
+          <DrawerField label={t("businesses.volume")} value={`${biz.total_volume_ton} ${t("businesses.ton", "tons")}`} />
+          <DrawerField label={t("businesses.spend")} value={`${fmtVnd(biz.total_spend_vnd)} VND`} />
+          <DrawerField label={t("businesses.last_active")} value={biz.last_active} />
         </div>
       )}
 
       {tab === "orders" && (
         orders.length === 0 ? (
-          <div className="empty">No orders from this business yet.</div>
+          <div className="empty">{t("businesses.no_orders", "No orders from this business yet.")}</div>
         ) : (
           <div style={{ overflow: "auto" }}>
             <table>
               <thead>
                 <tr>
-                  <th>Order ID</th>
-                  <th>Commodity</th>
-                  <th>Weight</th>
-                  <th>Status</th>
-                  <th>Created</th>
+                  <th>{language === "vi" ? "Mã đơn" : "Order ID"}</th><th>{t("businesses.commodity")}</th><th>{t("common.weight")}</th><th>{t("common.status")}</th><th>{t("businesses.created")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -156,7 +155,7 @@ function BusinessDrawer({
 
       {tab === "performance" && (
         biz.total_orders === 0 ? (
-          <div className="empty">No performance data — no orders placed yet.</div>
+          <div className="empty">{t("businesses.no_performance", "No performance data — no orders placed yet.")}</div>
         ) : (
           <div className="drawer-section-grid">
             <DrawerField label="Avg Transport Cost" value={`${fmtVnd(biz.avg_cost_vnd)} VND`} />
@@ -168,8 +167,8 @@ function BusinessDrawer({
       )}
 
       {tab === "activity" && (
-        <div className="empty" style={{ fontSize: 14, color: "#64748b" }}>
-          Recent business activity is shown in the Overview → Recent Activity feed.
+          <div className="empty" style={{ fontSize: 14, color: "#64748b" }}>
+          {t("businesses.activity_hint", "Recent business activity is shown in the Overview → Recent Activity feed.")}
         </div>
       )}
 
@@ -177,21 +176,21 @@ function BusinessDrawer({
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24, paddingTop: 16, borderTop: "1px solid #dbe2ea" }}>
         {biz.status === "pending" && (
           <button onClick={() => onStatusChange(biz.id, "active")} style={{ background: "#047857" }}>
-            Approve Business
+            {t("businesses.approve")}
           </button>
         )}
         {biz.status === "active" && (
           <button onClick={() => onStatusChange(biz.id, "suspended")} style={{ background: "#dc2626" }}>
-            Suspend
+            {t("businesses.suspend")}
           </button>
         )}
         {biz.status === "suspended" && (
           <button onClick={() => onStatusChange(biz.id, "active")} style={{ background: "#047857" }}>
-            Reactivate
+            {t("businesses.reactivate")}
           </button>
         )}
-        <button className="secondary">Edit</button>
-        <button className="secondary">View Orders →</button>
+        <button className="secondary">{t("common.edit", "Edit")}</button>
+        <button className="secondary">{t("businesses.view_orders", "View orders")} →</button>
       </div>
     </DetailDrawer>
   );
@@ -209,6 +208,7 @@ function DrawerField({ label, value }: { label: string; value: React.ReactNode }
 const PROVINCES = [...new Set(BUSINESSES.map((b) => b.province))].sort();
 
 function BusinessesContent() {
+  const { language, t } = useLanguage();
   const searchParams = useSearchParams();
   const initialFilter = searchParams.get("filter") || "all";
 
@@ -267,50 +267,50 @@ function BusinessesContent() {
     setConfirm(null);
   }
 
-  const actionLabels: Record<BusinessStatus, string> = { active: "Approve", pending: "Reset", suspended: "Confirm Suspend" };
+  const actionLabels: Record<BusinessStatus, string> = { active: t("businesses.approve"), pending: t("common.reset", "Reset"), suspended: t("businesses.confirm_suspend", "Confirm suspend") };
 
   return (
     <div className="admin-page">
       <div className="admin-page-header">
         <div>
-          <h1>Businesses</h1>
-          <p className="page-subtitle">Manage platform businesses and their orders</p>
+          <h1>{t("businesses.title")}</h1>
+          <p className="page-subtitle">{t("businesses.subtitle")}</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="secondary">Export</button>
-          <button>+ Add Business</button>
+          <button className="secondary">{t("businesses.export")}</button>
+          <button>+ {t("businesses.add")}</button>
         </div>
       </div>
 
       {/* Summary strip */}
       <div className="summary-strip" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-        <SummaryCard label="Total Businesses" value={counts.total} />
-        <SummaryCard label="Active" value={counts.active} color="#047857" />
-        <SummaryCard label="Pending Approval" value={counts.pending} color="#d97706" />
-        <SummaryCard label="Suspended" value={counts.suspended} color="#dc2626" />
+        <SummaryCard label={t("businesses.total")} value={counts.total} />
+        <SummaryCard label={t("businesses.active")} value={counts.active} color="#047857" />
+        <SummaryCard label={t("businesses.pending")} value={counts.pending} color="#d97706" />
+        <SummaryCard label={t("businesses.suspended")} value={counts.suspended} color="#dc2626" />
       </div>
 
       {/* Filters */}
       <div className="admin-filters">
         <input
           className="filter-input"
-          placeholder="Search by name or contact…"
+          placeholder={t("businesses.search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="pending">Pending</option>
-          <option value="suspended">Suspended</option>
+          <option value="all">{t("businesses.all_statuses")}</option>
+          <option value="active">{t("businesses.active")}</option>
+          <option value="pending">{t("businesses.pending")}</option>
+          <option value="suspended">{t("businesses.suspended")}</option>
         </select>
         <select value={provinceFilter} onChange={(e) => setProvinceFilter(e.target.value)}>
-          <option value="all">All Provinces</option>
+          <option value="all">{t("businesses.all_provinces")}</option>
           {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
         {(search || statusFilter !== "all" || provinceFilter !== "all") && (
           <button className="secondary" onClick={() => { setSearch(""); setStatusFilter("all"); setProvinceFilter("all"); }}>
-            Clear Filters
+            {t("businesses.clear_filters")}
           </button>
         )}
         <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
@@ -324,22 +324,14 @@ function BusinessesContent() {
           <table>
             <thead>
               <tr>
-                <th>Business</th>
-                <th>Contact</th>
-                <th>Province</th>
-                <th>Orders (Total / Active)</th>
-                <th>Volume</th>
-                <th>Total Spend</th>
-                <th>Last Active</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{t("businesses.company")}</th><th>{t("businesses.contact")}</th><th>{t("businesses.province")}</th><th>{t("businesses.total_orders")}</th><th>{t("businesses.volume")}</th><th>{t("businesses.spend")}</th><th>{t("businesses.last_active")}</th><th>{t("common.status")}</th><th>{t("businesses.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={9} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
-                    No businesses match the selected filters.
+                    {t("businesses.no_match")}
                   </td>
                 </tr>
               ) : (
@@ -366,14 +358,14 @@ function BusinessesContent() {
                           style={{ padding: "5px 10px", fontSize: 12 }}
                           onClick={() => setSelected(biz)}
                         >
-                          Details
+                          {t("businesses.details")}
                         </button>
                         {biz.status === "pending" && (
                           <button
                             style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }}
                             onClick={() => handleStatusChange(biz.id, "active")}
                           >
-                            Approve
+                            {t("businesses.approve")}
                           </button>
                         )}
                         {biz.status === "active" && (
@@ -381,7 +373,7 @@ function BusinessesContent() {
                             style={{ padding: "5px 10px", fontSize: 12, background: "#dc2626" }}
                             onClick={() => handleStatusChange(biz.id, "suspended")}
                           >
-                            Suspend
+                            {t("businesses.suspend")}
                           </button>
                         )}
                         {biz.status === "suspended" && (
@@ -389,7 +381,7 @@ function BusinessesContent() {
                             style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }}
                             onClick={() => handleStatusChange(biz.id, "active")}
                           >
-                            Reactivate
+                            {t("businesses.reactivate")}
                           </button>
                         )}
                       </div>
@@ -414,9 +406,9 @@ function BusinessesContent() {
       {/* Confirm dialog */}
       <ConfirmDialog
         open={!!confirm}
-        title="Suspend Business"
-        message={`Are you sure you want to suspend "${confirm?.biz.name}"? They will lose access to the platform.`}
-        confirmLabel={confirm ? actionLabels[confirm.next] : "Confirm"}
+        title={language === "vi" ? "Tạm dừng doanh nghiệp" : "Suspend business"}
+        message={language === "vi" ? `Bạn có chắc muốn tạm dừng "${confirm?.biz.name}"? Doanh nghiệp sẽ mất quyền truy cập nền tảng.` : `Are you sure you want to suspend "${confirm?.biz.name}"? They will lose access to the platform.`}
+        confirmLabel={confirm ? actionLabels[confirm.next] : t("common.confirm")}
         danger
         onConfirm={() => confirm && applyStatusChange(confirm.biz.id, confirm.next)}
         onCancel={() => setConfirm(null)}

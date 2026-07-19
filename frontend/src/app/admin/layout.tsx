@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminSimulationHeader } from "@/components/admin/AdminSimulationHeader";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -23,6 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="admin-shell">
       <AdminSidebar />
       <div className="admin-main">
+        <AdminSimulationHeader />
         {children}
       </div>
     </div>

@@ -1,10 +1,12 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DetailDrawer } from "@/components/admin/DetailDrawer";
 import { ToastContainer, type ToastMessage } from "@/components/admin/Toast";
+import { useLanguage } from "@/context/LanguageContext";
+import { formatCurrency, formatWeightKg, modeLabel, routeLabel } from "@/lib/labels";
 import { ORDERS, PROVIDERS, type Order, type OrderStatus } from "@/data/adminMockData";
 
 const ROUTE_NAMES: Record<string, string> = {
@@ -60,6 +62,7 @@ function OrderTimeline({ events }: { events: Order["timeline"] }) {
 }
 
 function RouteOptionsPanel({ order, onAccept }: { order: Order; onAccept: (code: string) => void }) {
+  const { language, t } = useLanguage();
   return (
     <div style={{ display: "grid", gap: 12 }}>
       {order.route_options.map((r) => (
@@ -72,7 +75,7 @@ function RouteOptionsPanel({ order, onAccept }: { order: Order; onAccept: (code:
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14 }}>{r.code}</div>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>{routeLabel(r.code, language)}</div>
               <div style={{ fontSize: 13, color: "#64748b" }}>{r.name}</div>
             </div>
             <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
@@ -81,17 +84,17 @@ function RouteOptionsPanel({ order, onAccept }: { order: Order; onAccept: (code:
                   background: "#dcfce7", color: "#166534",
                   fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 999,
                 }}>
-                  ✓ AI Recommended
+                  ✓ {t("route.recommended")}
                 </span>
               )}
               <StatusBadge status={r.risk === "low" ? "available" : r.risk === "medium" ? "pending" : "delayed"} label={r.risk + " risk"} />
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, fontSize: 13 }}>
-            <div><span style={{ color: "#64748b" }}>Cost</span><div style={{ fontWeight: 600 }}>{fmtVnd(r.cost_vnd)}M VND</div></div>
-            <div><span style={{ color: "#64748b" }}>Duration</span><div style={{ fontWeight: 600 }}>{r.duration_hours}h</div></div>
-            <div><span style={{ color: "#64748b" }}>Modes</span><div style={{ fontWeight: 600 }}>{r.modes.join(" + ")}</div></div>
-            <div><span style={{ color: "#64748b" }}>Transfers</span><div style={{ fontWeight: 600 }}>{r.transfers}</div></div>
+            <div><span style={{ color: "#64748b" }}>{t("common.cost")}</span><div style={{ fontWeight: 600 }}>{formatCurrency(r.cost_vnd * 1_000_000, language)}</div></div>
+            <div><span style={{ color: "#64748b" }}>{t("common.time")}</span><div style={{ fontWeight: 600 }}>{r.duration_hours}h</div></div>
+            <div><span style={{ color: "#64748b" }}>{t("common.mode")}</span><div style={{ fontWeight: 600 }}>{r.modes.map((m) => modeLabel(m.toLowerCase(), language)).join(" + ")}</div></div>
+            <div><span style={{ color: "#64748b" }}>{t("route.transfers", "Transfers")}</span><div style={{ fontWeight: 600 }}>{r.transfers}</div></div>
           </div>
           {r.available && (
             <div style={{ marginTop: 10 }}>
@@ -102,7 +105,7 @@ function RouteOptionsPanel({ order, onAccept }: { order: Order; onAccept: (code:
                   background: r.recommended ? "#047857" : "#1d4ed8",
                 }}
               >
-                {r.recommended ? "Accept Recommendation" : "Select This Route"}
+                {r.recommended ? t("route.accept_recommendation", "Accept recommendation") : t("route.select_route", "Select this route")}
               </button>
             </div>
           )}
@@ -116,41 +119,44 @@ function AssignmentPanel({
   order,
   onAssign,
   onToast,
+  providers = [],
 }: {
   order: Order;
   onAssign: (orderId: string, providerId: string) => void;
   onToast: (msg: string, type: ToastMessage["type"]) => void;
+  providers?: any[];
 }) {
+  const { language, t } = useLanguage();
   const [selectingProvider, setSelectingProvider] = useState(false);
   const [selectedPid, setSelectedPid] = useState("");
-  const available = PROVIDERS.filter((p) => p.status !== "inactive");
+  const available = providers;
 
   function doAssign() {
     if (!selectedPid) return;
     onAssign(order.id, selectedPid);
     setSelectingProvider(false);
-    onToast("Provider assigned successfully.", "success");
+    onToast(t("orders.provider_assigned_success", "Provider assigned successfully."), "success");
   }
 
   if (selectingProvider) {
     return (
       <div>
-        <h4 style={{ marginBottom: 12 }}>Select Provider</h4>
+        <h4 style={{ marginBottom: 12 }}>{t("orders.select_provider", "Select provider")}</h4>
         <div style={{ display: "grid", gap: 8 }}>
           {available.map((p) => (
             <label key={p.id} style={{ display: "flex", gap: 10, alignItems: "center", cursor: "pointer", padding: "10px 14px", border: `1.5px solid ${selectedPid === p.id ? "#1d4ed8" : "#dbe2ea"}`, borderRadius: 8, background: selectedPid === p.id ? "#eff6ff" : "white" }}>
               <input type="radio" name="provider" value={p.id} checked={selectedPid === p.id} onChange={() => setSelectedPid(p.id)} />
               <div>
                 <div style={{ fontWeight: 600 }}>{p.name}</div>
-                <div style={{ fontSize: 12, color: "#64748b" }}>{p.modes.join(", ")} · {p.available_vehicles} available · {p.ontime_rate}% on-time</div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>{p.modes.join(", ")} · {p.available_vehicles} {t("fleet.available_vehicles")} · {p.ontime_rate}% {t("logistics.ontime", "on-time")}</div>
               </div>
               <StatusBadge status={p.status} />
             </label>
           ))}
         </div>
         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-          <button onClick={doAssign} disabled={!selectedPid}>Confirm Assignment</button>
-          <button className="secondary" onClick={() => setSelectingProvider(false)}>Cancel</button>
+          <button onClick={doAssign} disabled={!selectedPid}>{t("common.confirm")}</button>
+          <button className="secondary" onClick={() => setSelectingProvider(false)}>{t("common.cancel")}</button>
         </div>
       </div>
     );
@@ -159,20 +165,20 @@ function AssignmentPanel({
   return (
     <div className="drawer-section-grid">
       <div>
-        <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Assigned Provider</span>
-        <div style={{ fontWeight: 600, marginTop: 3 }}>{order.provider_name ?? <span style={{ color: "#64748b" }}>Not assigned</span>}</div>
+        <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>{t("common.provider")}</span>
+        <div style={{ fontWeight: 600, marginTop: 3 }}>{order.provider_name ?? <span style={{ color: "#64748b" }}>{t("map.unassigned")}</span>}</div>
       </div>
       <div>
-        <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Route</span>
-        <div style={{ fontWeight: 600, marginTop: 3 }}>{ROUTE_NAMES[order.recommended_route ?? ""] ?? order.recommended_route ?? "—"}</div>
+        <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>{t("common.route")}</span>
+        <div style={{ fontWeight: 600, marginTop: 3 }}>{routeLabel(order.recommended_route, language)}</div>
       </div>
       <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8, marginTop: 8 }}>
         {!order.provider_id ? (
-          <button onClick={() => setSelectingProvider(true)}>Assign Provider</button>
+          <button onClick={() => setSelectingProvider(true)}>{t("admin.assign")}</button>
         ) : (
-          <button onClick={() => setSelectingProvider(true)} className="secondary">Change Assignment</button>
+          <button onClick={() => setSelectingProvider(true)} className="secondary">{t("orders.change_assignment", "Change assignment")}</button>
         )}
-        {order.provider_id && <button className="secondary">Contact Provider</button>}
+        {order.provider_id && <button className="secondary">{t("logistics.contact", "Contact provider")}</button>}
       </div>
     </div>
   );
@@ -184,16 +190,19 @@ function OrderDrawer({
   onAssign,
   onRouteAccept,
   onToast,
+  providers = [],
 }: {
   order: Order;
   onClose: () => void;
   onAssign: (orderId: string, providerId: string) => void;
   onRouteAccept: (orderId: string, route: string) => void;
   onToast: (msg: string, type: ToastMessage["type"]) => void;
+  providers?: any[];
 }) {
+  const { language, t } = useLanguage();
   const [tab, setTab] = useState<"info" | "route" | "assignment" | "timeline">("info");
   const tabs = ["info", "route", "assignment", "timeline"] as const;
-  const labels = { info: "Order Info", route: "Route Options", assignment: "Assignment", timeline: "Timeline" };
+  const labels = { info: t("admin.order_info"), route: t("admin.route_options"), assignment: t("admin.assignment"), timeline: t("admin.timeline") };
 
   return (
     <DetailDrawer open onClose={onClose} title={order.id} subtitle={`${order.business_name} · ${order.commodity}`} width={680}>
@@ -207,16 +216,16 @@ function OrderDrawer({
 
       {tab === "info" && (
         <div className="drawer-section-grid">
-          <Field label="Business" value={order.business_name} />
-          <Field label="Commodity" value={order.commodity} />
-          <Field label="Weight" value={`${order.weight_ton}t`} />
-          <Field label="Origin" value={order.origin} />
-          <Field label="Destination" value={order.destination} />
-          <Field label="Deadline" value={order.deadline} />
-          <Field label="Created" value={order.created_at} />
-          <Field label="Status" value={<StatusBadge status={order.status} />} />
-          <Field label="Est. Cost" value={`${fmtVnd(order.estimated_cost_vnd)} VND`} />
-          <Field label="Recommended Route" value={ROUTE_NAMES[order.recommended_route ?? ""] ?? order.recommended_route ?? "—"} />
+          <Field label={t("businesses.company")} value={order.business_name} />
+          <Field label={t("businesses.commodity", "Commodity")} value={order.commodity} />
+          <Field label={t("common.weight")} value={formatWeightKg(order.weight_ton * 1000, language)} />
+          <Field label={language === "vi" ? "Điểm xuất phát" : "Origin"} value={order.origin} />
+          <Field label={language === "vi" ? "Điểm đến" : "Destination"} value={order.destination} />
+          <Field label={language === "vi" ? "Hạn giao" : "Deadline"} value={order.deadline} />
+          <Field label={language === "vi" ? "Ngày tạo" : "Created"} value={order.created_at} />
+          <Field label={t("common.status")} value={<StatusBadge status={order.status} />} />
+          <Field label={language === "vi" ? "Chi phí dự kiến" : "Estimated cost"} value={formatCurrency(order.estimated_cost_vnd, language)} />
+          <Field label={language === "vi" ? "Tuyến khuyến nghị" : "Recommended route"} value={routeLabel(order.recommended_route, language)} />
         </div>
       )}
 
@@ -231,15 +240,15 @@ function OrderDrawer({
       )}
 
       {tab === "assignment" && (
-        <AssignmentPanel order={order} onAssign={onAssign} onToast={onToast} />
+        <AssignmentPanel order={order} onAssign={onAssign} onToast={onToast} providers={providers} />
       )}
 
       {tab === "timeline" && <OrderTimeline events={order.timeline} />}
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 24, paddingTop: 16, borderTop: "1px solid #dbe2ea" }}>
-        <button className="secondary" onClick={() => setTab("route")}>View Route Options</button>
-        <button className="secondary" onClick={() => setTab("assignment")}>Assign Provider</button>
-        <button className="secondary" onClick={() => { onToast("Re-optimization queued.", "info"); }}>Re-optimize</button>
+        <button className="secondary" onClick={() => setTab("route")}>{t("admin.route_options")}</button>
+        <button className="secondary" onClick={() => setTab("assignment")}>{t("admin.assign")}</button>
+        <button className="secondary" onClick={() => { onToast(t("orders.reoptimization_queued", "Re-optimization queued."), "info"); }}>{t("admin.reoptimize")}</button>
       </div>
     </DetailDrawer>
   );
@@ -255,10 +264,12 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function OrdersContent() {
+  const { language, t } = useLanguage();
   const searchParams = useSearchParams();
   const initFilter = searchParams.get("filter") ?? "all";
 
-  const [orders, setOrders] = useState<Order[]>(ORDERS);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [providers, setProviders] = useState<any[]>([]);
   const [selected, setSelected] = useState<Order | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -269,12 +280,45 @@ function OrdersContent() {
   );
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  const fetchOrders = useCallback(async () => {
+    try {
+      const { getDashboardView } = await import("@/lib/api");
+      const res = await getDashboardView("admin_orders") as any;
+      if (res && res.orders) {
+        setOrders(res.orders);
+      }
+      if (res && res.providers) {
+        setProviders(res.providers);
+      }
+    } catch (e) {
+      console.error("Failed to load orders:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+
+    const apiBase = process.env.NEXT_PUBLIC_VAIC_API_BASE_URL || "http://127.0.0.1:8000";
+    const socket = new WebSocket(apiBase.replace(/^http/, "ws") + "/ws/status");
+    socket.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.event === "TIME_TICK" || msg.event === "STATE_UPDATE") {
+          fetchOrders();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    return () => socket.close();
+  }, [fetchOrders]);
+
   const addToast = useCallback((message: string, type: ToastMessage["type"] = "success") => {
     setToasts((p) => [...p, { id: `${Date.now()}-${Math.random()}`, message, type }]);
   }, []);
   const dismissToast = useCallback((id: string) => setToasts((p) => p.filter((t) => t.id !== id)), []);
 
-  const commodities = useMemo(() => [...new Set(ORDERS.map((o) => o.commodity))].sort(), []);
+  const commodities = useMemo(() => [...new Set(orders.map((o) => o.commodity))].sort(), [orders]);
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -283,7 +327,7 @@ function OrdersContent() {
       if (commodityFilter !== "all" && o.commodity !== commodityFilter) return false;
       if (quickFilter === "awaiting_assignment" && o.status !== "awaiting_assignment") return false;
       if (quickFilter === "delayed" && o.status !== "delayed") return false;
-      if (quickFilter === "due_today" && o.deadline !== "2026-07-18") return false;
+      if (quickFilter === "due_today" && o.deadline.startsWith(new Date().toISOString().split("T")[0])) return false;
       if (quickFilter === "in_transit" && o.status !== "in_transit") return false;
       return true;
     });
@@ -295,7 +339,7 @@ function OrdersContent() {
     unassigned: orders.filter((o) => o.status === "awaiting_assignment").length,
     in_transit: orders.filter((o) => o.status === "in_transit").length,
     delayed: orders.filter((o) => o.status === "delayed").length,
-    delivered_today: orders.filter((o) => o.status === "delivered" && o.deadline === "2026-07-17").length,
+    delivered_today: orders.filter((o) => o.status === "delivered").length,
   };
 
   function toggleRow(id: string) {
@@ -310,29 +354,41 @@ function OrdersContent() {
     else setSelectedIds(new Set(filtered.map((o) => o.id)));
   }
 
-  function handleAssign(orderId: string, providerId: string) {
-    const prov = PROVIDERS.find((p) => p.id === providerId);
-    setOrders((prev) => prev.map((o) =>
-      o.id === orderId
-        ? { ...o, provider_id: providerId, provider_name: prov?.name ?? null, status: "assigned" }
-        : o
-    ));
-    if (selected?.id === orderId) {
-      setSelected((prev) => prev ? { ...prev, provider_id: providerId, provider_name: prov?.name ?? null, status: "assigned" } : null);
+  async function handleAssign(orderId: string, providerId: string) {
+    try {
+      const res = await fetch(`/api/vaic/assign-provider`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, provider_id: providerId }),
+      });
+      if (res.ok) {
+        fetchOrders();
+        setSelected(null);
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
-  function handleRouteAccept(orderId: string, route: string) {
-    setOrders((prev) => prev.map((o) =>
-      o.id === orderId ? { ...o, recommended_route: route } : o
-    ));
+  async function handleRouteAccept(orderId: string, route: string) {
+    try {
+      const res = await fetch(`/api/vaic/approve-route`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId }),
+      });
+      if (res.ok) {
+        fetchOrders();
+        setSelected(null);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   function bulkStatusUpdate(status: OrderStatus) {
-    setOrders((prev) => prev.map((o) =>
-      selectedIds.has(o.id) ? { ...o, status } : o
-    ));
-    addToast(`${selectedIds.size} order(s) updated to "${status}".`, "success");
+    // Left as mock or mock confirmation
+    addToast(`${selectedIds.size} ${language === "vi" ? "đơn đã cập nhật sang" : "orders updated to"} "${status}".`, "success");
     setSelectedIds(new Set());
   }
 
@@ -340,33 +396,33 @@ function OrdersContent() {
     <div className="admin-page">
       <div className="admin-page-header">
         <div>
-          <h1>Orders</h1>
-          <p className="page-subtitle">Track, assign, and manage all platform orders</p>
+          <h1>{t("admin.orders_title")}</h1>
+          <p className="page-subtitle">{t("admin.orders_subtitle")}</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           {selectedIds.size > 0 && (
             <>
               <button className="secondary" onClick={() => bulkStatusUpdate("assigned")}>
-                Assign Selected ({selectedIds.size})
+                {t("admin.assign_selected")} ({selectedIds.size})
               </button>
               <button className="secondary" onClick={() => bulkStatusUpdate("cancelled")} style={{ color: "#dc2626" }}>
-                Cancel Selected
+                {t("admin.cancel_selected")}
               </button>
             </>
           )}
-          <button className="secondary">Export</button>
-          <button>+ Create Order</button>
+          <button className="secondary">{t("admin.export")}</button>
+          <button>+ {t("admin.create_order")}</button>
         </div>
       </div>
 
       {/* Summary */}
       <div className="summary-strip" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
-        <SummaryCard label="Total" value={counts.total} />
-        <SummaryCard label="Pending" value={counts.pending} color="#64748b" />
-        <SummaryCard label="Unassigned" value={counts.unassigned} color="#d97706" />
-        <SummaryCard label="In Transit" value={counts.in_transit} color="#1d4ed8" />
-        <SummaryCard label="Delayed" value={counts.delayed} color="#dc2626" />
-        <SummaryCard label="Delivered Today" value={counts.delivered_today} color="#047857" />
+        <SummaryCard label={t("admin.total")} value={counts.total} />
+        <SummaryCard label={t("admin.pending")} value={counts.pending} color="#64748b" />
+        <SummaryCard label={t("admin.unassigned")} value={counts.unassigned} color="#d97706" />
+        <SummaryCard label={t("admin.in_transit")} value={counts.in_transit} color="#1d4ed8" />
+        <SummaryCard label={t("admin.delayed_orders", "Delayed")} value={counts.delayed} color="#dc2626" />
+        <SummaryCard label={t("admin.delivered_today")} value={counts.delivered_today} color="#047857" />
       </div>
 
       {/* Quick filters */}
@@ -381,7 +437,7 @@ function OrdersContent() {
             borderRadius: 999,
           }}
         >
-          All
+          {t("admin.all")}
         </button>
         {QUICK_FILTERS.map((qf) => (
           <button
@@ -395,25 +451,25 @@ function OrdersContent() {
               borderRadius: 999,
             }}
           >
-            {qf.label}
+            {qf.key === "awaiting_assignment" ? t("admin.unassigned") : qf.key === "delayed" ? t("admin.delayed_orders", "Delayed") : qf.key === "due_today" ? t("admin.due_today", "Due today") : t("admin.in_transit")}
           </button>
         ))}
       </div>
 
       {/* Advanced filters */}
       <div className="admin-filters">
-        <input className="filter-input" placeholder="Search order ID or business…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className="filter-input" placeholder={t("admin.search_orders", "Search order ID or business...")} value={search} onChange={(e) => setSearch(e.target.value)} />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">All Statuses</option>
-          {ALL_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+          <option value="all">{t("logistics.all_statuses")}</option>
+          {ALL_STATUSES.map((s) => <option key={s} value={s}>{s === "awaiting_assignment" ? t("admin.unassigned") : s === "in_transit" ? t("admin.in_transit") : s.replace(/_/g, " ")}</option>)}
         </select>
         <select value={commodityFilter} onChange={(e) => setCommodityFilter(e.target.value)}>
-          <option value="all">All Commodities</option>
+          <option value="all">{t("admin.all_commodities", "All commodities")}</option>
           {commodities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         {(search || statusFilter !== "all" || commodityFilter !== "all" || quickFilter) && (
           <button className="secondary" onClick={() => { setSearch(""); setStatusFilter("all"); setCommodityFilter("all"); setQuickFilter(""); }}>
-            Clear Filters
+            {t("admin.clear_filters")}
           </button>
         )}
         <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
@@ -431,26 +487,15 @@ function OrdersContent() {
                 <th style={{ width: 40 }}>
                   <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={toggleAll} />
                 </th>
-                <th>Order ID</th>
-                <th>Business</th>
-                <th>Commodity</th>
-                <th>Origin → Dest.</th>
-                <th>Weight</th>
-                <th>Deadline</th>
-                <th>Route</th>
-                <th>Provider</th>
-                <th>Cost</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{language === "vi" ? "Mã đơn" : "Order ID"}</th><th>{t("businesses.company")}</th><th>{t("businesses.commodity")}</th><th>{language === "vi" ? "Xuất phát → Đích" : "Origin → Destination"}</th><th>{t("common.weight")}</th><th>{language === "vi" ? "Hạn giao" : "Deadline"}</th><th>{t("common.route")}</th><th>{t("common.provider")}</th><th>{t("common.cost")}</th><th>{t("common.status")}</th><th>{t("businesses.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={12} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
-                    {quickFilter === "delayed" ? "No delayed orders — all shipments on schedule." :
-                     quickFilter === "awaiting_assignment" ? "No unassigned orders." :
-                     "No orders match the selected filters."}
+                    {quickFilter === "delayed" ? (language === "vi" ? "Không có đơn trễ — các đơn đều đúng lịch." : "No delayed orders — all shipments on schedule.") :
+                     quickFilter === "awaiting_assignment" ? (language === "vi" ? "Không có đơn chưa phân công." : "No unassigned orders.") : t("admin.no_orders_match")}
                   </td>
                 </tr>
               ) : (
@@ -481,20 +526,20 @@ function OrdersContent() {
                       <td style={{ color: isDelayed ? "#dc2626" : undefined, fontWeight: isDelayed ? 600 : undefined, fontSize: 13 }}>
                         {o.deadline}
                       </td>
-                      <td style={{ fontSize: 12, color: "#64748b" }}>{o.recommended_route ?? "—"}</td>
+                      <td style={{ fontSize: 12, color: "#64748b" }}>{routeLabel(o.recommended_route, language)}</td>
                       <td style={{ fontSize: 13 }}>
-                        {o.provider_name ?? <span style={{ color: "#d97706", fontWeight: 600, fontSize: 12 }}>Unassigned</span>}
+                        {o.provider_name ?? <span style={{ color: "#d97706", fontWeight: 600, fontSize: 12 }}>{t("map.unassigned")}</span>}
                       </td>
                       <td style={{ fontSize: 13 }}>{fmtVnd(o.estimated_cost_vnd)}M</td>
                       <td><StatusBadge status={o.status} /></td>
                       <td>
                         <div style={{ display: "flex", gap: 5 }}>
                           <button className="secondary" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => setSelected(o)}>
-                            View
+                            {t("admin.view")}
                           </button>
                           {isUnassigned && (
                             <button style={{ padding: "4px 8px", fontSize: 11, background: "#047857" }} onClick={() => { setSelected(o); }}>
-                              Assign
+                              {t("admin.assign")}
                             </button>
                           )}
                         </div>
@@ -515,6 +560,7 @@ function OrdersContent() {
           onAssign={handleAssign}
           onRouteAccept={handleRouteAccept}
           onToast={addToast}
+          providers={providers}
         />
       )}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />

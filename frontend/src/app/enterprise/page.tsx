@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { Brand } from "@/components/Brand";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { getScopedMapData } from "@/lib/api";
+import { formatCurrency, formatDurationHours, orderStateLabel, routeLabel } from "@/lib/labels";
 import dynamic from "next/dynamic";
 const VaicMap = dynamic(() => import("@/components/VaicMap").then((m) => m.VaicMap), {
   ssr: false,
@@ -43,26 +48,27 @@ function formatLocalDatetime(date: Date): string {
   return new Date(date.getTime() - localOffset).toISOString().slice(0, 16);
 }
 
-function getVehicleType(state: string, routeId: string | null): string {
-  if (!routeId) return "🚚 Xe tải bộ";
+function getVehicleType(state: string, routeId: string | null, language: "vi" | "en"): string {
+  if (!routeId) return language === "vi" ? "🚚 Xe tải bộ" : "🚚 Road truck";
   if (state === "routed_to_can_tho" || state === "in_transit_to_can_tho") {
     if (routeId.includes("WATER")) {
-      return "🚢 Sà lan đường thủy";
+      return language === "vi" ? "🚢 Tàu đường thủy" : "🚢 Waterway vessel";
     }
-    return "🚚 Xe tải bộ";
+    return language === "vi" ? "🚚 Xe tải bộ" : "🚚 Road truck";
   }
   if (state === "dispatched") {
     if (routeId === "D_WATER_VIA_CT" || routeId === "E_ROAD_WATER_VIA_CT") {
-      return "🚢 Sà lan đường thủy";
+      return language === "vi" ? "🚢 Tàu đường thủy" : "🚢 Waterway vessel";
     }
-    return "🚚 Xe tải bộ";
+    return language === "vi" ? "🚚 Xe tải bộ" : "🚚 Road truck";
   }
-  return "🚚 Phương tiện";
+  return language === "vi" ? "🚚 Phương tiện" : "🚚 Vehicle";
 }
 
 export default function EnterpriseDashboard() {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
+  const { dictionary, language, t } = useLanguage();
   const [step, setStep] = useState<"form" | "routes" | "tracking">("form");
 
   // Form states
@@ -80,11 +86,14 @@ export default function EnterpriseDashboard() {
   const [orderId, setOrderId] = useState<number | null>(null);
   const [routeOptions, setRouteOptions] = useState<OptimizeResult | null>(null);
   const [routeMap, setRouteMap] = useState<MapPayload | null>(null);
+  const [liveMap, setLiveMap] = useState<MapPayload | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [trackingState, setTrackingState] = useState<{
     state: string;
     location: { lat: number; lon: number } | null;
     progress: number;
+    provider_name?: string | null;
+    timeline?: Array<{ event: string; time: string; done: boolean }> | null;
   } | null>(null);
 
   const socketRef = useRef<WebSocket | null>(null);
@@ -130,6 +139,7 @@ export default function EnterpriseDashboard() {
           setRouteOptions(message.data);
           setRouteMap(message.route_map);
           setOrderId(message.order_id);
+          setLiveMap(null);
           // Pre-select the recommended route
           setSelectedRoute(message.data.recommended_route);
           setStep("routes");
@@ -146,6 +156,8 @@ export default function EnterpriseDashboard() {
             state: message.state,
             location: message.location,
             progress: message.progress,
+            provider_name: message.provider_name,
+            timeline: message.timeline,
           });
         }
       } catch (err) {
@@ -163,8 +175,25 @@ export default function EnterpriseDashboard() {
     };
   }, [loading, router, user]);
 
+  useEffect(() => {
+    if (step !== "tracking" || !orderId) return;
+    getScopedMapData()
+      .then((payload) => {
+        if (payload) {
+          setLiveMap({
+            ...payload,
+            routes: routeMap?.routes || payload.routes,
+            activeRoute: selectedRoute || payload.activeRoute,
+          });
+        }
+      })
+      .catch(() => {
+        // The tracking WebSocket remains authoritative if the map API is unavailable.
+      });
+  }, [orderId, routeMap, selectedRoute, step]);
+
   if (loading || !user || user.role !== "enterprise") {
-    return <main className="loading-screen">Đang tải...</main>;
+    return <main className="loading-screen">{dictionary.loading}</main>;
   }
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -224,7 +253,6 @@ export default function EnterpriseDashboard() {
       timestamp: `${shipmentAt}:00+07:00`,
       delivery_deadline: `${deliveryDeadline}:00+07:00`,
       harvested_at: `${harvestedAt}:00+07:00`,
-      user_id: user.id,
     };
 
     socketRef.current.send(JSON.stringify(payload));
@@ -258,28 +286,23 @@ export default function EnterpriseDashboard() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand">
-          <span className="brand-mark">E</span>
-          <div>
-            <strong>VAIC Enterprise</strong>
-            <small>Doanh nghiệp nông sản</small>
-          </div>
-        </div>
+        <Brand role="enterprise" />
         <nav>
-          <a className="active" href="#">Shipment Manager</a>
+          <a className="active" href="#">{t("enterprise.manager")}</a>
         </nav>
       </aside>
 
       <main className="main">
         <header className="topbar">
           <div>
-            <h1>Doanh nghiệp nông sản</h1>
-            <p>Hệ thống nộp đơn và theo dõi hành trình thời gian thực</p>
+            <h1>{t("enterprise.heading")}</h1>
+            <p>{t("enterprise.subtitle")}</p>
           </div>
           <div className="user-box">
+            <LanguageToggle />
             <span>{user.email}</span>
             <button className="secondary" type="button" onClick={() => logout().then(() => router.replace("/login"))}>
-              Đăng xuất
+              {dictionary.logout}
             </button>
           </div>
         </header>
@@ -287,15 +310,15 @@ export default function EnterpriseDashboard() {
         <section className="content">
           {step === "form" && (
             <div className="panel">
-              <h2 style={{ marginBottom: "16px" }}>Tạo Đơn Hàng Vận Chuyển</h2>
+              <h2 style={{ marginBottom: "16px" }}>{t("enterprise.create_order")}</h2>
               {validationError && (
                 <div className="alert" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", marginBottom: "16px" }}>
-                  <strong>Lỗi nhập liệu:</strong> {validationError}
+                  <strong>{t("enterprise.validation_error")}:</strong> {validationError}
                 </div>
               )}
               <form onSubmit={handleFormSubmit} className="grid-form">
                 <label>
-                  Hub xuất phát
+                  {t("enterprise.hub_origin")}
                   <select name="hub_id" defaultValue="HUB_VITHANH">
                     {HUBS.map((h) => (
                       <option key={h.value} value={h.value}>{h.label}</option>
@@ -304,7 +327,7 @@ export default function EnterpriseDashboard() {
                 </label>
 
                 <label>
-                  Loại hàng nông sản
+                  {t("enterprise.commodity")}
                   <select value={selectedPreset} onChange={(e) => setSelectedPreset(e.target.value)}>
                     {CARGO_PRESETS.map((p) => (
                       <option key={p.value} value={p.value}>{p.label}</option>
@@ -314,11 +337,11 @@ export default function EnterpriseDashboard() {
 
                 {selectedPreset === "other" ? (
                   <label>
-                    Nhập loại hàng cụ thể
+                    {t("enterprise.custom_commodity")}
                     <input
                       value={customCargoName}
                       onChange={(e) => setCustomCargoName(e.target.value)}
-                      placeholder="vd: Cua Cà Mau, Nhãn xuồng..."
+                      placeholder={t("enterprise.custom_placeholder")}
                       required
                     />
                   </label>
@@ -327,12 +350,12 @@ export default function EnterpriseDashboard() {
                 )}
 
                 <label>
-                  Khối lượng (kg)
+                  {t("enterprise.weight")}
                   <input name="khoi_luong_kg" type="number" min="100" defaultValue="5000" required />
                 </label>
 
                 <label>
-                  Thời điểm thu hoạch
+                  {t("enterprise.harvest_time")}
                   <input
                     type="datetime-local"
                     value={harvestedAt}
@@ -342,7 +365,7 @@ export default function EnterpriseDashboard() {
                 </label>
 
                 <label>
-                  Thời điểm xuất hàng
+                  {t("enterprise.shipment_time")}
                   <input
                     type="datetime-local"
                     value={shipmentAt}
@@ -352,7 +375,7 @@ export default function EnterpriseDashboard() {
                 </label>
 
                 <label>
-                  Thời điểm hạn giao hàng
+                  {t("enterprise.delivery_deadline")}
                   <input
                     type="datetime-local"
                     value={deliveryDeadline}
@@ -362,7 +385,7 @@ export default function EnterpriseDashboard() {
                 </label>
 
                 <button type="submit" style={{ gridColumn: "span 3", marginTop: "12px" }}>
-                  Nộp đơn (Optimize Route)
+                  {t("enterprise.submit")}
                 </button>
               </form>
             </div>
@@ -371,8 +394,8 @@ export default function EnterpriseDashboard() {
           {step === "routes" && routeOptions && (
             <div>
               <div className="panel" style={{ marginBottom: "16px" }}>
-                <h2 style={{ marginBottom: "8px" }}>Tuyến đường tối ưu AI đề xuất</h2>
-                <p style={{ color: "#64748b", marginBottom: "16px" }}>Chọn phương án tối ưu nhất và xác nhận để bắt đầu vận chuyển.</p>
+                <h2 style={{ marginBottom: "8px" }}>{t("enterprise.route_heading")}</h2>
+                <p style={{ color: "#64748b", marginBottom: "16px" }}>{t("enterprise.route_description")}</p>
                 <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))" }}>
                   {routeOptions.phuong_an.map((route: RouteOption) => {
                     const isRecommended = route.route_code === routeOptions.recommended_route;
@@ -386,19 +409,19 @@ export default function EnterpriseDashboard() {
                         style={{ cursor: disabled ? "not-allowed" : "pointer", border: isSelected ? "2px solid #1d4ed8" : "" }}
                       >
                         <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <strong>{route.route_code}</strong>
-                          {isRecommended && <span className="badge">Gợi ý AI</span>}
+                          <strong>{routeLabel(route.route_code, language)}</strong>
+                          {isRecommended && <span className="badge">{t("enterprise.ai_recommended")}</span>}
                         </header>
                         <p>{route.ten}</p>
                         {route.trang_thai === "available" ? (
                           <>
                             <div className="metric">
-                              <span>Chi phí dự đoán</span>
-                              <strong>{route.chi_phi_du_doan_vnd?.toLocaleString()} VND</strong>
+                              <span>{t("enterprise.predicted_cost")}</span>
+                              <strong>{formatCurrency(route.chi_phi_du_doan_vnd, language)}</strong>
                             </div>
                             <div className="metric">
-                              <span>Thời gian</span>
-                              <strong>{route.thoi_gian_du_kien_gio} giờ</strong>
+                              <span>{t("common.time")}</span>
+                              <strong>{formatDurationHours(route.thoi_gian_du_kien_gio, language)}</strong>
                             </div>
                           </>
                         ) : (
@@ -411,14 +434,14 @@ export default function EnterpriseDashboard() {
                   })}
                 </div>
                 <div style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                  <button className="secondary" onClick={() => setStep("form")}>Quay lại</button>
-                  <button onClick={handleConfirmRoute} disabled={!selectedRoute}>Xác nhận tuyến đường</button>
+                  <button className="secondary" onClick={() => setStep("form")}>{t("enterprise.back")}</button>
+                  <button onClick={handleConfirmRoute} disabled={!selectedRoute}>{t("enterprise.confirm_route")}</button>
                 </div>
               </div>
 
               {routeMap && (
                 <div className="panel" style={{ height: "450px", position: "relative", marginTop: "16px" }}>
-                  <h3 style={{ marginBottom: "12px" }}>Bản đồ xem trước hành trình của tuyến</h3>
+                  <h3 style={{ marginBottom: "12px" }}>{t("enterprise.preview_map")}</h3>
                   <VaicMap
                     data={routeMap}
                     selectedRoute={selectedRoute}
@@ -433,16 +456,16 @@ export default function EnterpriseDashboard() {
             <div style={{ display: "flex", gap: "20px", alignItems: "stretch" }}>
               {/* Nửa trái (70%) */}
               <div className="panel" style={{ flex: 7, display: "flex", flexDirection: "column", height: "550px" }}>
-                <h2 style={{ marginBottom: "12px" }}>Bản đồ theo dõi hành trình</h2>
+                <h2 style={{ marginBottom: "12px" }}>{t("enterprise.tracking_map")}</h2>
                 <div style={{ flex: 1, position: "relative" }}>
                   <VaicMap
-                    data={getMapPayload()}
+                    data={liveMap || routeMap || getMapPayload()}
                     trackingMarker={
                       trackingState?.location
                         ? {
                             lat: trackingState.location.lat,
                             lon: trackingState.location.lon,
-                            label: `${getVehicleType(trackingState.state, selectedRoute)} - Lô hàng #${orderId}`,
+                            label: `${getVehicleType(trackingState.state, selectedRoute, language)} - ${t("enterprise.shipment_id")} #${orderId}`,
                           }
                         : null
                     }
@@ -453,40 +476,64 @@ export default function EnterpriseDashboard() {
               {/* Nửa phải (30%) */}
               <div className="panel" style={{ flex: 3, display: "flex", flexDirection: "column", justifyContent: "space-between", height: "550px" }}>
                 <div>
-                  <h2 style={{ marginBottom: "16px" }}>Tiến Trình Di Chuyển</h2>
+                  <h2 style={{ marginBottom: "16px" }}>{t("enterprise.progress")}</h2>
                   
                   <div className="metric" style={{ marginBottom: "20px" }}>
-                    <span>Mã lô hàng:</span>
+                    <span>{t("enterprise.shipment_id")}:</span>
                     <strong>#{orderId}</strong>
                   </div>
                   
                   <div className="metric" style={{ marginBottom: "20px" }}>
-                    <span>Phương tiện:</span>
-                    <strong>{getVehicleType(trackingState?.state || "", selectedRoute)}</strong>
+                    <span>{t("enterprise.transport_provider")}:</span>
+                    <strong>{trackingState?.provider_name || t("orders.awaiting_assignment")}</strong>
                   </div>
 
                   <div className="metric" style={{ marginBottom: "20px" }}>
-                    <span>Trạng thái:</span>
+                    <span>{t("enterprise.vehicle")}:</span>
+                    <strong>{getVehicleType(trackingState?.state || "", selectedRoute, language)}</strong>
+                  </div>
+
+                  <div className="metric" style={{ marginBottom: "20px" }}>
+                    <span>{t("enterprise.status")}:</span>
                     <strong style={{ color: "#2563eb" }}>
-                      {trackingState?.state === "created" && "Đơn hàng đã được tạo"}
-                      {trackingState?.state === "routed_to_can_tho" && "Đang di chuyển tới Cần Thơ"}
-                      {trackingState?.state === "arrived_waiting" && "Đã tới Can Tho Hub (Gom hàng)"}
-                      {trackingState?.state === "dispatched" && (trackingState.progress < 1.0 ? "Đang di chuyển tới TP.HCM" : "Đã giao hàng (Hoàn tất)")}
+                      {orderStateLabel(trackingState?.state, language)}
                     </strong>
                   </div>
 
                   <div className="metric" style={{ marginBottom: "12px" }}>
-                    <span>Tiến độ hành trình:</span>
+                    <span>{t("enterprise.route_progress")}:</span>
                     <strong>{trackingState ? Math.round(trackingState.progress * 100) : 0}%</strong>
                   </div>
                   
-                  <div style={{ height: "8px", background: "#e2e8f0", borderRadius: "4px", overflow: "hidden", marginBottom: "24px" }}>
+                  <div style={{ height: "8px", background: "#e2e8f0", borderRadius: "4px", overflow: "hidden", marginBottom: "20px" }}>
                     <div style={{ height: "100%", width: `${(trackingState?.progress || 0) * 100}%`, background: "#2563eb", transition: "width 0.5s ease" }} />
+                  </div>
+
+                  {/* Nhật ký hành trình */}
+                  <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "14px", overflowY: "auto", maxHeight: "190px" }}>
+                    <h3 style={{ fontSize: "13px", fontWeight: 700, marginBottom: "10px", color: "#475569" }}>{t("enterprise.timeline")}</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      {trackingState?.timeline?.map((step, idx) => (
+                        <div key={idx} style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                          <div style={{
+                            width: "10px", height: "10px", borderRadius: "50%",
+                            background: step.done ? "#10b981" : "#cbd5e1",
+                            marginTop: "4px", flexShrink: 0
+                          }} />
+                          <div>
+                            <div style={{ fontSize: "12px", fontWeight: step.done ? 600 : 400, color: step.done ? "#0f172a" : "#64748b" }}>
+                              {step.event}
+                            </div>
+                            <div style={{ fontSize: "10px", color: "#94a3b8" }}>{step.time}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <button className="secondary" style={{ width: "100%" }} onClick={() => setStep("form")}>
-                  Tạo đơn hàng mới
+                  {t("enterprise.back_to_form")}
                 </button>
               </div>
             </div>

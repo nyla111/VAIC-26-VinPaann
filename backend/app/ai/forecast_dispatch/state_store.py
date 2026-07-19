@@ -91,6 +91,12 @@ class StateStore:
             if actual_arr.tzinfo is None:
                 actual_arr = actual_arr.replace(tzinfo=timezone.utc)
 
+        harvested_dt = None
+        if db_order.harvested_at:
+            harvested_dt = datetime.fromisoformat(db_order.harvested_at)
+            if harvested_dt.tzinfo is None:
+                harvested_dt = harvested_dt.replace(tzinfo=timezone.utc)
+
         return Shipment(
             shipment_id=str(db_order.id),
             hub_id=db_order.hub_id,
@@ -100,7 +106,7 @@ class StateStore:
             inbound_mode_to_can_tho=route_info[1],
             outbound_mode_from_can_tho=route_info[2],
             created_at=created_dt,
-            harvested_at=None,
+            harvested_at=harvested_dt,
             eta_can_tho=actual_arr if actual_arr else created_dt,
             state=ShipmentState(db_order.state),
             actual_arrival_at=actual_arr,
@@ -216,7 +222,7 @@ class StateStore:
             with Session(engine) as session:
                 db_veh = session.get(DBVehicle, vehicle.vehicle_id)
                 if not db_veh:
-                    db_veh = DBVehicle(vehicle_id=vehicle.vehicle_id)
+                    db_veh = DBVehicle(license_plate=vehicle.vehicle_id)
                 db_veh.mode = vehicle.mode.value
                 db_veh.capacity_kg = vehicle.capacity_kg
                 db_veh.status = vehicle.status.value
@@ -247,7 +253,7 @@ class StateStore:
                 if avail_dt <= decision_ts:
                     if v.supports_refrigeration or not needs_reefer:
                         result.append(Vehicle(
-                            vehicle_id=v.vehicle_id,
+                            vehicle_id=v.license_plate,
                             mode=Mode(v.mode),
                             capacity_kg=v.capacity_kg,
                             status=VehicleStatus(v.status),

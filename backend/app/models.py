@@ -20,6 +20,9 @@ class SystemLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     timestamp: str
     message: str
+    event_type: Optional[str] = None
+    payload_json: Optional[str] = None
+    level: str = "INFO"
 
 
 class SystemSettings(SQLModel, table=True):
@@ -63,8 +66,51 @@ class Order(SQLModel, table=True):
     delivery_deadline: Optional[str] = None
     harvested_at: Optional[str] = None
     assigned_vehicle_id: Optional[str] = None
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    # Canonical enterprise owner.  All role-scoped order reads use this field;
+    # the nullable value keeps legacy/demo orders readable during migration.
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)
+    # Explicit provider assignment is separate from the assigned vehicle.  A
+    # logistics provider can therefore be granted visibility before a vehicle
+    # is selected in the Layer 2 workflow.
+    assigned_provider_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)
+    provider_assignment_status: str = Field(default="unassigned", index=True)
+    provider_assigned_at: Optional[str] = None
     dispatched_at: Optional[str] = None
+
+    # Persisted Layer 1 decision snapshot. This keeps the optimizer output
+    # attached to the order that Layer 2 later consumes.
+    route_options_json: Optional[str] = None
+    selected_route_cost_vnd: Optional[float] = None
+    selected_route_eta_hours: Optional[float] = None
+    selected_route_geometry_json: Optional[str] = None
+    optimizer_version: Optional[str] = None
+
+    # Persisted Layer 2 decision metadata.
+    predicted_full_load_time: Optional[str] = None
+    reason_codes_json: Optional[str] = None
+    priority_score_json: Optional[str] = None
+    dispatch_proposal_id: Optional[str] = None
+    eta_can_tho: Optional[str] = None
+
+
+class DispatchOrder(SQLModel, table=True):
+    """Durable audit record for one atomic Layer 2 dispatch decision."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    proposal_id: str = Field(index=True, unique=True)
+    vehicle_id: str = Field(foreign_key="vehicle.license_plate", index=True)
+    outbound_mode: str
+    destination: str = "ho_chi_minh"
+    shipment_ids_json: str
+    total_weight_kg: float
+    capacity_kg: float
+    fill_ratio: float
+    predicted_full_load_time: Optional[str] = None
+    reason_codes_json: str = "[]"
+    priority_score_json: Optional[str] = None
+    status: str = "waiting_for_pickup"  # waiting_for_pickup, moving_to_can_tho, consolidating_at_can_tho, dispatching_to_hcm, completed
+    created_at: str
+    dispatched_at: Optional[str] = None
+    eta_hcm: Optional[str] = None
 
 
 
@@ -72,7 +118,10 @@ class Vehicle(SQLModel, table=True):
     """
     Tracks vehicle state and refrigeration features consolidated at Can Tho Hub.
     """
-    vehicle_id: str = Field(primary_key=True)
+    license_plate: str = Field(primary_key=True)
+    provider_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    current_lat: Optional[float] = None
+    current_lng: Optional[float] = None
     mode: str
     capacity_kg: float
     status: str
@@ -103,4 +152,3 @@ class SystemState(BaseModel):
     weather: str = PydanticField(..., description="Global weather condition")
     logs: List[Dict[str, str]] = PydanticField(..., description="Latest activity logs")
     last_updated: str = PydanticField(..., description="Timestamp of the last state change")
-

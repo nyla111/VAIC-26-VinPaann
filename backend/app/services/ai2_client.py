@@ -43,7 +43,37 @@ def demo_jobs() -> list[dict[str, Any]]:
 
 def get_jobs() -> tuple[list[dict[str, Any]], bool]:
     if not AI2_AVAILABLE:
-        return demo_jobs(), False
+        # The integrated supervisor is the local production implementation;
+        # do not silently substitute fabricated jobs for a live dashboard.
+        try:
+            from app.ai.forecast_dispatch.enums import Mode
+            from app.routes.layer2 import DEFAULT_CONFIG, store
+            from app.ai.forecast_dispatch import decision_engine
+
+            jobs: list[dict[str, Any]] = []
+            for mode in (Mode.ROAD, Mode.WATER):
+                result = decision_engine.evaluate(store, datetime.now(timezone.utc), mode, DEFAULT_CONFIG)
+                for shipment in store.pending_shipments(mode):
+                    jobs.append({
+                        "job_id": f"ORDER-{shipment.shipment_id}",
+                        "shipment_id": shipment.shipment_id,
+                        "hub_id": shipment.hub_id,
+                        "khoi_luong_tich_luy_hien_tai_kg": shipment.effective_weight_kg,
+                        "quyet_dinh": result.decision.value,
+                        "thoi_gian_de_xuat_chay": (
+                            result.proposed_departure_time.isoformat()
+                            if result.proposed_departure_time else None
+                        ),
+                        "predicted_full_load_time": (
+                            result.forecast.predicted_full_load_time.isoformat()
+                            if result.forecast.predicted_full_load_time else None
+                        ),
+                        "reason_codes": [code.value for code in result.reason_codes],
+                        "route_code": shipment.selected_route.value,
+                    })
+            return jobs, True
+        except Exception:
+            return [], False
     try:
         with urlopen(f"{AI2_BASE_URL}/dispatch/jobs", timeout=2.0) as response:
             payload = json.loads(response.read().decode("utf-8"))
@@ -53,8 +83,25 @@ def get_jobs() -> tuple[list[dict[str, Any]], bool]:
 
 
 def get_deliveries() -> list[dict[str, Any]]:
-    return [
-        {"delivery_id": "DLV-001", "route_code": "A_DIRECT_ROAD", "status": "dang_chay", "eta": "2h 10m"},
-        {"delivery_id": "DLV-002", "route_code": "D_WATER_VIA_CT", "status": "cho_boc_xep", "eta": "5h 40m"},
-        {"delivery_id": "DLV-003", "route_code": "B_ROAD_VIA_CT", "status": "hoan_tat", "eta": "0h"},
-    ]
+    try:
+        from sqlmodel import Session, select
+        from app.database import engine
+        from app.models import Order
+
+        with Session(engine) as session:
+            orders = session.exec(
+                select(Order).where(Order.state.in_(["dispatched", "delivered"]))
+            ).all()
+            return [
+                {
+                    "delivery_id": f"ORDER-{order.id}",
+                    "order_id": order.id,
+                    "hub_id": order.hub_id,
+                    "route_code": order.selected_route_id,
+                    "status": order.state,
+                    "eta": order.selected_route_eta_hours,
+                }
+                for order in orders
+            ]
+    except Exception:
+        return []
