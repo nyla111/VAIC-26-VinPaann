@@ -1,10 +1,10 @@
-# AI Layer 2 — Forecast & Dispatch Agent
+# AI Layer 2 - Forecast & Dispatch Agent
 
 `ai2_dispatch` is the Layer 2 service in the ĐBSCL agricultural logistics coordination system.
 It receives shipments that have already been routed through the Cần Thơ transshipment hub by
 Layer 1 (route & cost optimization), tracks accumulated load per outbound mode (road/water),
-forecasts how load will accumulate over the next few hours, and returns a dispatch decision —
-`dispatch_now`, `wait_for_load`, or `wait_for_vehicle` — together with a machine-readable
+forecasts how load will accumulate over the next few hours, and returns a dispatch decision -
+`dispatch_now`, `wait_for_load`, or `wait_for_vehicle` - together with a machine-readable
 explanation.
 
 The service combines two complementary behaviors:
@@ -13,7 +13,7 @@ The service combines two complementary behaviors:
   endpoint recomputes forecast and decision state from current data, so consumers can poll it
   safely at any time without side effects.
 - **Autonomous**: a background loop independently re-evaluates the dispatch decision on a
-  fixed interval, even with no new events and no incoming request — the classic agent cycle of
+  fixed interval, even with no new events and no incoming request - the classic agent cycle of
   observe → forecast → decide → (re-)observe. See [Autonomous agent loop](#autonomous-agent-loop).
 
 ## Status
@@ -86,7 +86,7 @@ identifiers that make the inbound/outbound transport mode explicit:
 
 | Route | Hub → Cần Thơ | Cần Thơ → HCMC |
 |---|---|---|
-| `direct_hcm_road` | — (bypasses Cần Thơ) | road |
+| `direct_hcm_road` | - (bypasses Cần Thơ) | road |
 | `via_can_tho_road_then_road` | road | road |
 | `via_can_tho_water_then_road` | water | road |
 | `via_can_tho_water_then_water` | water | water |
@@ -95,12 +95,10 @@ identifiers that make the inbound/outbound transport mode explicit:
 Only the four routes that pass through Cần Thơ are relevant to this service;
 `direct_hcm_road` shipments are rejected with `ROUTE_NOT_APPLICABLE`. The `selected_route`
 field accepts either the five snake_case identifiers above or Layer 1's internal route codes
-(`A_DIRECT_ROAD`..`E_ROAD_WATER_VIA_CT`) interchangeably — the service normalizes on input, so
+(`A_DIRECT_ROAD`..`E_ROAD_WATER_VIA_CT`) interchangeably - the service normalizes on input, so
 upstream callers do not need to perform this translation themselves. `inbound_mode_to_can_tho`
 and `outbound_mode_from_can_tho` are optional: if omitted, they are derived from
 `selected_route`; if provided, they must be consistent with it.
-
-## API reference
 
 ### Events
 
@@ -145,12 +143,12 @@ currently holds more pending weight. `decision_ts` defaults to the current time 
 passed explicitly by callers that need reproducible results.
 
 `GET /api/v1/forecast` returns a rolling multi-bucket forecast (default: 30-minute buckets over
-a 6-hour horizon) plus a `predicted_full_load_time` — the earliest time at which the selected
+a 6-hour horizon) plus a `predicted_full_load_time` - the earliest time at which the selected
 vehicle is expected to reach capacity, rather than a single fixed-horizon number.
 
 `GET /api/v1/dispatch-status` returns the current `decision`, structured `reason_codes`, a
-human-readable `explanation`, the selected vehicle, a full priority-score breakdown, and — when
-the decision is `dispatch_now` — a `dispatch_order_proposal` describing which shipments should
+human-readable `explanation`, the selected vehicle, a full priority-score breakdown, and - when
+the decision is `dispatch_now` - a `dispatch_order_proposal` describing which shipments should
 be loaded onto which vehicle. See `examples/sample_responses.json` for a real response captured
 against the dataset.
 
@@ -175,7 +173,7 @@ priority_score = 0.60 × fill_component + 0.30 × urgency_component + 0.10 × we
 
 `fill_component` is the current load as a fraction of vehicle capacity. `urgency_component` is
 the maximum, across all waiting shipments, of `elapsed_time / max_safe_wait_hours ×
-time_sensitivity` — the most time-sensitive cargo in a mixed load drives the urgency of the
+time_sensitivity` - the most time-sensitive cargo in a mixed load drives the urgency of the
 whole batch. `weather_component` reflects current flood/route risk. The score is additive by
 design so that a single zero-valued component cannot suppress the others; if the score reaches
 `0.65`, the service returns `dispatch_now`, otherwise `wait_for_load`.
@@ -200,8 +198,8 @@ shipment, i.e. arrivals the service hasn't been told about yet) is produced by a
 regression model when one is available.
 
 `scripts/train_forecaster.py` builds a bucketed (30-minute) time series of real Cần Thơ-bound
-arrivals from the canonical order history — reusing the same real-data extraction used for
-priority-score tuning — with features for hour of day, day of week, month, outbound mode, and
+arrivals from the canonical order history - reusing the same real-data extraction used for
+priority-score tuning - with features for hour of day, day of week, month, outbound mode, and
 short-term lag/rolling statistics, and fits a gradient-boosted regression model against it. The
 resulting artifact (`models/arrival_forecaster.joblib`) is loaded lazily by
 `app/ml_forecaster.py` and consumed by `forecasting.py` on every forecast computation, using
@@ -230,23 +228,23 @@ with `AI2_DISABLE_AGENT_TICK=1`, primarily for test environments.
 
 `GET /api/v1/dispatch-status?include_grounded_explanation=true` optionally augments the
 templated `explanation` field with a `grounded_explanation` generated by Claude
-(`claude-opus-4-8`, via the Anthropic API). The model is given only the decision's own data —
+(`claude-opus-4-8`, via the Anthropic API). The model is given only the decision's own data -
 the weather bulletins that produced the current road/water risk assessment and any dispatch or
-cold-chain policy documents relevant to the shipment — and instructed to write a short,
+cold-chain policy documents relevant to the shipment - and instructed to write a short,
 human-readable explanation that cites those specific documents by ID rather than paraphrasing
 freely. It is not permitted to introduce facts outside what it was given.
 
 This is opt-in (disabled by default) to avoid an LLM call on every poll; enable it for
 interactive or presentation contexts. If `ANTHROPIC_API_KEY` is not set, the `anthropic`
 package is unavailable, or the call fails for any reason (including a safety refusal),
-`grounded_explanation` is simply `null` — the templated `explanation` is always present
+`grounded_explanation` is simply `null` - the templated `explanation` is always present
 regardless, so this feature can never cause a request to fail.
 
 ## Live scenario simulation
 
 `POST /api/v1/simulate/what-if` runs the same replay-based simulation used for priority-score
-tuning (see [Decision logic](#decision-logic)) against a perturbed scenario — a weather-driven
-delay, a demand surge, or a reduced vehicle fleet — and returns it side by side with the
+tuning (see [Decision logic](#decision-logic)) against a perturbed scenario - a weather-driven
+delay, a demand surge, or a reduced vehicle fleet - and returns it side by side with the
 baseline (unperturbed) result, so a specific "what if X happens" question can be answered with
 a real number in a few seconds rather than by re-running an offline analysis. Presets are
 available at `GET /api/v1/simulate/presets` (`flood`, `fleet_loss`, `demand_surge`, and a
@@ -263,7 +261,7 @@ hub-to-Cần-Thơ transit time for each historical shipment rather than re-runni
 weather-aware routing model, which keeps the endpoint fast enough for live use (a few seconds
 per scenario) at the cost of not modeling second-order effects (e.g. a route becoming
 infeasible outright). The underlying shipment sample is precomputed once via
-`scripts/cache_shipments.py` (not on every request) — see that script's docstring, and
+`scripts/cache_shipments.py` (not on every request) - see that script's docstring, and
 `app/whatif.py`, for the full set of assumptions before treating scenario numbers as more than
 directional.
 
@@ -291,7 +289,7 @@ Run tests (executed against the real canonical dataset, no mocked data):
 python -m pytest ai2_dispatch/tests/test_smoke.py -v
 ```
 
-(Re-)train the forecasting model and (re-)run priority-score tuning (optional — a trained
+(Re-)train the forecasting model and (re-)run priority-score tuning (optional - a trained
 model and tuning report are already committed; only needed if the underlying dataset or
 methodology changes):
 
@@ -320,7 +318,7 @@ defaults.
   use but is not a substitute for a shared, multi-instance-safe store in production.
 - **Unknown commodity codes do not fail the request.** If `commodity_id` does not match the
   canonical commodity list, the service falls back to a moderate, cargo-agnostic urgency
-  profile rather than rejecting the shipment or silently excluding it from scoring — trading a
+  profile rather than rejecting the shipment or silently excluding it from scoring - trading a
   small amount of decision accuracy for pipeline robustness.
 - **The trained forecasting model is a directional check, not a tuned production model.** It
   was trained on a relatively small, sparse historical sample (see
@@ -329,12 +327,12 @@ defaults.
   whole forecast horizon rather than updated recursively bucket-by-bucket, which is a
   simplification, not a limitation of the underlying data.
 - **The agent loop's lag/rolling features come from this service's own observed history**,
-  which is empty on a fresh process start — early forecasts after a restart are less informed
+  which is empty on a fresh process start - early forecasts after a restart are less informed
   than ones made after the service has been running and observing arrivals for a while.
 - **Priority score weights are tuned against a proxy objective, not a real cost model.**
   Simulation-based tuning (see [Decision logic](#decision-logic)) improves on hand-picked
   defaults but still optimizes a hand-defined approximation of waiting/underfill/unresolved
-  cost, not actual transport or spoilage cost in VND — real cost data would change the result.
+  cost, not actual transport or spoilage cost in VND - real cost data would change the result.
 - **No forecasting model has been trained on this system's own event history yet.** The
   forecasting baseline (above) and the priority-score tuning both currently draw on the
   canonical historical dataset via replay, not on live production traffic; both should be
