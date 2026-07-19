@@ -415,141 +415,147 @@ function OrdersContent() {
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="summary-strip" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
-        <SummaryCard label={t("admin.total")} value={counts.total} />
-        <SummaryCard label={t("admin.pending")} value={counts.pending} color="#64748b" />
-        <SummaryCard label={t("admin.unassigned")} value={counts.unassigned} color="#d97706" />
-        <SummaryCard label={t("admin.in_transit")} value={counts.in_transit} color="#1d4ed8" />
-        <SummaryCard label={t("admin.delayed_orders", "Delayed")} value={counts.delayed} color="#dc2626" />
-        <SummaryCard label={t("admin.delivered_today")} value={counts.delivered_today} color="#047857" />
-      </div>
+      <div className="admin-two-column-layout">
+        {/* Left Column: Filters, Quick Filters, and Table */}
+        <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+          {/* Quick filters */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              onClick={() => setQuickFilter("")}
+              style={{
+                padding: "6px 14px",
+                fontSize: 13,
+                background: quickFilter === "" ? "#1d4ed8" : "#e5e7eb",
+                color: quickFilter === "" ? "white" : "#374151",
+                borderRadius: 999,
+              }}
+            >
+              {t("admin.all")}
+            </button>
+            {QUICK_FILTERS.map((qf) => (
+              <button
+                key={qf.key}
+                onClick={() => setQuickFilter(quickFilter === qf.key ? "" : qf.key)}
+                style={{
+                  padding: "6px 14px",
+                  fontSize: 13,
+                  background: quickFilter === qf.key ? "#1d4ed8" : "#e5e7eb",
+                  color: quickFilter === qf.key ? "white" : "#374151",
+                  borderRadius: 999,
+                }}
+              >
+                {qf.key === "awaiting_assignment" ? t("admin.unassigned") : qf.key === "delayed" ? t("admin.delayed_orders", "Delayed") : qf.key === "due_today" ? t("admin.due_today", "Due today") : t("admin.in_transit")}
+              </button>
+            ))}
+          </div>
 
-      {/* Quick filters */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button
-          onClick={() => setQuickFilter("")}
-          style={{
-            padding: "6px 14px",
-            fontSize: 13,
-            background: quickFilter === "" ? "#1d4ed8" : "#e5e7eb",
-            color: quickFilter === "" ? "white" : "#374151",
-            borderRadius: 999,
-          }}
-        >
-          {t("admin.all")}
-        </button>
-        {QUICK_FILTERS.map((qf) => (
-          <button
-            key={qf.key}
-            onClick={() => setQuickFilter(quickFilter === qf.key ? "" : qf.key)}
-            style={{
-              padding: "6px 14px",
-              fontSize: 13,
-              background: quickFilter === qf.key ? "#1d4ed8" : "#e5e7eb",
-              color: quickFilter === qf.key ? "white" : "#374151",
-              borderRadius: 999,
-            }}
-          >
-            {qf.key === "awaiting_assignment" ? t("admin.unassigned") : qf.key === "delayed" ? t("admin.delayed_orders", "Delayed") : qf.key === "due_today" ? t("admin.due_today", "Due today") : t("admin.in_transit")}
-          </button>
-        ))}
-      </div>
+          {/* Advanced filters */}
+          <div className="admin-filters">
+            <input className="filter-input" placeholder={t("admin.search_orders", "Search order ID or business...")} value={search} onChange={(e) => setSearch(e.target.value)} />
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">{t("logistics.all_statuses")}</option>
+              {ALL_STATUSES.map((s) => <option key={s} value={s}>{s === "awaiting_assignment" ? t("admin.unassigned") : s === "in_transit" ? t("admin.in_transit") : s.replace(/_/g, " ")}</option>)}
+            </select>
+            <select value={commodityFilter} onChange={(e) => setCommodityFilter(e.target.value)}>
+              <option value="all">{t("admin.all_commodities", "All commodities")}</option>
+              {commodities.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            {(search || statusFilter !== "all" || commodityFilter !== "all" || quickFilter) && (
+              <button className="secondary" onClick={() => { setSearch(""); setStatusFilter("all"); setCommodityFilter("all"); setQuickFilter(""); }}>
+                {t("admin.clear_filters")}
+              </button>
+            )}
+            <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
+              {filtered.length} of {orders.length}
+              {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
+            </span>
+          </div>
 
-      {/* Advanced filters */}
-      <div className="admin-filters">
-        <input className="filter-input" placeholder={t("admin.search_orders", "Search order ID or business...")} value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">{t("logistics.all_statuses")}</option>
-          {ALL_STATUSES.map((s) => <option key={s} value={s}>{s === "awaiting_assignment" ? t("admin.unassigned") : s === "in_transit" ? t("admin.in_transit") : s.replace(/_/g, " ")}</option>)}
-        </select>
-        <select value={commodityFilter} onChange={(e) => setCommodityFilter(e.target.value)}>
-          <option value="all">{t("admin.all_commodities", "All commodities")}</option>
-          {commodities.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-        {(search || statusFilter !== "all" || commodityFilter !== "all" || quickFilter) && (
-          <button className="secondary" onClick={() => { setSearch(""); setStatusFilter("all"); setCommodityFilter("all"); setQuickFilter(""); }}>
-            {t("admin.clear_filters")}
-          </button>
-        )}
-        <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
-          {filtered.length} of {orders.length}
-          {selectedIds.size > 0 && ` · ${selectedIds.size} selected`}
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="panel" style={{ padding: 0 }}>
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: 40 }}>
-                  <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={toggleAll} />
-                </th>
-                <th>{language === "vi" ? "Mã đơn" : "Order ID"}</th><th>{t("businesses.company")}</th><th>{t("businesses.commodity")}</th><th>{language === "vi" ? "Xuất phát → Đích" : "Origin → Destination"}</th><th>{t("common.weight")}</th><th>{language === "vi" ? "Hạn giao" : "Deadline"}</th><th>{t("common.route")}</th><th>{t("common.provider")}</th><th>{t("common.cost")}</th><th>{t("common.status")}</th><th>{t("businesses.actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={12} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
-                    {quickFilter === "delayed" ? (language === "vi" ? "Không có đơn trễ — các đơn đều đúng lịch." : "No delayed orders — all shipments on schedule.") :
-                     quickFilter === "awaiting_assignment" ? (language === "vi" ? "Không có đơn chưa phân công." : "No unassigned orders.") : t("admin.no_orders_match")}
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((o) => {
-                  const isDelayed = o.status === "delayed";
-                  const isUnassigned = o.status === "awaiting_assignment";
-                  return (
-                    <tr
-                      key={o.id}
-                      className="table-row-hover"
-                      style={{ background: selectedIds.has(o.id) ? "#eff6ff" : isDelayed ? "#fff7f7" : undefined }}
-                    >
-                      <td>
-                        <input type="checkbox" checked={selectedIds.has(o.id)} onChange={() => toggleRow(o.id)} />
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => setSelected(o)}
-                          style={{ background: "none", color: "#1d4ed8", fontWeight: 700, padding: 0, textDecoration: "underline", cursor: "pointer", fontSize: "inherit" }}
-                        >
-                          {o.id}
-                        </button>
-                      </td>
-                      <td style={{ fontSize: 13 }}>{o.business_name}</td>
-                      <td>{o.commodity}</td>
-                      <td style={{ fontSize: 12, color: "#64748b" }}>{o.origin} → {o.destination}</td>
-                      <td>{o.weight_ton}t</td>
-                      <td style={{ color: isDelayed ? "#dc2626" : undefined, fontWeight: isDelayed ? 600 : undefined, fontSize: 13 }}>
-                        {o.deadline}
-                      </td>
-                      <td style={{ fontSize: 12, color: "#64748b" }}>{routeLabel(o.recommended_route, language)}</td>
-                      <td style={{ fontSize: 13 }}>
-                        {o.provider_name ?? <span style={{ color: "#d97706", fontWeight: 600, fontSize: 12 }}>{t("map.unassigned")}</span>}
-                      </td>
-                      <td style={{ fontSize: 13 }}>{fmtVnd(o.estimated_cost_vnd)}M</td>
-                      <td><StatusBadge status={o.status} /></td>
-                      <td>
-                        <div style={{ display: "flex", gap: 5 }}>
-                          <button className="secondary" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => setSelected(o)}>
-                            {t("admin.view")}
-                          </button>
-                          {isUnassigned && (
-                            <button style={{ padding: "4px 8px", fontSize: 11, background: "#047857" }} onClick={() => { setSelected(o); }}>
-                              {t("admin.assign")}
-                            </button>
-                          )}
-                        </div>
+          {/* Table */}
+          <div className="panel" style={{ padding: 0 }}>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th style={{ width: 40 }}>
+                      <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={toggleAll} />
+                    </th>
+                    <th>{language === "vi" ? "Mã đơn" : "Order ID"}</th><th>{t("businesses.company")}</th><th>{t("businesses.commodity")}</th><th>{language === "vi" ? "Xuất phát → Đích" : "Origin → Destination"}</th><th>{t("common.weight")}</th><th>{language === "vi" ? "Hạn giao" : "Deadline"}</th><th>{t("common.route")}</th><th>{t("common.provider")}</th><th>{t("common.cost")}</th><th>{t("common.status")}</th><th>{t("businesses.actions")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={12} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
+                        {quickFilter === "delayed" ? (language === "vi" ? "Không có đơn trễ — các đơn đều đúng lịch." : "No delayed orders — all shipments on schedule.") :
+                         quickFilter === "awaiting_assignment" ? (language === "vi" ? "Không có đơn chưa phân công." : "No unassigned orders.") : t("admin.no_orders_match")}
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ) : (
+                    filtered.map((o) => {
+                      const isDelayed = o.status === "delayed";
+                      const isUnassigned = o.status === "awaiting_assignment";
+                      return (
+                        <tr
+                          key={o.id}
+                          className="table-row-hover"
+                          style={{ background: selectedIds.has(o.id) ? "#eff6ff" : isDelayed ? "#fff7f7" : undefined }}
+                        >
+                          <td>
+                            <input type="checkbox" checked={selectedIds.has(o.id)} onChange={() => toggleRow(o.id)} />
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => setSelected(o)}
+                              style={{ background: "none", color: "#1d4ed8", fontWeight: 700, padding: 0, textDecoration: "underline", cursor: "pointer", fontSize: "inherit" }}
+                            >
+                              {o.id}
+                            </button>
+                          </td>
+                          <td style={{ fontSize: 13 }}>{o.business_name}</td>
+                          <td>{o.commodity}</td>
+                          <td style={{ fontSize: 12, color: "#64748b" }}>{o.origin} → {o.destination}</td>
+                          <td>{o.weight_ton}t</td>
+                          <td style={{ color: isDelayed ? "#dc2626" : undefined, fontWeight: isDelayed ? 600 : undefined, fontSize: 13 }}>
+                            {o.deadline}
+                          </td>
+                          <td style={{ fontSize: 12, color: "#64748b" }}>{routeLabel(o.recommended_route, language)}</td>
+                          <td style={{ fontSize: 13 }}>
+                            {o.provider_name ?? <span style={{ color: "#d97706", fontWeight: 600, fontSize: 12 }}>{t("map.unassigned")}</span>}
+                          </td>
+                          <td style={{ fontSize: 13 }}>{fmtVnd(o.estimated_cost_vnd)}M</td>
+                          <td><StatusBadge status={o.status} /></td>
+                          <td>
+                            <div style={{ display: "flex", gap: 5 }}>
+                              <button className="secondary admin-btn-details" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => setSelected(o)}>
+                                {t("admin.view")}
+                              </button>
+                              {isUnassigned && (
+                                <button className="admin-btn-action" style={{ padding: "4px 8px", fontSize: 11, background: "#047857" }} onClick={() => { setSelected(o); }}>
+                                  {t("admin.assign")}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Summary cards stacked vertically */}
+        <div style={{ display: "grid", gap: 12 }}>
+          <h2 className="section-title" style={{ margin: 0 }}>{language === "vi" ? "Thống kê" : "Summary"}</h2>
+          <SummaryCard label={t("admin.total")} value={counts.total} />
+          <SummaryCard label={t("admin.pending")} value={counts.pending} color="#64748b" />
+          <SummaryCard label={t("admin.unassigned")} value={counts.unassigned} color="#d97706" />
+          <SummaryCard label={t("admin.in_transit")} value={counts.in_transit} color="#1d4ed8" />
+          <SummaryCard label={t("admin.delayed_orders", "Delayed")} value={counts.delayed} color="#dc2626" />
+          <SummaryCard label={t("admin.delivered_today")} value={counts.delivered_today} color="#047857" />
         </div>
       </div>
 

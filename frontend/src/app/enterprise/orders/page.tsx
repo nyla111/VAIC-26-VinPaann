@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Brand } from "@/components/Brand";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { orderStateLabel, routeLabel } from "@/lib/labels";
+import { routeLabel } from "@/lib/labels";
 
 export default function EnterpriseOrdersPage() {
   const router = useRouter();
@@ -53,20 +53,52 @@ export default function EnterpriseOrdersPage() {
     <div className="app-shell">
       <aside className="sidebar">
         <Brand role="enterprise" />
-        <nav>
+        <nav style={{ flex: 1 }}>
           <Link
             className={pathname === "/enterprise" ? "active" : ""}
             href="/enterprise"
           >
+            <span className="nav-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+              <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+            </span>
             {language === "vi" ? "Tạo đơn hàng" : "Create Shipment"}
           </Link>
           <Link
             className={pathname === "/enterprise/orders" ? "active" : ""}
             href="/enterprise/orders"
           >
+            <span className="nav-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+              <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+                <path d="M11 17a1 1 0 001.447.894l5-2.5A1 1 0 0018 14.5V8.382l-7 3.5V17zM9 17v-5.118L2 8.382v6.118a1 1 0 00.553.894l5 2.5A1 1 0 009 17zM10 2.236l-7 3.5L10 9.236l7-3.5-7-3.5z" />
+              </svg>
+            </span>
             {language === "vi" ? "Danh sách đơn hàng" : "Order History"}
           </Link>
         </nav>
+
+        <div className="admin-sidebar-footer" style={{ marginTop: "auto" }}>
+          <div className="user-badge" style={{ marginBottom: 12 }}>
+            <div className="user-avatar">
+              {user.email ? user.email.split("@")[0].slice(0, 2).toUpperCase() : "EN"}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span className="user-email" style={{ fontSize: "13px" }}>{user.email}</span>
+              <span style={{ fontSize: "11px", color: "var(--muted)" }}>{dictionary.enterprise}</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <LanguageToggle />
+            <button
+              className="secondary"
+              style={{ flex: 1, fontSize: 12, padding: "8px 10px" }}
+              onClick={() => logout().then(() => router.replace("/login"))}
+            >
+              {dictionary.logout}
+            </button>
+          </div>
+        </div>
       </aside>
 
       <main className="main">
@@ -74,13 +106,6 @@ export default function EnterpriseOrdersPage() {
           <div>
             <h1>{t("enterprise.heading")}</h1>
             <p>{t("enterprise.subtitle")}</p>
-          </div>
-          <div className="user-box">
-            <LanguageToggle />
-            <span>{user.email}</span>
-            <button className="secondary" type="button" onClick={() => logout().then(() => router.replace("/login"))}>
-              {dictionary.logout}
-            </button>
           </div>
         </header>
 
@@ -108,22 +133,57 @@ export default function EnterpriseOrdersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order) => (
-                      <tr key={order.order_id}>
-                        <td style={{ fontWeight: "bold", color: "#1d4ed8" }}>ORDER-{order.order_id}</td>
-                        <td>{order.hub_id}</td>
-                        <td>{order.loai_hang || order.commodity}</td>
-                        <td>{order.khoi_luong_kg ? `${order.khoi_luong_kg.toLocaleString()} kg` : `${(order.weight_ton * 1000).toLocaleString()} kg`}</td>
-                        <td>{routeLabel(order.selected_route_id || "N/A", language)}</td>
-                        <td>
-                          <span className={`status-badge ${order.state_code || order.state}`}>
-                            {orderStateLabel(order.state_code || order.state, language)}
-                          </span>
-                        </td>
-                        <td>
-                          {order.selected_route_id && (
+                    {orders.map((order) => {
+                      const orderId = order.id; // e.g. "ORD143"
+                      const dbId = order.db_id; // e.g. 143
+                      const routeCode = order.recommended_route; // e.g. "D_WATER_VIA_CT"
+                      const origin = order.origin; // e.g. "Vị Thanh Hub"
+                      const commodity = order.commodity; // e.g. "Rice"
+                      const weightText = order.weight_ton ? `${order.weight_ton} ${language === "vi" ? "tấn" : "tons"}` : "-";
+                      const status = order.status; // e.g. "awaiting_assignment", "in_transit", etc.
+                      
+                      const getStatusLabel = (statusVal: string) => {
+                        const mapping: Record<string, { vi: string; en: string }> = {
+                          awaiting_assignment: { vi: "Chờ phân công", en: "Awaiting assignment" },
+                          in_transit: { vi: "Đang di chuyển", en: "In transit" },
+                          assigned: { vi: "Đã gán xe", en: "Vehicle assigned" },
+                          delivered: { vi: "Đã giao hàng", en: "Delivered" },
+                        };
+                        return mapping[statusVal]?.[language] || statusVal;
+                      };
+
+                      const trackingUrl = routeCode 
+                        ? `/enterprise?order_id=${dbId}&route=${routeCode}&step=tracking`
+                        : `/enterprise?order_id=${dbId}&step=routes`;
+
+                      return (
+                        <tr
+                          key={dbId}
+                          onClick={() => router.push(trackingUrl)}
+                          style={{ cursor: "pointer" }}
+                          className="table-row-hover"
+                        >
+                          <td style={{ fontWeight: "bold" }}>
                             <Link
-                              href={`/enterprise?order_id=${order.order_id}&route=${order.selected_route_id}&step=tracking`}
+                              href={trackingUrl}
+                              style={{ color: "#1d4ed8", textDecoration: "none" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {orderId}
+                            </Link>
+                          </td>
+                          <td>{origin}</td>
+                          <td>{commodity}</td>
+                          <td>{weightText}</td>
+                          <td>{routeLabel(routeCode || "N/A", language)}</td>
+                          <td>
+                            <span className={`status-badge ${status}`}>
+                              {getStatusLabel(status)}
+                            </span>
+                          </td>
+                          <td>
+                            <Link
+                              href={trackingUrl}
                               className="button secondary"
                               style={{
                                 display: "inline-block",
@@ -135,13 +195,14 @@ export default function EnterpriseOrdersPage() {
                                 borderRadius: "4px",
                                 border: "1px solid #cbd5e1"
                               }}
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              {language === "vi" ? "Theo dõi" : "Track"}
+                              {routeCode ? (language === "vi" ? "Theo dõi" : "Track") : (language === "vi" ? "Chọn tuyến" : "Select Route")}
                             </Link>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

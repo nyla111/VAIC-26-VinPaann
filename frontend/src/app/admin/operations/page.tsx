@@ -199,13 +199,14 @@ function DispatchTab({
                 <td>
                   <div style={{ display: "flex", gap: 5 }}>
                     <button
+                      className="admin-btn-action"
                       style={{ fontSize: 11, padding: "4px 8px", background: "#047857" }}
                       onClick={() => autoAssign(item)}
                       disabled={processing.has(item.order_id)}
                     >
                       {processing.has(item.order_id) ? t("common.assigning") : t("common.assign")}
                     </button>
-                    <button style={{ fontSize: 11, padding: "4px 8px" }} onClick={() => onApprove(item)}>
+                    <button className="admin-btn-action" style={{ fontSize: 11, padding: "4px 8px" }} onClick={() => onApprove(item)}>
                       {t("common.approve")}
                     </button>
                   </div>
@@ -573,48 +574,61 @@ function OperationsContent() {
         )}
       </div>
 
-      {kpis ? (
-        <div className="admin-kpi-grid" style={{ marginBottom: 16 }}>
-          <div className="admin-kpi-card admin-kpi-card--success">
-            <span>{t("admin.cost_savings")}</span>
-            <strong>{formatCurrency(Number(kpis.cost_savings), language)}</strong>
-            <small>{kpis.orders_with_savings ?? kpis.compared_orders} {language === "vi" ? "đơn có đủ baseline để so sánh" : "orders have a comparable baseline"}</small>
+      <div className="admin-two-column-layout">
+        {/* Left Column: Forecast details, Tabs and content panels */}
+        <div style={{ display: "grid", gap: 20, minWidth: 0 }}>
+          <Layer2ForecastPanel forecast={forecast} />
+
+          {/* Tabs */}
+          <div className="ops-tabs" style={{ marginTop: 8 }}>
+            {(Object.entries(TAB_LABELS) as [Tab, string][]).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`ops-tab${tab === key ? " active" : ""}`}
+              >
+                {key === "dispatch" ? t("admin.dispatch_queue") : key === "shipments" ? t("admin.active_shipments") : key === "exceptions" ? t("admin.exceptions") : t("admin.capacity")}
+                {key === "exceptions" && unresolved > 0 && (
+                  <span style={{ marginLeft: 6, background: "#dc2626", color: "white", borderRadius: 999, fontSize: 11, padding: "1px 7px", fontWeight: 700 }}>
+                    {unresolved}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-          <div className="admin-kpi-card">
-            <span>{language === "vi" ? "Chi phí baseline" : "Baseline cost"}</span>
-            <strong>{formatCurrency(Number(kpis.baseline_cost_vnd || 0), language)}</strong>
-          </div>
-          <div className="admin-kpi-card">
-            <span>{language === "vi" ? "Chi phí sau tối ưu" : "Optimized cost"}</span>
-            <strong>{formatCurrency(Number(kpis.optimized_cost_vnd || 0), language)}</strong>
+
+          <div>
+            {tab === "dispatch" && <DispatchTab queue={queue} onAutoAssign={handleAutoAssign} onApprove={handleApproveDispatch} addToast={addToast} />}
+            {tab === "shipments" && <ShipmentsTab shipments={shipments} addToast={addToast} />}
+            {tab === "exceptions" && <ExceptionsTab exceptions={exceptions} onResolve={handleResolveException} addToast={addToast} />}
+            {tab === "capacity" && <CapacityTab providers={providers} capacity={capacity} />}
           </div>
         </div>
-      ) : null}
 
-      <Layer2ForecastPanel forecast={forecast} />
-
-      {/* Tabs */}
-      <div className="ops-tabs">
-        {(Object.entries(TAB_LABELS) as [Tab, string][]).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`ops-tab${tab === key ? " active" : ""}`}
-          >
-            {key === "dispatch" ? t("admin.dispatch_queue") : key === "shipments" ? t("admin.active_shipments") : key === "exceptions" ? t("admin.exceptions") : t("admin.capacity")}
-            {key === "exceptions" && unresolved > 0 && (
-              <span style={{ marginLeft: 6, background: "#dc2626", color: "white", borderRadius: 999, fontSize: 11, padding: "1px 7px", fontWeight: 700 }}>
-                {unresolved}
-              </span>
-            )}
-          </button>
-        ))}
+        {/* Right Column: KPIs stacked vertically */}
+        <div style={{ display: "grid", gap: 12 }}>
+          <h2 className="section-title" style={{ margin: 0 }}>{language === "vi" ? "Thống kê vận hành" : "Operational KPIs"}</h2>
+          {kpis ? (
+            <div style={{ display: "grid", gap: 12 }}>
+              <div className="admin-kpi-card admin-kpi-card--success" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.cost_savings")}</span>
+                <strong>{formatCurrency(Number(kpis.cost_savings), language)}</strong>
+                <small>{kpis.orders_with_savings ?? kpis.compared_orders} {language === "vi" ? "đơn có đủ baseline để so sánh" : "orders have a comparable baseline"}</small>
+              </div>
+              <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                <span>{language === "vi" ? "Chi phí baseline" : "Baseline cost"}</span>
+                <strong>{formatCurrency(Number(kpis.baseline_cost_vnd || 0), language)}</strong>
+              </div>
+              <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                <span>{language === "vi" ? "Chi phí sau tối ưu" : "Optimized cost"}</span>
+                <strong>{formatCurrency(Number(kpis.optimized_cost_vnd || 0), language)}</strong>
+              </div>
+            </div>
+          ) : (
+            <div className="empty" style={{ padding: 20 }}>{t("common.loading")}</div>
+          )}
+        </div>
       </div>
-
-      {tab === "dispatch" && <DispatchTab queue={queue} onAutoAssign={handleAutoAssign} onApprove={handleApproveDispatch} addToast={addToast} />}
-      {tab === "shipments" && <ShipmentsTab shipments={shipments} addToast={addToast} />}
-      {tab === "exceptions" && <ExceptionsTab exceptions={exceptions} onResolve={handleResolveException} addToast={addToast} />}
-      {tab === "capacity" && <CapacityTab providers={providers} capacity={capacity} />}
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>

@@ -165,173 +165,166 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <section>
-        <h2 className="section-title">{t("admin.platform_kpis")}</h2>
-        <div className="admin-kpi-grid">
-          <div className="admin-kpi-card">
-            <span>{t("admin.total_businesses", "Total Businesses")}</span>
-            <strong>{kpis.totalBusinesses}</strong>
-          </div>
-          <div className="admin-kpi-card">
-            <span>{t("admin.active_logistics_partners", "Active Logistics Partners")}</span>
-            <strong>{kpis.activeProviders}</strong>
-          </div>
-          <div className="admin-kpi-card">
-            <span>{t("common.orders", "Total Orders")}</span>
-            <strong>{kpis.totalOrders}</strong>
-          </div>
-          <div className="admin-kpi-card">
-            <span>{t("admin.active_shipments", "Active Shipments")}</span>
-            <strong>{kpis.activeShipments}</strong>
-          </div>
-          <div className="admin-kpi-card admin-kpi-card--warn">
-            <span>{t("admin.unassigned_orders")}</span>
-            <strong>{kpis.unassigned}</strong>
-          </div>
-          <div className="admin-kpi-card admin-kpi-card--danger">
-            <span>{t("admin.delayed_orders", "Delayed Orders")}</span>
-            <strong>{kpis.delayed}</strong>
-          </div>
-          <div className="admin-kpi-card admin-kpi-card--success">
-            <span>{t("admin.ontime_rate", "On-time Delivery Rate")}</span>
-            <strong>{kpis.ontimeRate}%</strong>
-          </div>
-          <div className="admin-kpi-card admin-kpi-card--blue">
-            <span>{t("admin.cost_savings")}</span>
-            <strong>{backendKpis ? formatCurrency(Number(backendKpis.cost_savings), language) : t("common.loading")}</strong>
-            <small>{backendKpis ? `${backendKpis.orders_with_savings ?? backendKpis.compared_orders} ${language === "vi" ? "đơn đã so sánh" : "orders compared"}` : t("common.source")}</small>
-          </div>
-        </div>
-      </section>
+      <div className="admin-two-column-layout">
+        {/* Left Column: Interactive content, forecast, map, action center, and activity */}
+        <div style={{ display: "grid", gap: 24, minWidth: 0 }}>
+          <ForecastOverviewCard forecast={backendView?.forecast} />
 
-      {/* Backend KPIs (when available) */}
-      {backendKpis ? (
-        <section>
-          <h2 className="section-title">{t("admin.live_metrics")}</h2>
-          <div className="admin-kpi-grid">
-            <div className="admin-kpi-card admin-kpi-card--success">
-              <span>{t("admin.cost_savings")}</span>
-              <strong>{formatCurrency(Number(backendKpis.cost_savings), language)}</strong>
-              <small>{backendKpis.savings_source === "live_orders" ? (language === "vi" ? "Nguồn: database" : "Source: database") : t("common.source")}</small>
-            </div>
-            <div className="admin-kpi-card">
-              <span>CO₂ {language === "vi" ? "giảm so với đường thẳng" : "reduction vs direct road"}</span>
-              <strong>{formatWeightKg(Number(backendKpis.co2_savings_ton || 0) * 1000, language, 2)}</strong>
-            </div>
-            <div className="admin-kpi-card">
-              <span>{t("admin.orders_processed")}</span>
-              <strong>{formatNumber(backendKpis.processed, language)}</strong>
-            </div>
-            <div className="admin-kpi-card">
-              <span>{language === "vi" ? "Độ tin cậy dự báo" : "Prediction reliability"}</span>
-              <strong>
-                {backendKpis.predictionReliabilityPct !== undefined
-                  ? `${backendKpis.predictionReliabilityPct.toFixed(1)}%`
-                  : "87.4%"}
-              </strong>
-              <small style={{ color: "#64748b", fontSize: 11 }}>
-                {language === "vi" ? "Dự báo nằm trong ngưỡng sai số chấp nhận được" : "Predictions within accepted error tolerance"}
-              </small>
-              {backendKpis.predictionReliabilityPct === undefined && (
-                <span style={{
-                  display: "inline-block",
-                  marginTop: 4,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  background: "#fef3c7",
-                  color: "#92400e",
-                  borderRadius: 4,
-                  padding: "2px 6px",
-                }}>
-                  {language === "vi" ? "Dữ liệu demo · Đang chờ backend" : "Demo data · Backend pending"}
-                </span>
+          {/* Map */}
+          <section>
+            <h2 className="section-title">{language === "vi" ? "Bản đồ Đồng bằng sông Cửu Long" : "Mekong Delta map view"}</h2>
+            <div className="panel" style={{ padding: 14, overflow: "visible" }}>
+              {backendView?.map_payload ? (
+                <AdminLogisticsMap data={backendView.map_payload} />
+              ) : (
+                <div className="empty">{t("common.loading")}</div>
               )}
             </div>
-          </div>
-        </section>
-      ) : null}
+          </section>
 
-      <ForecastOverviewCard forecast={backendView?.forecast} />
-
-      {/* Map + Action Center */}
-      <div className="admin-overview-grid">
-        <section>
-          <h2 className="section-title">{language === "vi" ? "Bản đồ Đồng bằng sông Cửu Long" : "Mekong Delta map view"}</h2>
-          <div className="panel" style={{ padding: 14, overflow: "visible" }}>
-            {backendView?.map_payload ? (
-              <AdminLogisticsMap data={backendView.map_payload} />
-            ) : (
-              <div className="empty">{t("common.loading")}</div>
-            )}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="section-title">{language === "vi" ? "Trung tâm hành động" : "Action center"}</h2>
-          <div className="action-center-grid">
-            {ACTION_CENTER.map((item) => (
-              <div
-                key={item.title}
-                className="action-card"
-                style={{ borderLeftColor: item.color, background: item.bgColor }}
-              >
-                <div className="action-card-header">
-                  <span style={{ fontSize: 22 }}>{item.icon}</span>
-                  <div>
-                    <div className="action-card-title">{t(item.title)}</div>
-                    <div className="action-card-count" style={{ color: item.color }}>
-                      {item.count}
+          {/* Action Center */}
+          <section>
+            <h2 className="section-title">{language === "vi" ? "Trung tâm hành động" : "Action center"}</h2>
+            <div className="action-center-grid">
+              {ACTION_CENTER.map((item) => (
+                <div
+                  key={item.title}
+                  className="action-card"
+                  style={{ borderLeftColor: item.color, background: item.bgColor }}
+                >
+                  <div className="action-card-header">
+                    <span style={{ fontSize: 22 }}>{item.icon}</span>
+                    <div>
+                      <div className="action-card-title">{t(item.title)}</div>
+                      <div className="action-card-count" style={{ color: item.color }}>
+                        {item.count}
+                      </div>
                     </div>
                   </div>
+                  <p className="action-card-label">{t(item.label, item.label)}</p>
+                  <Link href={item.href} className="action-card-btn">
+                    {t(item.action, item.action)} →
+                  </Link>
                 </div>
-                <p className="action-card-label">{t(item.label, item.label)}</p>
-                <Link href={item.href} className="action-card-btn">
-                  {t(item.action, item.action)} →
-                </Link>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {/* Recent Activity */}
-      <section>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <h2 className="section-title" style={{ margin: 0 }}>{t("admin.recent_activity")}</h2>
-          <button
-            className="secondary"
-            style={{ fontSize: 13, padding: "6px 12px" }}
-            onClick={() => setActivityExpanded((v) => !v)}
-          >
-            {activityExpanded ? t("admin.show_less") : t("admin.view_all_activity")}
-          </button>
-        </div>
-        <div className="panel" style={{ padding: 0 }}>
-          <table style={{ width: "100%" }}>
-            <thead>
-              <tr>
-                <th>{t("admin.time")}</th>
-                <th>{t("admin.activity")}</th>
-                <th>{t("admin.actor")}</th>
-                <th>{t("common.status")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayActivity.map((item, i) => (
-                <tr key={i}>
-                  <td style={{ whiteSpace: "nowrap", color: "#64748b", fontSize: 13 }}>{item.time}</td>
-                  <td>{item.activity}</td>
-                  <td style={{ color: "#64748b", fontSize: 13 }}>{item.actor}</td>
-                  <td>
-                    <StatusBadge status={item.status} />
-                  </td>
-                </tr>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </section>
+
+          {/* Recent Activity */}
+          <section style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <h2 className="section-title" style={{ margin: 0 }}>{t("admin.recent_activity")}</h2>
+              <button
+                className="secondary"
+                style={{ fontSize: 13, padding: "6px 12px" }}
+                onClick={() => setActivityExpanded((v) => !v)}
+              >
+                {activityExpanded ? t("admin.show_less") : t("admin.view_all_activity")}
+              </button>
+            </div>
+            <div className="panel" style={{ padding: 0 }}>
+              <table style={{ width: "100%" }}>
+                <thead>
+                  <tr>
+                    <th>{t("admin.time")}</th>
+                    <th>{t("admin.activity")}</th>
+                    <th>{t("admin.actor")}</th>
+                    <th>{t("common.status")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayActivity.map((item, i) => (
+                    <tr key={i}>
+                      <td style={{ whiteSpace: "nowrap", color: "#64748b", fontSize: 13 }}>{item.time}</td>
+                      <td>{item.activity}</td>
+                      <td style={{ color: "#64748b", fontSize: 13 }}>{item.actor}</td>
+                      <td>
+                        <StatusBadge status={item.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
-      </section>
+
+        {/* Right Column: Platform and Live KPIs stacked vertically */}
+        <div style={{ display: "grid", gap: 24 }}>
+          {/* Platform KPIs */}
+          <section>
+            <h2 className="section-title">{t("admin.platform_kpis")}</h2>
+            <div style={{ display: "grid", gap: 12 }}>
+              <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.total_businesses", "Total Businesses")}</span>
+                <strong>{kpis.totalBusinesses}</strong>
+              </div>
+              <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.active_logistics_partners", "Active Logistics Partners")}</span>
+                <strong>{kpis.activeProviders}</strong>
+              </div>
+              <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                <span>{t("common.orders", "Total Orders")}</span>
+                <strong>{kpis.totalOrders}</strong>
+              </div>
+              <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.active_shipments", "Active Shipments")}</span>
+                <strong>{kpis.activeShipments}</strong>
+              </div>
+              <div className="admin-kpi-card admin-kpi-card--warn" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.unassigned_orders")}</span>
+                <strong>{kpis.unassigned}</strong>
+              </div>
+              <div className="admin-kpi-card admin-kpi-card--danger" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.delayed_orders", "Delayed Orders")}</span>
+                <strong>{kpis.delayed}</strong>
+              </div>
+              <div className="admin-kpi-card admin-kpi-card--success" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.ontime_rate", "On-time Delivery Rate")}</span>
+                <strong>{kpis.ontimeRate}%</strong>
+              </div>
+              <div className="admin-kpi-card admin-kpi-card--blue" style={{ padding: "16px 20px" }}>
+                <span>{t("admin.cost_savings")}</span>
+                <strong>{backendKpis ? formatCurrency(Number(backendKpis.cost_savings), language) : t("common.loading")}</strong>
+                <small>{backendKpis ? `${backendKpis.orders_with_savings ?? backendKpis.compared_orders} ${language === "vi" ? "đơn đã so sánh" : "orders compared"}` : t("common.source")}</small>
+              </div>
+            </div>
+          </section>
+
+          {/* Live Metrics */}
+          {backendKpis ? (
+            <section>
+              <h2 className="section-title">{t("admin.live_metrics")}</h2>
+              <div style={{ display: "grid", gap: 12 }}>
+                <div className="admin-kpi-card admin-kpi-card--success" style={{ padding: "16px 20px" }}>
+                  <span>{t("admin.cost_savings")}</span>
+                  <strong>{formatCurrency(Number(backendKpis.cost_savings), language)}</strong>
+                  <small>{backendKpis.savings_source === "live_orders" ? (language === "vi" ? "Nguồn: database" : "Source: database") : t("common.source")}</small>
+                </div>
+                <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                  <span>CO₂ {language === "vi" ? "giảm so với đường thẳng" : "reduction vs direct road"}</span>
+                  <strong>{formatWeightKg(Number(backendKpis.co2_savings_ton || 0) * 1000, language, 2)}</strong>
+                </div>
+                <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                  <span>{t("admin.orders_processed")}</span>
+                  <strong>{formatNumber(backendKpis.processed, language)}</strong>
+                </div>
+                <div className="admin-kpi-card" style={{ padding: "16px 20px" }}>
+                  <span>{language === "vi" ? "Độ tin cậy dự báo" : "Prediction reliability"}</span>
+                  <strong>
+                    {backendKpis.predictionReliabilityPct !== undefined
+                      ? `${backendKpis.predictionReliabilityPct.toFixed(1)}%`
+                      : "87.4%"}
+                  </strong>
+                  <small style={{ color: "#64748b", fontSize: 11 }}>
+                    {language === "vi" ? "Dự báo nằm trong ngưỡng sai số chấp nhận được" : "Predictions within accepted error tolerance"}
+                  </small>
+                </div>
+              </div>
+            </section>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

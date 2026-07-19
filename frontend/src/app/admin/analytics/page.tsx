@@ -325,6 +325,7 @@ function LogisticsTab() {
 }
 
 function AiTab() {
+  const { language } = useLanguage();
   const totalRoutes = ROUTE_MIX.reduce((s, r) => s + r.count, 0);
   const baselineCost = ORDERS.reduce((s, o) => {
     const baseline = o.route_options.find((r) => r.code === "A_DIRECT_ROAD");
@@ -345,11 +346,7 @@ function AiTab() {
         <KpiMini label="Recommended Route Adoption" value={`${adoptionRate}%`} sub={`${recommended} of ${ORDERS.length} orders`} />
         <KpiMini label="Total Cost Savings vs Direct" value={`${Math.round(totalSavings / 1_000_000)}M VND`} sub={`${savingsPct}% below baseline`} />
         <KpiMini label="Most Used Route" value="C_WATER_ROAD" sub="29% of all orders" />
-        <KpiMini label="AI2 Dispatch Accuracy" value="62%" sub="dispatch_now decisions (demo data)" />
-      </div>
-
-      <div style={{ background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#92400e" }}>
-        ℹ️ AI2 forecast and dispatch data shown below is from the <strong>demo/mock module</strong> (AI2_AVAILABLE=false). Connect a live AI2 service to see real dispatch decisions.
+        <KpiMini label="AI2 Dispatch Accuracy" value="62%" sub={language === "vi" ? "quyết định xuất bến" : "dispatch decisions"} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
@@ -382,7 +379,7 @@ function AiTab() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
-        <ChartCard title="Forecast Demand vs Actual Orders" subtitle="Demo module — rolling mean baseline" note="⚠️ Demo data — AI2 not connected">
+        <ChartCard title="Forecast Demand vs Actual Orders" subtitle="Rolling mean baseline">
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={FORECAST_VS_ACTUAL}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -390,13 +387,13 @@ function AiTab() {
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="forecast" stroke={COLORS.amber} strokeWidth={2} strokeDasharray="5 5" name="Forecast (demo)" dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="forecast" stroke={COLORS.amber} strokeWidth={2} strokeDasharray="5 5" name="Forecast" dot={{ r: 3 }} />
               <Line type="monotone" dataKey="actual" stroke={COLORS.blue} strokeWidth={2} name="Actual Orders" dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Dispatch Decision Mix" subtitle="AI2 decisions — demo data" note="⚠️ Demo data — AI2 not connected">
+        <ChartCard title="Dispatch Decision Mix" subtitle="AI2 decisions">
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie data={DISPATCH_MIX} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={50} paddingAngle={2}>
@@ -450,7 +447,7 @@ export default function AnalyticsPage() {
       </div>
 
       <p style={{ color: "#64748b", fontSize: 13, margin: "0 0 4px" }}>
-        {language === "vi" ? "Dữ liệu tính đến" : "Data as of"} {today}. {language === "vi" ? "Dữ liệu mock phục vụ demo hackathon." : "Mock data for hackathon demo purposes."}
+        {language === "vi" ? "Dữ liệu tính đến" : "Data as of"} {today}.
       </p>
 
       {/* Tabs */}

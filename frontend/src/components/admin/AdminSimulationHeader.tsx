@@ -60,33 +60,33 @@ export function AdminSimulationHeader() {
   };
 
   return (
-    <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800 sticky top-0 z-50">
+    <div className="bg-[#001e3d] text-white px-6 py-4 flex items-center justify-between border-b border-[#002d58]/40 sticky top-0 z-50">
       <div className="flex items-center gap-4">
         <span className="flex h-3 w-3 relative">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#86bb44] opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-[#86bb44]"></span>
         </span>
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">{copy.clock}</div>
-          <div className="text-lg font-mono font-bold tracking-widest text-emerald-400">{clock}</div>
+          <div className="text-[10px] uppercase tracking-wider text-slate-300 font-bold">{copy.clock}</div>
+          <div className="text-lg font-mono font-bold tracking-widest text-[#86bb44]">{clock}</div>
         </div>
       </div>
 
       <div className="flex items-center gap-3 relative">
-        <div className="bg-slate-800 border border-slate-700 rounded px-2.5 py-1 text-xs font-mono text-slate-300">
-          {copy.pacing}: <strong className="text-emerald-400 font-bold">{multiplier}h/10s</strong>
+        <div className="bg-[#002d58] border border-white/10 rounded px-2.5 py-1 text-xs font-mono text-slate-200">
+          {copy.pacing}: <strong className="text-[#86bb44] font-bold">{multiplier}h/10s</strong>
         </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-700 text-slate-300 flex items-center justify-center"
+          className="p-2 rounded bg-white/10 hover:bg-white/20 transition-colors border border-white/10 text-white flex items-center justify-center"
           title={copy.settings}
         >
           ⚙️
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-12 bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-4 w-72 z-[999] animate-slide-in">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-3 border-b border-slate-700 pb-1.5">{copy.speed}</h4>
+          <div className="absolute right-0 top-12 bg-[#001e3d] border border-white/10 rounded-lg shadow-xl p-4 w-72 z-[999] animate-slide-in">
+            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-3 border-b border-white/10 pb-1.5">{copy.speed}</h4>
             <div className="grid grid-cols-3 gap-2">
               {[1, 2, 5].map((val) => (
                 <button
@@ -94,15 +94,15 @@ export function AdminSimulationHeader() {
                   onClick={() => updateMultiplier(val)}
                   className={`py-1.5 rounded text-xs font-mono font-bold transition-all ${
                     multiplier === val
-                      ? "bg-emerald-500 text-slate-950 shadow-md"
-                      : "bg-slate-700 hover:bg-slate-600 text-slate-200"
+                      ? "bg-[#86bb44] text-slate-950 shadow-md"
+                      : "bg-white/10 hover:bg-white/20 text-slate-200"
                   }`}
                 >
                   {val}h/10s
                 </button>
               ))}
             </div>
-            <div className="mt-3 text-[10px] text-slate-400 italic">
+            <div className="mt-3 text-[10px] text-slate-300 italic">
               {copy.help}
             </div>
           </div>

@@ -164,7 +164,6 @@ function RouteCard({
         <strong>{routeLabel(route.route_code, language)}</strong>
         {isRecommended ? <span className="badge">{t("route.recommended", "Khuyến nghị")}</span> : null}
       </header>
-      <p>{route.ten}</p>
       {route.trang_thai === "available" ? (
         <>
           <div className="metric">

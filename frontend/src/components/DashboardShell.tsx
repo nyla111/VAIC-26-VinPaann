@@ -17,6 +17,38 @@ const defaultSection: Record<Role, string> = {
   admin: "admin_inventory",
 };
 
+const SOLID_ICONS: Record<string, React.ReactNode> = {
+  logistics_overview: (
+    <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+    </svg>
+  ),
+  logistics_orders: (
+    <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+      <path d="M11 17a1 1 0 001.447.894l5-2.5A1 1 0 0018 14.5V8.382l-7 3.5V17zM9 17v-5.118L2 8.382v6.118a1 1 0 00.553.894l5 2.5A1 1 0 009 17zM10 2.236l-7 3.5L10 9.236l7-3.5-7-3.5z" />
+    </svg>
+  ),
+  logistics_fleet: (
+    <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+      <path d="M2 3a1 1 0 00-1 1v11a1.5 1.5 0 001.5 1.5H3a2 2 0 004 0h6a2 2 0 004 0h1.5a1.5 1.5 0 001.5-1.5v-5a1.5 1.5 0 00-.44-1.06l-3-3A1.5 1.5 0 0010.5 5H2zm3 13a1 1 0 110-2 1 1 0 010 2zm10 0a1 1 0 110-2 1 1 0 010 2z" />
+    </svg>
+  ),
+  logistics_jobs: (
+    <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v6.5h3.71a1 1 0 01.82 1.573l-7 10A1 1 0 018 19.5V13H4.29a1 1 0 01-.82-1.573l7-10a1 1 0 011.03-.381z" clipRule="evenodd" />
+    </svg>
+  ),
+  business_shipment_form: (
+    <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+    </svg>
+  ),
+  business_orders: (
+    <svg style={{ width: "16px", height: "16px" }} viewBox="0 0 20 20" fill="currentColor">
+      <path d="M11 17a1 1 0 001.447.894l5-2.5A1 1 0 0018 14.5V8.382l-7 3.5V17zM9 17v-5.118L2 8.382v6.118a1 1 0 00.553.894l5 2.5A1 1 0 009 17zM10 2.236l-7 3.5L10 9.236l7-3.5-7-3.5z" />
+    </svg>
+  )
+};
 
 export function DashboardShell({ role }: { role: Role }) {
   const router = useRouter();
@@ -112,9 +144,6 @@ export function DashboardShell({ role }: { role: Role }) {
     refreshView();
   }, [loading, requestedSection, role, router, statusFilter, user, refreshView]);
 
-  // REST loads the view; WebSocket is the production push channel. Any
-  // committed backend state change causes a cheap authoritative re-read so
-  // role-specific projections never become a second source of truth.
   useEffect(() => {
     if (loading || !user || user.role !== role) return;
     const apiBase = process.env.NEXT_PUBLIC_VAIC_API_BASE_URL || "http://127.0.0.1:8000";
@@ -144,39 +173,61 @@ export function DashboardShell({ role }: { role: Role }) {
 
   if (loading || !user || user.role !== role) return <main className="loading-screen">{dictionary.loading}</main>;
 
+  const userInitials = user.email ? user.email.split("@")[0].slice(0, 2).toUpperCase() : "US";
+  const roleLabelText = role === "enterprise"
+    ? dictionary.enterprise
+    : role === "logistics"
+      ? dictionary.logistics
+      : dictionary.admin;
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <Brand role={role} />
-        <nav>
-          {(view?.menu || []).map((item, index) => (
-            <div key={item.id} className="nav-item-wrap">
-              {role === "admin" && index === 5 ? <div className="nav-divider">{t("common.view_by_role", "Xem theo góc nhìn")}</div> : null}
-              <Link className={activeSection === item.id ? "active" : ""} href={sectionHref(item.id)}>
-                {sectionLabel(item.id, item.label)}
-              </Link>
-            </div>
-          ))}
+        <nav style={{ flex: 1 }}>
+          {(view?.menu || []).map((item, index) => {
+            const isActive = activeSection === item.id;
+            return (
+              <div key={item.id} className="nav-item-wrap">
+                {role === "admin" && index === 5 ? <div className="nav-divider">{t("common.view_by_role", "Xem theo góc nhìn")}</div> : null}
+                <Link className={isActive ? "active" : ""} href={sectionHref(item.id)}>
+                  <span className="nav-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                    {SOLID_ICONS[item.id]}
+                  </span>
+                  {sectionLabel(item.id, item.label)}
+                </Link>
+              </div>
+            );
+          })}
         </nav>
+
+        <div className="admin-sidebar-footer" style={{ marginTop: "auto" }}>
+          <div className="user-badge" style={{ marginBottom: 12 }}>
+            <div className="user-avatar">
+              {userInitials}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span className="user-email" style={{ fontSize: "13px" }}>{user.email}</span>
+              <span style={{ fontSize: "11px", color: "var(--muted)" }}>{roleLabelText}</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <LanguageToggle />
+            <button
+              className="secondary"
+              style={{ flex: 1, fontSize: 12, padding: "8px 10px" }}
+              onClick={() => logout().then(() => router.replace("/login"))}
+            >
+              {dictionary.logout}
+            </button>
+          </div>
+        </div>
       </aside>
       <main className="main">
         <header className="topbar">
           <div>
             <h1>{title}</h1>
             <p>{subtitle}</p>
-          </div>
-          <div className="user-box">
-            <LanguageToggle />
-            <span>
-              {user.email}
-            </span>
-            <button
-              className="secondary"
-              type="button"
-              onClick={() => logout().then(() => router.replace("/login"))}
-            >
-              {dictionary.logout}
-            </button>
           </div>
         </header>
         <section className="content">

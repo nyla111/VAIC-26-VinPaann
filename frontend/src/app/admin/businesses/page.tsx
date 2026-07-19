@@ -282,115 +282,124 @@ function BusinessesContent() {
         </div>
       </div>
 
-      {/* Summary strip */}
-      <div className="summary-strip" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-        <SummaryCard label={t("businesses.total")} value={counts.total} />
-        <SummaryCard label={t("businesses.active")} value={counts.active} color="#047857" />
-        <SummaryCard label={t("businesses.pending")} value={counts.pending} color="#d97706" />
-        <SummaryCard label={t("businesses.suspended")} value={counts.suspended} color="#dc2626" />
-      </div>
+      <div className="admin-two-column-layout">
+        {/* Left Column: Filters and Table */}
+        <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+          {/* Filters */}
+          <div className="admin-filters">
+            <input
+              className="filter-input"
+              placeholder={t("businesses.search")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">{t("businesses.all_statuses")}</option>
+              <option value="active">{t("businesses.active")}</option>
+              <option value="pending">{t("businesses.pending")}</option>
+              <option value="suspended">{t("businesses.suspended")}</option>
+            </select>
+            <select value={provinceFilter} onChange={(e) => setProvinceFilter(e.target.value)}>
+              <option value="all">{t("businesses.all_provinces")}</option>
+              {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+            {(search || statusFilter !== "all" || provinceFilter !== "all") && (
+              <button className="secondary" onClick={() => { setSearch(""); setStatusFilter("all"); setProvinceFilter("all"); }}>
+                {t("businesses.clear_filters")}
+              </button>
+            )}
+            <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
+              {filtered.length} of {businesses.length}
+            </span>
+          </div>
 
-      {/* Filters */}
-      <div className="admin-filters">
-        <input
-          className="filter-input"
-          placeholder={t("businesses.search")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">{t("businesses.all_statuses")}</option>
-          <option value="active">{t("businesses.active")}</option>
-          <option value="pending">{t("businesses.pending")}</option>
-          <option value="suspended">{t("businesses.suspended")}</option>
-        </select>
-        <select value={provinceFilter} onChange={(e) => setProvinceFilter(e.target.value)}>
-          <option value="all">{t("businesses.all_provinces")}</option>
-          {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
-        {(search || statusFilter !== "all" || provinceFilter !== "all") && (
-          <button className="secondary" onClick={() => { setSearch(""); setStatusFilter("all"); setProvinceFilter("all"); }}>
-            {t("businesses.clear_filters")}
-          </button>
-        )}
-        <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
-          {filtered.length} of {businesses.length}
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="panel" style={{ padding: 0 }}>
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>{t("businesses.company")}</th><th>{t("businesses.contact")}</th><th>{t("businesses.province")}</th><th>{t("businesses.total_orders")}</th><th>{t("businesses.volume")}</th><th>{t("businesses.spend")}</th><th>{t("businesses.last_active")}</th><th>{t("common.status")}</th><th>{t("businesses.actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={9} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
-                    {t("businesses.no_match")}
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((biz) => (
-                  <tr key={biz.id} className="table-row-hover">
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{biz.name}</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{biz.id}</div>
-                    </td>
-                    <td>
-                      <div>{biz.contact}</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{biz.email}</div>
-                    </td>
-                    <td>{biz.province}</td>
-                    <td>{biz.total_orders} / {biz.active_orders}</td>
-                    <td>{biz.total_volume_ton}t</td>
-                    <td>{fmtVnd(biz.total_spend_vnd)} VND</td>
-                    <td style={{ color: "#64748b", fontSize: 13 }}>{biz.last_active}</td>
-                    <td><StatusBadge status={biz.status} /></td>
-                    <td>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "nowrap" }}>
-                        <button
-                          className="secondary"
-                          style={{ padding: "5px 10px", fontSize: 12 }}
-                          onClick={() => setSelected(biz)}
-                        >
-                          {t("businesses.details")}
-                        </button>
-                        {biz.status === "pending" && (
-                          <button
-                            style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }}
-                            onClick={() => handleStatusChange(biz.id, "active")}
-                          >
-                            {t("businesses.approve")}
-                          </button>
-                        )}
-                        {biz.status === "active" && (
-                          <button
-                            style={{ padding: "5px 10px", fontSize: 12, background: "#dc2626" }}
-                            onClick={() => handleStatusChange(biz.id, "suspended")}
-                          >
-                            {t("businesses.suspend")}
-                          </button>
-                        )}
-                        {biz.status === "suspended" && (
-                          <button
-                            style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }}
-                            onClick={() => handleStatusChange(biz.id, "active")}
-                          >
-                            {t("businesses.reactivate")}
-                          </button>
-                        )}
-                      </div>
-                    </td>
+          {/* Table */}
+          <div className="panel" style={{ padding: 0 }}>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t("businesses.company")}</th><th>{t("businesses.contact")}</th><th>{t("businesses.province")}</th><th>{t("businesses.total_orders")}</th><th>{t("businesses.volume")}</th><th>{t("businesses.spend")}</th><th>{t("businesses.last_active")}</th><th>{t("common.status")}</th><th>{t("businesses.actions")}</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
+                        {t("businesses.no_match")}
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((biz) => (
+                      <tr key={biz.id} className="table-row-hover">
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{biz.name}</div>
+                          <div style={{ fontSize: 12, color: "#64748b" }}>{biz.id}</div>
+                        </td>
+                        <td>
+                          <div>{biz.contact}</div>
+                          <div style={{ fontSize: 12, color: "#64748b" }}>{biz.email}</div>
+                        </td>
+                        <td>{biz.province}</td>
+                        <td>{biz.total_orders} / {biz.active_orders}</td>
+                        <td>{biz.total_volume_ton}t</td>
+                        <td>{fmtVnd(biz.total_spend_vnd)} VND</td>
+                        <td style={{ color: "#64748b", fontSize: 13 }}>{biz.last_active}</td>
+                        <td><StatusBadge status={biz.status} /></td>
+                        <td>
+                          <div style={{ display: "flex", gap: 6, flexWrap: "nowrap" }}>
+                            <button
+                              className="secondary admin-btn-details"
+                              style={{ padding: "5px 10px", fontSize: 12 }}
+                              onClick={() => setSelected(biz)}
+                            >
+                              {t("businesses.details")}
+                            </button>
+                            {biz.status === "pending" && (
+                              <button
+                                className="admin-btn-action"
+                                style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }}
+                                onClick={() => handleStatusChange(biz.id, "active")}
+                              >
+                                {t("businesses.approve")}
+                              </button>
+                            )}
+                            {biz.status === "active" && (
+                              <button
+                                className="admin-btn-action"
+                                style={{ padding: "5px 10px", fontSize: 12, background: "#dc2626" }}
+                                onClick={() => handleStatusChange(biz.id, "suspended")}
+                              >
+                                {t("businesses.suspend")}
+                              </button>
+                            )}
+                            {biz.status === "suspended" && (
+                              <button
+                                className="admin-btn-action"
+                                style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }}
+                                onClick={() => handleStatusChange(biz.id, "active")}
+                              >
+                                {t("businesses.reactivate")}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Summaries stacked vertically */}
+        <div style={{ display: "grid", gap: 12 }}>
+          <h2 className="section-title" style={{ margin: 0 }}>{language === "vi" ? "Thống kê" : "Summary"}</h2>
+          <SummaryCard label={t("businesses.total")} value={counts.total} />
+          <SummaryCard label={t("businesses.active")} value={counts.active} color="#047857" />
+          <SummaryCard label={t("businesses.pending")} value={counts.pending} color="#d97706" />
+          <SummaryCard label={t("businesses.suspended")} value={counts.suspended} color="#dc2626" />
         </div>
       </div>
 

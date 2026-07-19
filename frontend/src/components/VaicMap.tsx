@@ -23,6 +23,8 @@ type Props = {
   selectedRoute?: string | null;
   onSelectedRouteChange?: (routeCode: string) => void;
   trackingMarker?: { lat: number; lon: number; label: string } | null;
+  hideRouteSelector?: boolean;
+  isEnterprise?: boolean;
 };
 
 function escapeHtml(value: unknown) {
@@ -56,7 +58,7 @@ function pointAlongPolyline(points: [number, number][], progress: number): [numb
   return points[points.length - 1];
 }
 
-export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMarker }: Props) {
+export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMarker, hideRouteSelector, isEnterprise }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const routeLayerRef = useRef<LayerGroup | null>(null);
@@ -105,6 +107,12 @@ export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMa
     }
     routeLayerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
+
+    setTimeout(() => {
+      if (mounted && map) {
+        map.invalidateSize();
+      }
+    }, 150);
     return () => {
       mounted = false;
       mapRef.current?.remove();
@@ -118,6 +126,13 @@ export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMa
     async function draw() {
       if (!mapRef.current || !routeLayerRef.current) return;
       const routeLayer = routeLayerRef.current;
+
+      mapRef.current.invalidateSize();
+      setTimeout(() => {
+        if (!cancelled && mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 150);
       routeLayer.clearLayers();
       const segments = routeCode
         ? data.routes?.[routeCode] || []
@@ -140,7 +155,7 @@ export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMa
 
       await Promise.all(
         segments.map(async (segment) => {
-          const color = segment.mode === "water" ? "#0f766e" : "#64748b";
+          const color = segment.mode === "water" ? "#002d58" : "#64748b";
           const points = await geographicGeometry(segment);
           if (!cancelled) {
             L.polyline(points, {
@@ -169,7 +184,7 @@ export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMa
         });
 
         if (data.operational) {
-          const deliveryColors = ["#7c3aed", "#0891b2", "#ea580c", "#4f46e5"];
+          const deliveryColors = ["#002d58", "#86bb44", "#ea580c", "#7c3aed"];
           const deliveryGeometry = new Map<string, [number, number][]>();
           await Promise.all(
             (data.active_deliveries || []).map(async (delivery, deliveryIndex) => {
@@ -226,7 +241,7 @@ export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMa
 
           const boatIcon = L.divIcon({
             className: "custom-boat-icon",
-            html: `<div style="background-color: #1d4ed8; border: 2px solid white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">🚢</div>`,
+            html: `<div style="background-color: #002d58; border: 2px solid white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">🚢</div>`,
             iconSize: [32, 32],
             iconAnchor: [16, 16],
             popupAnchor: [0, -16]
@@ -337,17 +352,28 @@ export function VaicMap({ data, selectedRoute, onSelectedRouteChange, trackingMa
 
   return (
     <div className="map-stack">
-      {data.operational ? (
+      {isEnterprise ? (
+        <div className="map-legend" aria-label={language === "vi" ? "Chú giải bản đồ" : "Map legend"} style={{ gridTemplateColumns: "1fr", gap: 12 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ display: "inline-block", width: "24px", height: "4px", backgroundColor: "#64748b", borderRadius: "2px" }} />
+            {language === "vi" ? "Đường bộ" : "Road"}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ display: "inline-block", width: "24px", height: "4px", borderTop: "4px dashed #002d58" }} />
+            {language === "vi" ? "Đường thủy" : "Waterway"}
+          </span>
+        </div>
+      ) : data.operational ? (
         <div className="map-legend" aria-label={language === "vi" ? "Chú giải bản đồ" : "Map legend"}>
           <span><i className="legend-dot available" />{mapText.available} ({data.summary?.available_vehicles || 0})</span>
           <span><i className="legend-dot legend-unavailable" />{mapText.unavailable} ({data.summary?.unavailable_vehicles || 0})</span>
           <span><i className="legend-dot delivery" />{mapText.delivery} ({(data.vehicle_points || []).filter((vehicle) => vehicle.display_status === "in_delivery").length})</span>
-          <span className="flex items-center gap-1"><i className="legend-dot" style={{ backgroundColor: "#fbbf24", display: "inline-block", borderRadius: "50%", width: "10px", height: "10px" }} />{mapText.arrived} ({(data.vehicle_points || []).filter((vehicle) => vehicle.display_status === "arrived_waiting").length})</span>
+          <span><i className="legend-dot" style={{ backgroundColor: "#fbbf24" }} />{mapText.arrived} ({(data.vehicle_points || []).filter((vehicle) => vehicle.display_status === "arrived_waiting").length})</span>
           <span><i className="legend-dot job" />{mapText.waitingJobs} ({data.summary?.waiting_jobs || 0})</span>
           <span><i className="legend-line" />{mapText.activeRoutes} ({data.summary?.active_deliveries || 0})</span>
         </div>
       ) : null}
-      {routeCodes.length ? (
+      {routeCodes.length && !hideRouteSelector ? (
         <div className="route-toolbar" aria-label={t("map.route_selector")}>
           {routeCodes.map((code) => (
             <button

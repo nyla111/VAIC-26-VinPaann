@@ -189,103 +189,109 @@ export default function LogisticsPage() {
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="summary-strip" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
-        {[
-          { label: t("logistics.total"), value: totals.total },
-          { label: t("logistics.available"), value: totals.available, color: "#047857" },
-          { label: t("logistics.active_deliveries"), value: totals.activeDeliveries, color: "#1d4ed8" },
-          { label: t("logistics.available_vehicles"), value: totals.availVehicles, color: "#6366f1" },
-          { label: t("logistics.avg_ontime"), value: `${totals.avgOntime}%`, color: "#047857" },
-        ].map((c) => (
-          <div key={c.label} style={{ background: "white", border: "1px solid #dbe2ea", borderRadius: 8, padding: 14 }}>
-            <span style={{ color: "#64748b", fontSize: 13 }}>{c.label}</span>
-            <div style={{ fontSize: 24, fontWeight: 700, color: c.color ?? "#111827", marginTop: 4 }}>{c.value}</div>
+      <div className="admin-two-column-layout">
+        {/* Left Column: Filters and Table */}
+        <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+          {/* Filters */}
+          <div className="admin-filters">
+            <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)}>
+              {MODES.map((m) => (
+                <option key={m} value={m}>{m === "all" ? t("logistics.all_modes") : modeLabel(m, language)}</option>
+              ))}
+            </select>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">{t("logistics.all_statuses")}</option><option value="available">{t("fleet.available")}</option><option value="busy">{t("logistics.busy")}</option><option value="inactive">{t("logistics.inactive")}</option>
+            </select>
+            <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
+              {filtered.length} of {providers.length}
+            </span>
           </div>
-        ))}
-      </div>
 
-      {/* Filters */}
-      <div className="admin-filters">
-        <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)}>
-          {MODES.map((m) => (
-            <option key={m} value={m}>{m === "all" ? t("logistics.all_modes") : modeLabel(m, language)}</option>
-          ))}
-        </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">{t("logistics.all_statuses")}</option><option value="available">{t("fleet.available")}</option><option value="busy">{t("logistics.busy")}</option><option value="inactive">{t("logistics.inactive")}</option>
-        </select>
-        <span style={{ marginLeft: "auto", color: "#64748b", fontSize: 13 }}>
-          {filtered.length} of {providers.length}
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="panel" style={{ padding: 0 }}>
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>{t("common.provider")}</th><th>{t("common.mode")}</th><th>{t("common.fleet")}</th><th>{t("fleet.available_vehicles")}</th><th>{t("logistics.active_orders")}</th><th>{t("common.capacity")}</th><th>{t("logistics.ontime")}</th><th>{t("logistics.fleet_utilization")}</th><th>{t("common.status")}</th><th>{t("common.actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={10} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
-                    {t("logistics.no_match")}
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((p) => (
-                  <tr key={p.id} className="table-row-hover">
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{p.name}</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{p.province}</div>
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                        {p.modes.map((m) => <StatusBadge key={m} status={m} />)}
-                      </div>
-                    </td>
-                    <td>{p.fleet_size}</td>
-                    <td>{p.available_vehicles}</td>
-                    <td>{p.active_orders}</td>
-                    <td>{p.available_capacity_ton}t</td>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <Progress pct={p.ontime_rate} color={p.ontime_rate >= 90 ? "#047857" : p.ontime_rate >= 80 ? "#d97706" : "#dc2626"} />
-                        <span style={{ fontSize: 12, fontWeight: 600, minWidth: 36 }}>{p.ontime_rate}%</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <Progress pct={p.utilization} color={p.utilization >= 80 ? "#dc2626" : "#1d4ed8"} />
-                        <span style={{ fontSize: 12, fontWeight: 600, minWidth: 36 }}>{p.utilization}%</span>
-                      </div>
-                    </td>
-                    <td><StatusBadge status={p.status} /></td>
-                    <td>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button className="secondary" style={{ padding: "5px 10px", fontSize: 12 }} onClick={() => setSelected(p)}>
-                          {t("logistics.details")}
-                        </button>
-                        {p.status === "inactive" ? (
-                          <button style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }} onClick={() => handleStatusChange(p.id, "available")}>
-                            {t("logistics.activate")}
-                          </button>
-                        ) : (
-                          <button style={{ padding: "5px 10px", fontSize: 12, background: "#dc2626" }} onClick={() => handleStatusChange(p.id, "inactive")}>
-                            {t("logistics.deactivate")}
-                          </button>
-                        )}
-                      </div>
-                    </td>
+          {/* Table */}
+          <div className="panel" style={{ padding: 0 }}>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t("common.provider")}</th><th>{t("common.mode")}</th><th>{t("common.fleet")}</th><th>{t("fleet.available_vehicles")}</th><th>{t("logistics.active_orders")}</th><th>{t("common.capacity")}</th><th>{t("logistics.ontime")}</th><th>{t("logistics.fleet_utilization")}</th><th>{t("common.status")}</th><th>{t("common.actions")}</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={10} style={{ textAlign: "center", padding: 32, color: "#64748b" }}>
+                        {t("logistics.no_match")}
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((p) => (
+                      <tr key={p.id} className="table-row-hover">
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{p.name}</div>
+                          <div style={{ fontSize: 12, color: "#64748b" }}>{p.province}</div>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                            {p.modes.map((m) => <StatusBadge key={m} status={m} />)}
+                          </div>
+                        </td>
+                        <td>{p.fleet_size}</td>
+                        <td>{p.available_vehicles}</td>
+                        <td>{p.active_orders}</td>
+                        <td>{p.available_capacity_ton}t</td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <Progress pct={p.ontime_rate} color={p.ontime_rate >= 90 ? "#047857" : p.ontime_rate >= 80 ? "#d97706" : "#dc2626"} />
+                            <span style={{ fontSize: 12, fontWeight: 600, minWidth: 36 }}>{p.ontime_rate}%</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <Progress pct={p.utilization} color={p.utilization >= 80 ? "#dc2626" : "#1d4ed8"} />
+                            <span style={{ fontSize: 12, fontWeight: 600, minWidth: 36 }}>{p.utilization}%</span>
+                          </div>
+                        </td>
+                        <td><StatusBadge status={p.status} /></td>
+                        <td>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button className="secondary admin-btn-details" style={{ padding: "5px 10px", fontSize: 12 }} onClick={() => setSelected(p)}>
+                              {t("logistics.details")}
+                            </button>
+                            {p.status === "inactive" ? (
+                              <button className="admin-btn-action" style={{ padding: "5px 10px", fontSize: 12, background: "#047857" }} onClick={() => handleStatusChange(p.id, "available")}>
+                                {t("logistics.activate")}
+                              </button>
+                            ) : (
+                              <button className="admin-btn-action" style={{ padding: "5px 10px", fontSize: 12, background: "#dc2626" }} onClick={() => handleStatusChange(p.id, "inactive")}>
+                                {t("logistics.deactivate")}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Summaries stacked vertically */}
+        <div style={{ display: "grid", gap: 12 }}>
+          <h2 className="section-title" style={{ margin: 0 }}>{language === "vi" ? "Thống kê" : "Summary"}</h2>
+          {[
+            { label: t("logistics.total"), value: totals.total },
+            { label: t("logistics.available"), value: totals.available, color: "#047857" },
+            { label: t("logistics.active_deliveries"), value: totals.activeDeliveries, color: "#1d4ed8" },
+            { label: t("logistics.available_vehicles"), value: totals.availVehicles, color: "#6366f1" },
+            { label: t("logistics.avg_ontime"), value: `${totals.avgOntime}%`, color: "#047857" },
+          ].map((c) => (
+            <div key={c.label} style={{ background: "white", border: "1px solid #dbe2ea", borderRadius: 8, padding: 14 }}>
+              <span style={{ color: "#64748b", fontSize: 13 }}>{c.label}</span>
+              <div style={{ fontSize: 24, fontWeight: 700, color: c.color ?? "#111827", marginTop: 4 }}>{c.value}</div>
+            </div>
+          ))}
         </div>
       </div>
 
