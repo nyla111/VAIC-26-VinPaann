@@ -250,7 +250,7 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Right Column: Platform and Live KPIs stacked vertically */}
-        <div style={{ display: "grid", gap: 24 }}>
+        <div className="admin-summary-column" style={{ gap: 24 }}>
           {/* Platform KPIs */}
           <section>
             <h2 className="section-title">{t("admin.platform_kpis")}</h2>

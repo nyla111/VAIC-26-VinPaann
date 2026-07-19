@@ -278,7 +278,7 @@ export default function LogisticsPage() {
         </div>
 
         {/* Right Column: Summaries stacked vertically */}
-        <div style={{ display: "grid", gap: 12 }}>
+        <div className="admin-summary-column">
           <h2 className="section-title" style={{ margin: 0 }}>{language === "vi" ? "Thống kê" : "Summary"}</h2>
           {[
             { label: t("logistics.total"), value: totals.total },

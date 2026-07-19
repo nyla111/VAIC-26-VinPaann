@@ -606,7 +606,7 @@ function OperationsContent() {
         </div>
 
         {/* Right Column: KPIs stacked vertically */}
-        <div style={{ display: "grid", gap: 12 }}>
+        <div className="admin-summary-column">
           <h2 className="section-title" style={{ margin: 0 }}>{language === "vi" ? "Thống kê vận hành" : "Operational KPIs"}</h2>
           {kpis ? (
             <div style={{ display: "grid", gap: 12 }}>

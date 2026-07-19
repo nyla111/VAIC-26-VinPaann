@@ -548,7 +548,7 @@ function OrdersContent() {
         </div>
 
         {/* Right Column: Summary cards stacked vertically */}
-        <div style={{ display: "grid", gap: 12 }}>
+        <div className="admin-summary-column">
           <h2 className="section-title" style={{ margin: 0 }}>{language === "vi" ? "Thống kê" : "Summary"}</h2>
           <SummaryCard label={t("admin.total")} value={counts.total} />
           <SummaryCard label={t("admin.pending")} value={counts.pending} color="#64748b" />

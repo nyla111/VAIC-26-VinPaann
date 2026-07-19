@@ -353,7 +353,8 @@ select {
   width: 260px;
   height: 100vh;
   z-index: 50;
-  overflow-y: auto;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .brand {
@@ -946,7 +947,8 @@ tr:last-child td {
   width: 260px;
   height: 100vh;
   z-index: 50;
-  overflow-y: auto;
+  overflow: hidden;
+  box-sizing: border-box;
   border-right: 1px solid var(--line);
 }
 
@@ -1014,14 +1016,33 @@ tr:last-child td {
 
 .admin-two-column-layout {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 280px;
   gap: 24px;
   align-items: start;
 }
 
-@media (max-width: 1200px) {
+.admin-two-column-layout > * {
+  min-width: 0;
+}
+
+.admin-summary-column {
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 1380px) {
   .admin-two-column-layout {
     grid-template-columns: 1fr;
+  }
+
+  .admin-summary-column {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+  }
+
+  .admin-summary-column .section-title {
+    grid-column: 1 / -1;
   }
 }
 
