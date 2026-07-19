@@ -117,7 +117,19 @@ def websocket_user(websocket: WebSocket) -> dict[str, Any] | None:
     user_id = session_data.get("user_id")
     role = session_data.get("role")
     if not user_id or not role:
+        # Fallback to query parameters for cross-origin websocket connections
+        params = dict(websocket.query_params)
+        user_id = params.get("user_id")
+        role = params.get("role")
+        if user_id:
+            try:
+                user_id = int(user_id)
+            except ValueError:
+                return None
+
+    if not user_id or not role:
         return None
+
     with Session(engine) as session:
         user = session.get(User, user_id)
         if not user or user.role != role:

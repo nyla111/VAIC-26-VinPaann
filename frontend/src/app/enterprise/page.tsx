@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, FormEvent, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Brand } from "@/components/Brand";
@@ -65,8 +66,30 @@ function getVehicleType(state: string, routeId: string | null, language: "vi" | 
   return language === "vi" ? "🚚 Phương tiện" : "🚚 Vehicle";
 }
 
-export default function EnterpriseDashboard() {
+const MAP_PAYLOAD_NODES = [
+  { node_id: "HUB_VITHANH", name: "Hub Vị Thanh", type: "farm_hub", lat: 9.784, lon: 105.4701, on_river: "True" },
+  { node_id: "HUB_LONGXUYEN", name: "Hub Long Xuyên", type: "farm_hub", lat: 10.3864, lon: 105.4352, on_river: "True" },
+  { node_id: "HUB_SOCTRANG", name: "Hub Sóc Trăng", type: "farm_hub", lat: 9.6025, lon: 105.9739, on_river: "True" },
+  { node_id: "HUB_VINHLONG", name: "Hub Vĩnh Long", type: "farm_hub", lat: 10.2537, lon: 105.9722, on_river: "True" },
+  { node_id: "CT_HUB", name: "Trung tâm trung chuyển Cần Thơ", type: "transshipment", lat: 10.0452, lon: 105.7469, on_river: "True" },
+  { node_id: "HCM_MARKET", name: "Thị trường TP.HCM", type: "market", lat: 10.7769, lon: 106.7009, on_river: "False" },
+];
+
+function getMapPayload(): MapPayload {
+  return {
+    nodes: MAP_PAYLOAD_NODES,
+    fleet: [],
+  };
+}
+
+function EnterpriseDashboard() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const paramOrderId = searchParams.get("order_id");
+  const paramRoute = searchParams.get("route");
+  const paramStep = searchParams.get("step");
+
   const { user, loading, logout } = useAuth();
   const { dictionary, language, t } = useLanguage();
   const [step, setStep] = useState<"form" | "routes" | "tracking">("form");
@@ -98,6 +121,73 @@ export default function EnterpriseDashboard() {
 
   const socketRef = useRef<WebSocket | null>(null);
 
+  const fetchOrderDetails = async (oid: number) => {
+    try {
+      const res = await fetch(`/api/v1/orders/${oid}`, { credentials: "include", cache: "no-store" });
+      if (res.ok) {
+        const order = await res.json();
+        
+        // Parse route options
+        try {
+          const opts = JSON.parse(order.route_options_json || "[]");
+          setRouteOptions({
+            hub_id: order.hub_id,
+            priority: { tier: "standard", score: 100, label: "Standard" },
+            recommended_route: order.selected_route_id,
+            phuong_an: opts,
+            khuyen_nghi: order.selected_route_id,
+            evidence: { weather_ts: null, price_ts: null }
+          });
+        } catch (e) {
+          console.error("Error parsing route options:", e);
+        }
+
+        // Parse route geometry
+        try {
+          const route_map = JSON.parse(order.selected_route_geometry_json || "{}");
+          setRouteMap({
+            nodes: getMapPayload().nodes,
+            fleet: [],
+            routes: route_map
+          });
+        } catch (e) {
+          console.error("Error parsing route map geometry:", e);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching order details:", err);
+    }
+  };
+
+  const handleBackToForm = () => {
+    router.replace("/enterprise");
+    setStep("form");
+    setOrderId(null);
+    setSelectedRoute(null);
+    setRouteOptions(null);
+    setRouteMap(null);
+    setLiveMap(null);
+    setTrackingState(null);
+  };
+
+  useEffect(() => {
+    if (paramStep === "tracking" && paramOrderId && paramRoute) {
+      const oid = parseInt(paramOrderId);
+      setOrderId(oid);
+      setSelectedRoute(paramRoute);
+      setStep("tracking");
+      
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.send(
+          JSON.stringify({
+            action: "TRACK_CARGO",
+            order_id: oid,
+          })
+        );
+      }
+    }
+  }, [paramStep, paramOrderId, paramRoute]);
+
   useEffect(() => {
     const now = new Date();
     const harvestDate = new Date(now.getTime() - 6 * 60 * 60 * 1000);
@@ -121,13 +211,27 @@ export default function EnterpriseDashboard() {
       return;
     }
 
-    const backendBaseUrl = process.env.NEXT_PUBLIC_VAIC_API_BASE_URL || "http://127.0.0.1:8000";
-    const wsUrl = backendBaseUrl.replace(/^http/, "ws") + "/ws";
+    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    let wsHost = "localhost:8000";
+    if (process.env.NEXT_PUBLIC_VAIC_API_BASE_URL) {
+      wsHost = process.env.NEXT_PUBLIC_VAIC_API_BASE_URL.replace(/^https?:\/\//, "");
+    } else if (typeof window !== "undefined") {
+      wsHost = `${window.location.hostname}:8000`;
+    }
+    const wsUrl = `${wsProtocol}//${wsHost}/ws?user_id=${user.id}&role=${user.role}`;
     const socket = new WebSocket(wsUrl);
     socketRef.current = socket;
 
     socket.onopen = () => {
       console.log("WebSocket connected.");
+      if (paramStep === "tracking" && paramOrderId) {
+        socket.send(
+          JSON.stringify({
+            action: "TRACK_CARGO",
+            order_id: parseInt(paramOrderId),
+          })
+        );
+      }
     };
 
     socket.onmessage = (event) => {
@@ -269,26 +373,23 @@ export default function EnterpriseDashboard() {
     );
   };
 
-  const getMapPayload = (): MapPayload => {
-    return {
-      nodes: [
-        { node_id: "HUB_VITHANH", name: "Hub Vị Thanh", type: "farm_hub", lat: 9.784, lon: 105.4701, on_river: "True" },
-        { node_id: "HUB_LONGXUYEN", name: "Hub Long Xuyên", type: "farm_hub", lat: 10.3864, lon: 105.4352, on_river: "True" },
-        { node_id: "HUB_SOCTRANG", name: "Hub Sóc Trăng", type: "farm_hub", lat: 9.6025, lon: 105.9739, on_river: "True" },
-        { node_id: "HUB_VINHLONG", name: "Hub Vĩnh Long", type: "farm_hub", lat: 10.2537, lon: 105.9722, on_river: "True" },
-        { node_id: "CT_HUB", name: "Trung tâm trung chuyển Cần Thơ", type: "transshipment", lat: 10.0452, lon: 105.7469, on_river: "True" },
-        { node_id: "HCM_MARKET", name: "Thị trường TP.HCM", type: "market", lat: 10.7769, lon: 106.7009, on_river: "False" },
-      ],
-      fleet: [],
-    };
-  };
-
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <Brand role="enterprise" />
         <nav>
-          <a className="active" href="#">{t("enterprise.manager")}</a>
+          <Link
+            className={pathname === "/enterprise" ? "active" : ""}
+            href="/enterprise"
+          >
+            {language === "vi" ? "Tạo đơn hàng" : "Create Shipment"}
+          </Link>
+          <Link
+            className={pathname === "/enterprise/orders" ? "active" : ""}
+            href="/enterprise/orders"
+          >
+            {language === "vi" ? "Danh sách đơn hàng" : "Order History"}
+          </Link>
         </nav>
       </aside>
 
@@ -460,6 +561,8 @@ export default function EnterpriseDashboard() {
                 <div style={{ flex: 1, position: "relative" }}>
                   <VaicMap
                     data={liveMap || routeMap || getMapPayload()}
+                    selectedRoute={selectedRoute}
+                    onSelectedRouteChange={setSelectedRoute}
                     trackingMarker={
                       trackingState?.location
                         ? {
@@ -532,7 +635,7 @@ export default function EnterpriseDashboard() {
                   </div>
                 </div>
 
-                <button className="secondary" style={{ width: "100%" }} onClick={() => setStep("form")}>
+                <button className="secondary" style={{ width: "100%" }} onClick={handleBackToForm}>
                   {t("enterprise.back_to_form")}
                 </button>
               </div>
@@ -541,5 +644,13 @@ export default function EnterpriseDashboard() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function EnterprisePage() {
+  return (
+    <Suspense fallback={<main className="loading-screen">Đang tải...</main>}>
+      <EnterpriseDashboard />
+    </Suspense>
   );
 }
